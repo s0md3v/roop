@@ -26,6 +26,8 @@ If you plan on doing it, you will need to install the appropriate `onnxruntime-*
 pip3 install onnxruntime-gpu
 ```
 #### AMD
+Install ROCM-based torch packages from [here](https://pytorch.org/get-started/locally/) and then,
+
 ```
 git clone https://github.com/microsoft/onnxruntime
 cd onnxruntime
@@ -39,7 +41,7 @@ pip install build/Linux/Release/dist/*.whl
 Executing `python run.py` command will launch this window:
 ![gui-demo](gui-demo.png)
 
-Choose a face (image with desired face) and the target image/video (image/video in which you want to replace the face) and click on `Start`. The output will be saved in `output.mp4` file.
+Choose a face (image with desired face) and the target image/video (image/video in which you want to replace the face) and click on `Start`. It will create a directory named `<video_title>` where you can see the frames being swapped in realtime. Once the processing is done, it will create a video file named `<video_title>.mp4`. That's it.
 
 Don't touch the FPS checkbox unless you know what you are doing.
 
