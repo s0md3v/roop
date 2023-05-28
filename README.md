@@ -17,7 +17,7 @@ pip3 install -r requirements.txt
 ```
 4. Download [this file](https://drive.google.com/file/d/1jbDUGrADco9A1MutWjO6d_1dwizh9w9P/view?usp=sharing) and keep it in **roop** directory
 
-### Do you have a decent GPU?
+### GPU Accleration (Optional)
 If you have a good enough GPU, you can use it to speed-up the face-swapping process by running `run.py` with `--gpu` flag.
 If you plan on doing it, you will need to install the appropriate `onnxruntime-*` package as follows:
 
@@ -41,7 +41,7 @@ pip install build/Linux/Release/dist/*.whl
 Executing `python run.py` command will launch this window:
 ![gui-demo](gui-demo.png)
 
-Choose a face (image with desired face) and the target image/video (image/video in which you want to replace the face) and click on `Start`. It will create a directory named `<video_title>` where you can see the frames being swapped in realtime. Once the processing is done, it will create a video file named `<video_title>.mp4`. That's it.
+Choose a face (image with desired face) and the target image/video (image/video in which you want to replace the face) and click on `Start`. Open file explorer and navigate to the directory you launched `run.py` from. You will find a directory named `<video_title>` where you can see the frames being swapped in realtime. Once the processing is done, it will create a video file named `swapped-<video_title>.mp4`. That's it.
 
 Don't touch the FPS checkbox unless you know what you are doing.
 
