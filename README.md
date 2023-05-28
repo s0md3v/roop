@@ -18,8 +18,8 @@ pip3 install -r requirements.txt
 4. Download [this file](https://drive.google.com/file/d/1jbDUGrADco9A1MutWjO6d_1dwizh9w9P/view?usp=sharing) and keep it in **roop** directory
 
 ### Do you have a decent GPU?
-If you have a good enough GPU, you can use it to speed up the face-swapping process by running `run.py` with `--gpu` flag.
-If you plan on doing, you will need to install the appropriate `onnxruntime-*` package as follows:
+If you have a good enough GPU, you can use it to speed-up the face-swapping process by running `run.py` with `--gpu` flag.
+If you plan on doing it, you will need to install the appropriate `onnxruntime-*` package as follows:
 
 #### NVIDIA
 ```
@@ -37,6 +37,7 @@ pip install build/Linux/Release/dist/*.whl
 > Note: When you run this program for the first time, it will download some models ~300MB in size.
 
 Executing `python run.py` command will launch this window:
+![gui-demo](gui-demo.png)
 
 Choose a face (image with desired face) and the target image/video (image/video in which you want to replace the face) and click on `Start`. The output will be saved in `output.mp4` file.
 
