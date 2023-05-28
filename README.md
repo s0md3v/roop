@@ -13,7 +13,7 @@ That's it, that's the software.
 ```
 git clone https://github.com/s0md3v/roop
 cd roop
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 ```
 4. Download [this file](https://drive.google.com/file/d/1jbDUGrADco9A1MutWjO6d_1dwizh9w9P/view?usp=sharing) and keep it in **roop** directory
 
@@ -22,8 +22,9 @@ If you have a good enough GPU, you can use it to speed-up the face-swapping proc
 If you plan on doing it, you will need to install the appropriate `onnxruntime-*` package as follows:
 
 #### NVIDIA
+Install `cuda` and then,
 ```
-pip3 install onnxruntime-gpu
+pip install onnxruntime-gpu
 ```
 #### AMD
 Install ROCM-based torch packages from [here](https://pytorch.org/get-started/locally/) and then,
