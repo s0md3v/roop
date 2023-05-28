@@ -15,6 +15,7 @@ git clone https://github.com/s0md3v/roop
 cd roop
 pip3 install -r requirements.txt
 ```
+4. Download [this file](https://drive.google.com/file/d/1jbDUGrADco9A1MutWjO6d_1dwizh9w9P/view?usp=sharing) and keep it in **roop** directory
 
 ### Do you have a decent GPU?
 If you have a good enough GPU, you can use it to speed up the face-swapping process by running `run.py` with `--gpu` flag.
