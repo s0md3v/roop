@@ -71,12 +71,16 @@ def toggle_fps_limit():
     args['keep_fps'] = limit_fps.get() != True
 
 
+def toggle_keep_frames():
+    args['keep_frames'] = keep_frames.get() != True
+
+
 def save_file():
-   args['output_file'] = asksaveasfilename(initialfile='output.mp4', defaultextension=".mp4", filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+    args['output_file'] = asksaveasfilename(initialfile='output.mp4', defaultextension=".mp4", filetypes=[("All Files","*.*"),("Videos","*.mp4")])
 
 
 def status(string):
-    status_label["text"] = string
+    status_label["text"] = "Status: " + string
     window.update()
 
 
@@ -97,12 +101,12 @@ def start():
         return
     if is_img(target_path):
         process_img(args['source_img'], target_path)
-        status("Swap successful!")
+        status("swap successful!")
         return
     video_name = target_path.split("/")[-1].split(".")[0]
     output_dir = target_path.replace(target_path.split("/")[-1], "").rstrip("/") + "/" + video_name
     Path(output_dir).mkdir(exist_ok=True)
-    status("Detecting video's FPS...")
+    status("detecting video's FPS...")
     fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
         this_path = output_dir + "/" + video_name + ".mp4"
@@ -110,21 +114,21 @@ def start():
         target_path, fps = this_path, 30
     else:
         shutil.copy(target_path, output_dir)
-    status("Extracting frames...")
+    status("extracting frames...")
     extract_frames(target_path, output_dir)
     args['frame_paths'] = tuple(sorted(
         glob.glob(output_dir + f"/*.png"),
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
-    status("Swapping in progress...")
+    status("swapping in progress...")
     start_processing()
-    status("Creating video...")
+    status("creating video...")
     create_video(video_name, fps, output_dir)
-    status("Adding audio...")
+    status("adding audio...")
     add_audio(output_dir, target_path, args['keep_frames'], args['output_file'])
     save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
-    status("Swap successful!")
+    status("swap successful!")
 
 
 if __name__ == "__main__":
@@ -133,34 +137,40 @@ if __name__ == "__main__":
         start()
         quit()
     window = tk.Tk()
-    window.geometry("600x400")
+    window.geometry("600x500")
     window.title("roop")
+    window.configure(bg="#2d3436")
+    window.resizable(width=False, height=False)
 
     # Contact information
-    support_link = tk.Label(window, text="Support the project ^_^", fg="red", cursor="hand2")
+    support_link = tk.Label(window, text="Donate to project <3", fg="#fd79a8", bg="#2d3436", cursor="hand2", font=("Arial", 8))
+    support_link.place(x=180,y=20,width=250,height=30)
     support_link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/sponsors/s0md3v"))
-    support_link.pack()
 
     # Select a face button
-    face_button = tk.Button(window, text="Select a face", command=select_face)
-    face_button.pack(padx=10, pady=20)
+    face_button = tk.Button(window, text="Select a face", command=select_face, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
+    face_button.place(x=60,y=120,width=180,height=80)
 
     # Select a target button
-    target_button = tk.Button(window, text="Select a target", command=select_target)
-    target_button.pack(padx=10, pady=10)
+    target_button = tk.Button(window, text="Select a target", command=select_target, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
+    target_button.place(x=360,y=120,width=180,height=80)
 
     # FPS limit checkbox
     limit_fps = tk.IntVar()
-    fps_checkbox = tk.Checkbutton(window, text="Limit FPS to 30", variable=limit_fps, command=toggle_fps_limit, font=("Arial", 8))
-    fps_checkbox.pack()
+    fps_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
+    fps_checkbox.place(x=30,y=230,width=240,height=31)
     fps_checkbox.select()
 
+    # Keep frames checkbox
+    keep_frames = tk.IntVar()
+    frames_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
+    frames_checkbox.place(x=37,y=280,width=240,height=31)
+
     # Start button
-    start_button = tk.Button(window, text="Start", bg="#f1c40f", command=lambda: [save_file(), start()])
-    start_button.pack(padx=10, pady=20)
+    start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
+    start_button.place(x=240,y=360,width=120,height=49)
 
     # Status label
-    status_label = tk.Label(window, width=340, text="Waiting for input...", bg="black", fg="#2ecc71")
-    status_label.pack()
-
+    status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
+    status_label.place(x=10,y=440,width=580,height=30)
     window.mainloop()
