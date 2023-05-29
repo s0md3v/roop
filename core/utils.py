@@ -3,7 +3,7 @@ import shutil
 
 sep = "/"
 if os.name == "nt":
-    sep = "\\"
+    sep = "/"
 
 def run_command(command, mode="silent"):
     if mode == "debug":
