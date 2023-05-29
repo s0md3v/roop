@@ -75,8 +75,13 @@ def save_file():
    args['output_file'] = asksaveasfilename(initialfile='output.mp4', defaultextension=".mp4", filetypes=[("All Files","*.*"),("Videos","*.mp4")])
 
 
+def status(string):
+    status_label["text"] = string
+    window.update()
+
+
 def start():
-    print("DON'T WORRY. IT'S NOT STUCK.\n" * 5)
+    print("DON'T WORRY. IT'S NOT STUCK/CRASHED.\n" * 5)
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
         return
@@ -92,10 +97,12 @@ def start():
         return
     if is_img(target_path):
         process_img(args['source_img'], target_path)
+        status("Swap successful!")
         return
     video_name = target_path.split("/")[-1].split(".")[0]
     output_dir = target_path.replace(target_path.split("/")[-1], "").rstrip("/") + "/" + video_name
     Path(output_dir).mkdir(exist_ok=True)
+    status("Detecting video's FPS...")
     fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
         this_path = output_dir + "/" + video_name + ".mp4"
@@ -103,46 +110,57 @@ def start():
         target_path, fps = this_path, 30
     else:
         shutil.copy(target_path, output_dir)
+    status("Extracting frames...")
     extract_frames(target_path, output_dir)
     args['frame_paths'] = tuple(sorted(
         glob.glob(output_dir + f"/*.png"),
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
+    status("Swapping in progress...")
     start_processing()
+    status("Creating video...")
     create_video(video_name, fps, output_dir)
+    status("Adding audio...")
     add_audio(output_dir, target_path, args['keep_frames'], args['output_file'])
     save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
+    status("Swap successful!")
 
 
 if __name__ == "__main__":
+    global status_label, window
     if args['source_img']:
         start()
         quit()
     window = tk.Tk()
-    window.geometry("600x200")
+    window.geometry("600x400")
     window.title("roop")
 
     # Contact information
     support_link = tk.Label(window, text="Support the project ^_^", fg="red", cursor="hand2")
-    support_link.pack(padx=10, pady=10)
     support_link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/sponsors/s0md3v"))
+    support_link.pack()
 
     # Select a face button
     face_button = tk.Button(window, text="Select a face", command=select_face)
-    face_button.pack(side=tk.LEFT, padx=10, pady=10)
+    face_button.pack(padx=10, pady=20)
 
     # Select a target button
     target_button = tk.Button(window, text="Select a target", command=select_target)
-    target_button.pack(side=tk.RIGHT, padx=10, pady=10)
+    target_button.pack(padx=10, pady=10)
 
     # FPS limit checkbox
     limit_fps = tk.IntVar()
     fps_checkbox = tk.Checkbutton(window, text="Limit FPS to 30", variable=limit_fps, command=toggle_fps_limit, font=("Arial", 8))
-    fps_checkbox.pack(side=tk.BOTTOM)
+    fps_checkbox.pack()
     fps_checkbox.select()
 
     # Start button
-    start_button = tk.Button(window, text="Start", bg="green", command=lambda: [save_file(), start()])
-    start_button.pack(side=tk.BOTTOM, padx=10, pady=10)
+    start_button = tk.Button(window, text="Start", bg="#f1c40f", command=lambda: [save_file(), start()])
+    start_button.pack(padx=10, pady=20)
+
+    # Status label
+    status_label = tk.Label(window, width=340, text="Waiting for input...", bg="black", fg="#2ecc71")
+    status_label.pack()
+
     window.mainloop()
