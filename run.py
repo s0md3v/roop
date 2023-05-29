@@ -36,7 +36,7 @@ for name, value in vars(parser.parse_args()).items():
     args[name] = value
 
 sep = "/" # used for filepaths e.g. /root/path/output.mp4
-if os.name == 'nt':
+if sys.platform.startswith("win") or os.name == 'nt':
     sep = "\\" # for windows
 
 def start_processing():
