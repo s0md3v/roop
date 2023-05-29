@@ -1,6 +1,7 @@
 numpy
 opencv-python
 onnx
+onnxruntime
 insightface
 psutil
 tk
