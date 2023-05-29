@@ -72,6 +72,7 @@ def save_file():
 
 
 def start():
+    print("DON'T WORRY. IT'S NOT STUCK.\n" * 5)
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
         return
@@ -90,7 +91,7 @@ def start():
         return
     video_name = target_path.split(sep)[-1].split(".")[0]
     output_dir = target_path.replace(target_path.split(sep)[-1], "") + sep + video_name
-    if sep = "\\":
+    if sep == "\\":
         output_dir = output_dir.lstrip("\\", "")
     Path(output_dir).mkdir(exist_ok=True)
     fps = detect_fps(target_path)
