@@ -42,7 +42,7 @@ pip install build/Linux/Release/dist/*.whl
 Executing `python run.py` command will launch this window:
 ![gui-demo](gui-demo.png)
 
-Choose a face (image with desired face) and the target image/video (image/video in which you want to replace the face) and click on `Start`. Open file explorer and navigate to the directory you launched `run.py` from. You will find a directory named `<video_title>` where you can see the frames being swapped in realtime. Once the processing is done, it will create a video file named `swapped-<video_title>.mp4`. That's it.
+Choose a face (image with desired face) and the target image/video (image/video in which you want to replace the face) and click on `Start`. Open file explorer and navigate to the directory you select your output to be in. You will find a directory named `<video_title>` where you can see the frames being swapped in realtime. Once the processing is done, it will create the output file. That's it.
 
 Don't touch the FPS checkbox unless you know what you are doing.
 
