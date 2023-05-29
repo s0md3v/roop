@@ -28,6 +28,10 @@ parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_fr
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
 
+sep = "/" # used for filepaths e.g. /root/path/output.mp4
+if os.name == 'nt':
+    sep = "\\" # for windows
+
 def start_processing():
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
@@ -77,12 +81,12 @@ def start():
     if is_img(target_path):
         process_img(args['source_img'], target_path)
         return
-    video_name = target_path.split("/")[-1].split(".")[0]
-    output_dir = target_path.replace(target_path.split("/")[-1], "") + "/" + video_name
+    video_name = target_path.split(sep)[-1].split(".")[0]
+    output_dir = target_path.replace(target_path.split(sep)[-1], "") + sep + video_name
     Path(output_dir).mkdir(exist_ok=True)
     fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
-        this_path = output_dir + "/" + video_name + ".mp4"
+        this_path = output_dir + sep + video_name + ".mp4"
         set_fps(target_path, this_path, 30)
         target_path, fps = this_path, 30
     else:
@@ -90,12 +94,12 @@ def start():
     extract_frames(target_path, output_dir)
     args['frame_paths'] = tuple(sorted(
         glob.glob(output_dir + "/*.png"),
-        key=lambda x: int(x.split("/")[-1].replace(".png", ""))
+        key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     start_processing()
     create_video(video_name, fps, output_dir)
     add_audio(output_dir, target_path, args['keep_frames'], args['output_file'])
-    save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
+    save_path = args['output_file'] if args['output_file'] else output_dir + sep + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
 
 
