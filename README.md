@@ -53,6 +53,8 @@ Additional command line arguments are given below:
                         use this face
 -t TARGET_PATH, --target TARGET_PATH
                         replace this face
+-o OUTPUT_FILE, --output OUTPUT_FILE
+                      save output to this file
 --keep-fps            keep original fps
 --gpu                 use gpu
 --keep-frames         don't delete frames directory
