@@ -4,6 +4,7 @@ import core.globals
 
 if not shutil.which('ffmpeg'):
     print('ffmpeg is not installed. Read the docs you idiot.\n' * 10)
+    quit()
 if '--gpu' not in sys.argv:
     core.globals.providers = ['CPUExecutionProvider']
 
