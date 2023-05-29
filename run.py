@@ -1,6 +1,9 @@
 import sys
+import shutil
 import core.globals
 
+if not shutil.which('ffmpeg'):
+    print('ffmpeg is not installed. Read the docs you idiot.\n' * 10)
 if '--gpu' not in sys.argv:
     core.globals.providers = ['CPUExecutionProvider']
 
@@ -17,7 +20,6 @@ from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, ext
 from core.config import get_face
 import webbrowser
 import psutil
-import shutil
 import cv2
 
 pool = None
