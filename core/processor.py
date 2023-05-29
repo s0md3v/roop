@@ -14,11 +14,16 @@ def process_video(source_img, frame_paths):
         frame = cv2.imread(frame_path)
         try:
             face = get_face(frame)
-            result = face_swapper.get(frame, face, source_face, paste_back=True)
-            cv2.imwrite(frame_path, result)
+            if face:
+                result = face_swapper.get(frame, face, source_face, paste_back=True)
+                cv2.imwrite(frame_path, result)
+                print('.', end='', flush=True)
+            else:
+                print('S', end='', flush=True)
         except Exception as e:
+            print('E', end='', flush=True)
             pass
-
+    print(flush=True)
 
 def process_img(source_img, target_path):
     frame = cv2.imread(target_path)
