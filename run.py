@@ -66,13 +66,12 @@ def start():
         return
     global pool
     pool = mp.Pool(psutil.cpu_count()-1)
-    current_dir = os.getcwd()
     target_path = args['target_path']
     if is_img(target_path):
         process_img(args['source_img'], target_path)
         return
     video_name = target_path.split("/")[-1].split(".")[0]
-    output_dir = current_dir + "/" + video_name
+    output_dir = target_path.replace(target_path.split("/")[-1], "") + "/" + video_name
     Path(output_dir).mkdir(exist_ok=True)
     fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
@@ -88,7 +87,7 @@ def start():
     ))
     start_processing()
     create_video(video_name, fps, output_dir)
-    add_audio(current_dir, output_dir, target_path, args['keep_frames'], args['output_file'])
+    add_audio(output_dir, target_path, args['keep_frames'], args['output_file'])
     save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
 
