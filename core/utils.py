@@ -1,6 +1,10 @@
 import os
 import shutil
 
+sep = "/"
+if os.name == "nt":
+    sep = "\\"
+
 def run_command(command, mode="silent"):
     if mode == "debug":
         return os.system(command)
@@ -21,20 +25,20 @@ def set_fps(input_path, output_path, fps):
 
 
 def create_video(video_name, fps, output_dir):
-    os.system(f'ffmpeg -framerate {fps} -pattern_type glob -i "{output_dir}/*.png" -c:v libx264 -pix_fmt yuv420p -y "{output_dir}/output.mp4"')
+    os.system(f'ffmpeg -framerate {fps} -pattern_type glob -i "{output_dir}{sep}*.png" -c:v libx264 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
 
 
 def extract_frames(input_path, output_dir):
-    os.system(f'ffmpeg -i "{input_path}" "{output_dir}/%04d.png"')
+    os.system(f'ffmpeg -i "{input_path}" "{output_dir}{sep}%04d.png"')
 
 
-def add_audio(current_dir, output_dir, target_path, keep_frames, output_file):
-    video = target_path.split("/")[-1]
+def add_audio(output_dir, target_path, keep_frames, output_file):
+    video = target_path.split(sep)[-1]
     video_name = video.split(".")[0]
-    save_to = output_file if output_file else current_dir + "/swapped-" + video_name + ".mp4"
-    os.system(f'ffmpeg -i "{output_dir}/output.mp4" -i "{output_dir}/{video}" -c:v copy -map 0:v:0 -map 1:a:0 -y "{save_to}"')
+    save_to = output_file if output_file else output_dir + "{sep}swapped-" + video_name + ".mp4"
+    os.system(f'ffmpeg -i "{output_dir}{sep}output.mp4" -i "{output_dir}{sep}{video}" -c:v copy -map 0:v:0 -map 1:a:0 -y "{save_to}"')
     if not os.path.isfile(save_to):
-        shutil.move(output_dir + "/output.mp4", save_to)
+        shutil.move(output_dir + "{sep}output.mp4", save_to)
     if not keep_frames:
         shutil.rmtree(output_dir)
 
