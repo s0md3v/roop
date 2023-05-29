@@ -1,6 +1,7 @@
 import insightface
+import onnxruntime
 
-face_analyser = insightface.app.FaceAnalysis(name='buffalo_l', providers=['CUDAExecutionProvider', 'ROCMExecutionProvider', 'CPUExecutionProvider'])
+face_analyser = insightface.app.FaceAnalysis(name='buffalo_l', providers=onnxruntime.get_available_providers())
 face_analyser.prepare(ctx_id=0, det_size=(640, 640))
 
 
