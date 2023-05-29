@@ -23,7 +23,7 @@ def process_video(source_img, frame_paths):
         except Exception as e:
             print('E', end='', flush=True)
             pass
-
+    print(flush=True)
 
 def process_img(source_img, target_path):
     frame = cv2.imread(target_path)
