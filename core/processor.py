@@ -1,6 +1,4 @@
 import os
-import time
-
 import cv2
 import insightface
 import core.globals
@@ -14,7 +12,6 @@ else:
 
 
 def process_video(source_img, frame_paths):
-    start_time = time.time()
     source_face = get_face(cv2.imread(source_img))
     for frame_path in frame_paths:
         frame = cv2.imread(frame_path)
@@ -29,9 +26,6 @@ def process_video(source_img, frame_paths):
         except Exception as e:
             print('E', end='', flush=True)
             pass
-    print(flush=True)
-    end_time = time.time()
-    print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
 
 
 def process_img(source_img, target_path):

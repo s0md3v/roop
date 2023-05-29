@@ -3,12 +3,15 @@
 <<<<<<< HEAD
 import sys
 import time
+<<<<<<< HEAD
 =======
 
 >>>>>>> 54f800d (Add GPU support, Quit on missing model, Remove globals (sorry))
 =======
 import sys
 >>>>>>> dc0653a (Restore globals, add process time for better comparison)
+=======
+>>>>>>> 2b14613 (Move process time to the correct place)
 import torch
 import shutil
 import core.globals
@@ -61,8 +64,13 @@ def start_processing():
     start_time = time.time()
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
+<<<<<<< HEAD
         end_time = time.time()
         print(flush=True)
+=======
+        print(flush=True)
+        end_time = time.time()
+>>>>>>> 2b14613 (Move process time to the correct place)
         print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
         return
     frame_paths = args["frame_paths"]
@@ -75,6 +83,7 @@ def start_processing():
         p.get()
     pool.close()
     pool.join()
+<<<<<<< HEAD
     end_time = time.time()
     print(flush=True)
     print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
@@ -108,6 +117,11 @@ def preview_video(video_path):
         img_label.pack()
 
     cap.release()
+=======
+    print(flush=True)
+    end_time = time.time()
+    print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
+>>>>>>> 2b14613 (Move process time to the correct place)
 
 
 def select_face():
