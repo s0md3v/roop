@@ -4,3 +4,4 @@ onnx
 insightface
 psutil
 tk
+onnxruntime
