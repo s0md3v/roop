@@ -101,6 +101,7 @@ def select_target():
     args['target_path'] = filedialog.askopenfilename(title="Select a target")
     threading.Thread(target=preview_video, args=(args['target_path'],)).start()
 
+
 def toggle_fps_limit():
     args['keep_fps'] = limit_fps.get() != True
 
