@@ -28,12 +28,13 @@ def extract_frames(input_path, output_dir):
     os.system(f"ffmpeg -i {input_path} '{output_dir}/%04d.png'")
 
 
-def add_audio(current_dir, output_dir, target_path, keep_frames):
+def add_audio(current_dir, output_dir, target_path, keep_frames, output_file):
     video = target_path.split("/")[-1]
     video_name = video.split(".")[0]
-    os.system(f"ffmpeg -i {output_dir}/output.mp4 -i {output_dir}/{video} -c:v copy -map 0:v:0 -map 1:a:0 -y {current_dir}/swapped-{video_name}.mp4")
+    save_to = output_file if output_file else current_dir + "/swapped-" + video_name + ".mp4"
+    os.system(f"ffmpeg -i {output_dir}/output.mp4 -i {output_dir}/{video} -c:v copy -map 0:v:0 -map 1:a:0 -y {save_to}")
     if not os.path.isfile(current_dir + "/swapped-" + video_name + ".mp4"):
-        shutil.move(output_dir + "/output.mp4", current_dir + "/swapped-" + video_name + ".mp4")
+        shutil.move(output_dir + "/output.mp4", save_to)
     if not keep_frames:
         shutil.rmtree(output_dir)
 

@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog
+from tkinter.filedialog import asksaveasfilename
 from core.processor import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames
 import webbrowser
@@ -52,6 +53,10 @@ def toggle_fps_limit():
     args['keep_fps'] = limit_fps.get() != True
 
 
+def save_file():
+   args['output_file'] = asksaveasfilename(initialfile='output.mp4', defaultextension=".mp4", filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+
+
 def start():
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
@@ -83,7 +88,7 @@ def start():
     ))
     start_processing()
     create_video(video_name, fps, output_dir)
-    add_audio(current_dir, output_dir, target_path, args['keep_frames'])
+    add_audio(current_dir, output_dir, target_path, args['keep_frames'], args['output_file'])
     print("\n\nVideo saved as:", current_dir + "/swapped-" + video_name + ".mp4", "\n\n")
 
 
@@ -115,6 +120,6 @@ if __name__ == "__main__":
     fps_checkbox.select()
 
     # Start button
-    start_button = tk.Button(window, text="Start", bg="green", command=start)
+    start_button = tk.Button(window, text="Start", bg="green", command=lambda: [save_file(), start()])
     start_button.pack(side=tk.BOTTOM, padx=10, pady=10)
     window.mainloop()
