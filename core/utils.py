@@ -35,7 +35,7 @@ def set_fps(input_path, output_path, fps):
 
 def create_video(video_name, fps, output_dir):
     output_dir = path(output_dir)
-    os.system(f'ffmpeg -framerate {fps} -pattern_type glob -i "{output_dir}{sep}*.png" -c:v libx264 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
+    os.system(f'ffmpeg -framerate {fps} -i "{output_dir}{sep}%04d.png" -c:v libx264 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
 
 
 def extract_frames(input_path, output_dir):
@@ -44,7 +44,7 @@ def extract_frames(input_path, output_dir):
 
 
 def add_audio(output_dir, target_path, keep_frames, output_file):
-    video = target_path.split(sep)[-1]
+    video = target_path.split("/")[-1]
     video_name = video.split(".")[0]
     save_to = output_file if output_file else output_dir + f"/swapped-" + video_name + ".mp4"
     save_to_ff, output_dir_ff = path(save_to), path(output_dir)
