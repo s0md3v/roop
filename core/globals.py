@@ -1,2 +1,4 @@
+import onnxruntime
+
 use_gpu = False
-providers = ['CPUExecutionProvider']
+providers =  onnxruntime.get_available_providers()

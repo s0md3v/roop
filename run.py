@@ -1,9 +1,8 @@
 import sys
-import onnxruntime
 import core.globals
 
-if '--gpu' in sys.argv:
-    core.globals.providers = onnxruntime.get_available_providers()
+if '--gpu' not in sys.argv:
+    core.globals.providers = ['CPUExecutionProvider']
 
 import glob
 import argparse
