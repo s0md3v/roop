@@ -65,12 +65,17 @@ def start_processing():
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
 <<<<<<< HEAD
+<<<<<<< HEAD
         end_time = time.time()
         print(flush=True)
 =======
         print(flush=True)
         end_time = time.time()
 >>>>>>> 2b14613 (Move process time to the correct place)
+=======
+        end_time = time.time()
+        print(flush=True)
+>>>>>>> 0f782ff (Move process time to the correct place)
         print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
         return
     frame_paths = args["frame_paths"]
@@ -83,6 +88,7 @@ def start_processing():
         p.get()
     pool.close()
     pool.join()
+<<<<<<< HEAD
 <<<<<<< HEAD
     end_time = time.time()
     print(flush=True)
@@ -119,7 +125,10 @@ def preview_video(video_path):
     cap.release()
 =======
     print(flush=True)
+=======
+>>>>>>> 0f782ff (Move process time to the correct place)
     end_time = time.time()
+    print(flush=True)
     print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
 >>>>>>> 2b14613 (Move process time to the correct place)
 
