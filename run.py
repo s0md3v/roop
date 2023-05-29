@@ -1,3 +1,10 @@
+import sys
+import onnxruntime
+import core.globals
+
+if '--gpu' in sys.argv:
+    core.globals.providers = onnxruntime.get_available_providers()
+
 import glob
 import argparse
 import multiprocessing as mp

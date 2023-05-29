@@ -1,7 +1,8 @@
 import insightface
 import onnxruntime
+import core.globals
 
-face_analyser = insightface.app.FaceAnalysis(name='buffalo_l', providers=onnxruntime.get_available_providers())
+face_analyser = insightface.app.FaceAnalysis(name='buffalo_l', providers=core.globals.providers)
 face_analyser.prepare(ctx_id=0, det_size=(640, 640))
 
 

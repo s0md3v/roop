@@ -1,10 +1,11 @@
 import cv2
 import insightface
 import onnxruntime
+import core.globals
 from core.config import get_face
 from core.utils import rreplace
 
-face_swapper = insightface.model_zoo.get_model('inswapper_128.onnx', providers=onnxruntime.get_available_providers())
+face_swapper = insightface.model_zoo.get_model('inswapper_128.onnx', providers=core.globals.providers)
 
 
 def process_video(source_img, frame_paths):
