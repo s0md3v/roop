@@ -53,6 +53,12 @@ def toggle_fps_limit():
 
 
 def start():
+    if not args['source_img'] or not os.path.isfile(args['source_img']):
+        print("\n[WARNING] Please select an image containing a face.")
+        return
+    elif not args['target_path'] or not os.path.isfile(args['target_path']):
+        print("\n[WARNING] Please select a video/image to swap face in.")
+        return
     global pool
     pool = mp.Pool(psutil.cpu_count()-1)
     current_dir = os.getcwd()
