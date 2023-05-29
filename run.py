@@ -22,6 +22,8 @@ from core.config import get_face
 import webbrowser
 import psutil
 import cv2
+import threading
+from PIL import Image, ImageTk
 
 pool = None
 args = {}
@@ -59,13 +61,45 @@ def start_processing():
     pool.join()
 
 
+def preview_image(image_path):
+    img = Image.open(image_path)
+    img = img.resize((150, 150), Image.ANTIALIAS)
+    photo_img = ImageTk.PhotoImage(img)
+    left_frame = tk.Frame(window)
+    left_frame.pack(side=tk.LEFT, padx=10, pady=10)
+    img_label = tk.Label(left_frame, image=photo_img)
+    img_label.image = photo_img
+    img_label.pack()
+
+
+def preview_video(video_path):
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        print("Error opening video file")
+        return
+    ret, frame = cap.read()
+    if ret:
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(frame)
+        img = img.resize((150, 150), Image.ANTIALIAS)
+        photo_img = ImageTk.PhotoImage(img)
+        right_frame = tk.Frame(window)
+        right_frame.pack(side=tk.RIGHT, padx=10, pady=10)
+        img_label = tk.Label(right_frame, image=photo_img)
+        img_label.image = photo_img
+        img_label.pack()
+
+    cap.release()
+
+
 def select_face():
     args['source_img'] = filedialog.askopenfilename(title="Select a face")
+    preview_image(args['source_img'])
 
 
 def select_target():
     args['target_path'] = filedialog.askopenfilename(title="Select a target")
-
+    threading.Thread(target=preview_video, args=(args['target_path'],)).start()
 
 def toggle_fps_limit():
     args['keep_fps'] = limit_fps.get() != True
@@ -120,7 +154,7 @@ if __name__ == "__main__":
         start()
         quit()
     window = tk.Tk()
-    window.geometry("600x200")
+    window.geometry("600x350")
     window.title("roop")
 
     # Contact information
