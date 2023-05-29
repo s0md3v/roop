@@ -1,11 +1,15 @@
+import os
 import cv2
 import insightface
 import onnxruntime
-import core.globals
 from core.config import get_face
 from core.utils import rreplace
 
-face_swapper = insightface.model_zoo.get_model('inswapper_128.onnx', providers=core.globals.providers)
+if os.path.isfile('inswapper_128.onnx'):
+    face_swapper = insightface.model_zoo.get_model('inswapper_128.onnx', providers=onnxruntime.get_available_providers())
+else:
+    quit('File "inswapper_128.onnx" does not exist!')
+
 
 
 def process_video(source_img, frame_paths):
@@ -24,6 +28,7 @@ def process_video(source_img, frame_paths):
             print('E', end='', flush=True)
             pass
     print(flush=True)
+
 
 def process_img(source_img, target_path):
     frame = cv2.imread(target_path)
