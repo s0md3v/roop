@@ -78,6 +78,7 @@ def start():
     start_processing()
     create_video(video_name, fps, output_dir)
     add_audio(current_dir, output_dir, target_path, args['keep_frames'])
+    print("\n\nVideo saved as:", current_dir + "/swapped-" + video_name + ".mp4", "\n\n")
 
 
 if __name__ == "__main__":
