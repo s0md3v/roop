@@ -103,7 +103,7 @@ def start():
         shutil.copy(target_path, output_dir)
     extract_frames(target_path, output_dir)
     args['frame_paths'] = tuple(sorted(
-        glob.glob(output_dir + "/*.png"),
+        glob.glob(output_dir + f"{sep}*.png"),
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     start_processing()
