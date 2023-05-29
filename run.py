@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+import time
 import torch
 import shutil
 import core.globals
@@ -47,8 +48,12 @@ if os.name == "nt":
 
 
 def start_processing():
+    start_time = time.time()
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
+        print(flush=True)
+        end_time = time.time()
+        print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
         return
     frame_paths = args["frame_paths"]
     n = len(frame_paths)//(psutil.cpu_count()-1)
@@ -60,6 +65,9 @@ def start_processing():
         p.get()
     pool.close()
     pool.join()
+    print(flush=True)
+    end_time = time.time()
+    print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
 
 
 def select_face():
