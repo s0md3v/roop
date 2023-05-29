@@ -8,9 +8,11 @@ from tkinter import filedialog
 from tkinter.filedialog import asksaveasfilename
 from core.processor import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames
+from core.config import get_face
 import webbrowser
 import psutil
 import shutil
+import cv2
 
 pool = None
 args = {}
@@ -67,6 +69,10 @@ def start():
     global pool
     pool = mp.Pool(psutil.cpu_count()-1)
     target_path = args['target_path']
+    test_face = get_face(cv2.imread(args['source_img']))
+    if not test_face:
+        print("\n[WARNING] No face detected in source image. Please try with another one.\n")
+        return
     if is_img(target_path):
         process_img(args['source_img'], target_path)
         return
