@@ -36,6 +36,11 @@ for name, value in vars(parser.parse_args()).items():
     args[name] = value
 
 
+sep = "/"
+if os.name == "nt":
+    sep = "\\"
+
+
 def start_processing():
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
@@ -87,7 +92,7 @@ def start():
         process_img(args['source_img'], target_path)
         return
     video_name = target_path.split("/")[-1].split(".")[0]
-    output_dir = target_path.replace(target_path.split("/")[-1], "") + "/" + video_name
+    output_dir = target_path.replace(target_path.split("/")[-1], "").rstrip("/") + "/" + video_name
     Path(output_dir).mkdir(exist_ok=True)
     fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
@@ -99,7 +104,7 @@ def start():
     extract_frames(target_path, output_dir)
     args['frame_paths'] = tuple(sorted(
         glob.glob(output_dir + f"/*.png"),
-        key=lambda x: int(x.split("/")[-1].replace(".png", ""))
+        key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     start_processing()
     create_video(video_name, fps, output_dir)
