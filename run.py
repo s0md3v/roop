@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
 <<<<<<< HEAD
+<<<<<<< HEAD
 import sys
 import time
 =======
 
 >>>>>>> 54f800d (Add GPU support, Quit on missing model, Remove globals (sorry))
+=======
+import sys
+>>>>>>> dc0653a (Restore globals, add process time for better comparison)
 import torch
 import shutil
+import core.globals
 
 if not shutil.which('ffmpeg'):
     print('ffmpeg is not installed. Read the docs: https://github.com/s0md3v/roop#installation.\n' * 10)
     quit()
+if '--gpu' not in sys.argv:
+    core.globals.providers = ['CPUExecutionProvider']
 
 import glob
 import argparse
