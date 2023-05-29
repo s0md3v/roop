@@ -5,3 +5,4 @@ onnxruntime
 insightface
 psutil
 tk
+onnxruntime-gpu
