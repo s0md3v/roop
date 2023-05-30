@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import multiprocessing
+
+import platform
 import sys
 import time
 import torch
@@ -21,7 +22,6 @@ import psutil
 import cv2
 import threading
 from PIL import Image, ImageTk
-import resource
 
 pool = None
 args = {}
@@ -44,9 +44,14 @@ if os.name == "nt":
 
 
 def limit_resources():
-    if args['max_memory'] <= 1:
+    if args['max_memory'] >= 1:
         memory = args['max_memory'] * 1024 * 1024 * 1024
-        resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))
+        if str(platform.system()).lower() == 'linux':
+            import resource
+            resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))
+        if str(platform.system()).lower() == 'windows':
+            import win32api
+            win32api.SetProcessWorkingSetSize(-1, memory, memory)
 
 
 def pre_check():
