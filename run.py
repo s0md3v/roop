@@ -41,10 +41,13 @@ parser.add_argument('-o', '--output', help='save output to this file', dest='out
 parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
+parser.add_argument('--cores', help='number of cores to use', dest='cores_count', type=int)
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
 
+if not args['cores_count']:
+    args['cores_count'] = psutil.cpu_count()-1
 
 sep = "/"
 if os.name == "nt":
@@ -60,7 +63,7 @@ def start_processing():
         print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
         return
     frame_paths = args["frame_paths"]
-    n = len(frame_paths)//(psutil.cpu_count()-1)
+    n = len(frame_paths)//(args['cores_count'])
     processes = []
     for i in range(0, len(frame_paths), n):
         p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
@@ -148,7 +151,7 @@ def start():
     if not args['output_file']:
         args['output_file'] = rreplace(args['target_path'], "/", "/swapped-", 1) if "/" in target_path else "swapped-"+target_path
     global pool
-    pool = mp.Pool(psutil.cpu_count()-1)
+    pool = mp.Pool(args['cores_count'])
     target_path = args['target_path']
     test_face = get_face(cv2.imread(args['source_img']))
     if not test_face:
