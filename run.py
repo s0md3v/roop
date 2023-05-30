@@ -1,6 +1,22 @@
 #!/usr/bin/env python3
+<<<<<<< HEAD
 import sys
 import time
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+import sys
+import time
+<<<<<<< HEAD
+=======
+
+>>>>>>> 54f800d (Add GPU support, Quit on missing model, Remove globals (sorry))
+=======
+import sys
+>>>>>>> dc0653a (Restore globals, add process time for better comparison)
+=======
+>>>>>>> 2b14613 (Move process time to the correct place)
+>>>>>>> TitasDas-feature/preview-for-face-image-and-input-video
 import torch
 import shutil
 import core.globals
@@ -25,6 +41,8 @@ from core.config import get_face
 import webbrowser
 import psutil
 import cv2
+import threading
+from PIL import Image, ImageTk
 
 pool = None
 args = {}
@@ -51,8 +69,23 @@ def start_processing():
     start_time = time.time()
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
+<<<<<<< HEAD
         end_time = time.time()
         print(flush=True)
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+        end_time = time.time()
+        print(flush=True)
+=======
+        print(flush=True)
+        end_time = time.time()
+>>>>>>> 2b14613 (Move process time to the correct place)
+=======
+        end_time = time.time()
+        print(flush=True)
+>>>>>>> 0f782ff (Move process time to the correct place)
+>>>>>>> TitasDas-feature/preview-for-face-image-and-input-video
         print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
         return
     frame_paths = args["frame_paths"]
@@ -65,17 +98,65 @@ def start_processing():
         p.get()
     pool.close()
     pool.join()
+<<<<<<< HEAD
+    end_time = time.time()
+    print(flush=True)
+    print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
     end_time = time.time()
     print(flush=True)
     print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
 
+def preview_image(image_path):
+    img = Image.open(image_path)
+    img = img.resize((180, 180), Image.ANTIALIAS)
+    photo_img = ImageTk.PhotoImage(img)
+    left_frame = tk.Frame(window)
+    left_frame.place(x=60, y=100)
+    img_label = tk.Label(left_frame, image=photo_img)
+    img_label.image = photo_img
+    img_label.pack()
+
+
+def preview_video(video_path):
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        print("Error opening video file")
+        return
+    ret, frame = cap.read()
+    if ret:
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(frame)
+        img = img.resize((180, 180), Image.ANTIALIAS)
+        photo_img = ImageTk.PhotoImage(img)
+        right_frame = tk.Frame(window)
+        right_frame.place(x=360, y=100)
+        img_label = tk.Label(right_frame, image=photo_img)
+        img_label.image = photo_img
+        img_label.pack()
+
+    cap.release()
+=======
+    print(flush=True)
+=======
+>>>>>>> 0f782ff (Move process time to the correct place)
+    end_time = time.time()
+    print(flush=True)
+    print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
+>>>>>>> 2b14613 (Move process time to the correct place)
+>>>>>>> TitasDas-feature/preview-for-face-image-and-input-video
+
 
 def select_face():
     args['source_img'] = filedialog.askopenfilename(title="Select a face")
+    preview_image(args['source_img'])
 
 
 def select_target():
     args['target_path'] = filedialog.askopenfilename(title="Select a target")
+    threading.Thread(target=preview_video, args=(args['target_path'],)).start()
 
 
 def toggle_fps_limit():
@@ -148,7 +229,15 @@ if __name__ == "__main__":
         start()
         quit()
     window = tk.Tk()
+<<<<<<< HEAD
     window.geometry("600x500")
+=======
+<<<<<<< HEAD
+    window.geometry("600x700")
+=======
+    window.geometry("600x500")
+>>>>>>> a440cef (better gui)
+>>>>>>> TitasDas-feature/preview-for-face-image-and-input-video
     window.title("roop")
     window.configure(bg="#2d3436")
     window.resizable(width=False, height=False)
@@ -160,21 +249,46 @@ if __name__ == "__main__":
 
     # Select a face button
     face_button = tk.Button(window, text="Select a face", command=select_face, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
+<<<<<<< HEAD
     face_button.place(x=60,y=120,width=180,height=80)
 
     # Select a target button
     target_button = tk.Button(window, text="Select a target", command=select_target, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
     target_button.place(x=360,y=120,width=180,height=80)
+=======
+<<<<<<< HEAD
+    face_button.place(x=60,y=320,width=180,height=80)
+
+    # Select a target button
+    target_button = tk.Button(window, text="Select a target", command=select_target, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
+    target_button.place(x=360,y=320,width=180,height=80)
+=======
+    face_button.place(x=60,y=120,width=180,height=80)
+
+    # Select a target button
+    target_button = tk.Button(window, text="Select a target", command=select_target, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
+    target_button.place(x=360,y=120,width=180,height=80)
+>>>>>>> a440cef (better gui)
+>>>>>>> TitasDas-feature/preview-for-face-image-and-input-video
 
     # FPS limit checkbox
     limit_fps = tk.IntVar()
     fps_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
+<<<<<<< HEAD
     fps_checkbox.place(x=30,y=230,width=240,height=31)
+=======
+<<<<<<< HEAD
+    fps_checkbox.place(x=30,y=500,width=240,height=31)
+=======
+    fps_checkbox.place(x=30,y=230,width=240,height=31)
+>>>>>>> a440cef (better gui)
+>>>>>>> TitasDas-feature/preview-for-face-image-and-input-video
     fps_checkbox.select()
 
     # Keep frames checkbox
     keep_frames = tk.IntVar()
     frames_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
+<<<<<<< HEAD
     frames_checkbox.place(x=37,y=280,width=240,height=31)
 
     # Start button
@@ -184,4 +298,28 @@ if __name__ == "__main__":
     # Status label
     status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
     status_label.place(x=10,y=440,width=580,height=30)
+=======
+<<<<<<< HEAD
+    frames_checkbox.place(x=37,y=450,width=240,height=31)
+
+    # Start button
+    start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
+    start_button.place(x=240,y=560,width=120,height=49)
+
+    # Status label
+    status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
+    status_label.place(x=10,y=640,width=580,height=30)
+    
+=======
+    frames_checkbox.place(x=37,y=280,width=240,height=31)
+
+    # Start button
+    start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
+    start_button.place(x=240,y=360,width=120,height=49)
+
+    # Status label
+    status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
+    status_label.place(x=10,y=440,width=580,height=30)
+>>>>>>> a440cef (better gui)
+>>>>>>> TitasDas-feature/preview-for-face-image-and-input-video
     window.mainloop()
