@@ -4,7 +4,7 @@ That's it, that's the software. You can watch some demos [here](https://drive.go
 
 ![demo-gif](demo.gif)
 
-## Installation
+## How do I install it?
 > Note: The instructions may or may not work for you. Use google or look through issues people have created here to solve your problems.
 
 There are two types of installations: basic and gpu-powered.
@@ -13,7 +13,7 @@ There are two types of installations: basic and gpu-powered.
 
 - **GPU:** If you have a good GPU and are ready for solving any software issues you may face, you can enable GPU which is wayyy faster. To do this, first follow the basic install instructions given above and then follow GPU-specific instructions [here](https://github.com/s0md3v/roop/wiki/2.-GPU-Acceleration).
 
-## Usage
+## How do I use it?
 > Note: When you run this program for the first time, it will download some models ~300MB in size.
 
 Executing `python run.py` command will launch this window:
