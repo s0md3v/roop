@@ -11,7 +11,7 @@ if '--gpu' not in sys.argv:
     core.globals.providers = ['CPUExecutionProvider']
 elif 'ROCMExecutionProvider' not in core.globals.providers:
     import torch
-    if not torch.cuda.is_available() and args['gpu']:
+    if not torch.cuda.is_available():
         quit("You are using --gpu flag but CUDA isn't available on your system.")
 
 import glob
