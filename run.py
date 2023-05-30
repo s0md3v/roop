@@ -139,8 +139,10 @@ def status(string):
         status_label["text"] = "Status: " + string
         window.update()
 
-
-def start():
+def start(bargs = None):
+    if bargs is not None:
+        global args
+        args = bargs
     print("DON'T WORRY. IT'S NOT STUCK/CRASHED.\n" * 5)
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
@@ -189,49 +191,78 @@ def start():
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
 
-
-if __name__ == "__main__":
+def create_gui():
     global status_label, window
-    if args['source_img']:
-        args['cli_mode'] = True
-        start()
-        quit()
+
     window = tk.Tk()
     window.geometry("600x700")
     window.title("roop")
     window.configure(bg="#2d3436")
     window.resizable(width=False, height=False)
-
     # Contact information
     support_link = tk.Label(window, text="Donate to project <3", fg="#fd79a8", bg="#2d3436", cursor="hand2", font=("Arial", 8))
     support_link.place(x=180,y=20,width=250,height=30)
     support_link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/sponsors/s0md3v"))
-
     # Select a face button
     face_button = tk.Button(window, text="Select a face", command=select_face, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
     face_button.place(x=60,y=320,width=180,height=80)
-
     # Select a target button
     target_button = tk.Button(window, text="Select a target", command=select_target, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
     target_button.place(x=360,y=320,width=180,height=80)
-
     # FPS limit checkbox
     limit_fps = tk.IntVar()
     fps_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
     fps_checkbox.place(x=30,y=500,width=240,height=31)
     fps_checkbox.select()
-
     # Keep frames checkbox
     keep_frames = tk.IntVar()
     frames_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
     frames_checkbox.place(x=37,y=450,width=240,height=31)
-
     # Start button
     start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
     start_button.place(x=240,y=560,width=120,height=49)
-
     # Status label
     status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
     status_label.place(x=10,y=640,width=580,height=30)
-    
+
     window.mainloop()
+
+fcwd = lambda x: os.path.join(os.getcwd(), x)
+
+VALID_SOURCE = [".png", ".jpg", ".jpeg"]
+VALID_TARGET = [".mp4"]
+ARGSEXC = ["source_img","target_path","output_file"]
+
+def batch_mode(**kwargs):
+    cnt = 0
+    drun = {k:v for k,v in kwargs.items() if k not in ARGSEXC}
+    drun["cli_mode"] = True
+    for flsrc in os.listdir(kwargs["source_img"]):
+        for fltrg in os.listdir(kwargs["target_path"]):
+            srcext = os.path.splitext(flsrc)
+            trgext = os.path.splitext(fltrg)
+            if srcext in VALID_SOURCE and trgext in VALID_TARGET:
+                cnt = cnt + 1
+                ptsrc = os.path.join(kwargs["source_img"],flface)
+                # ptface = fcwd(ptface)
+                ptvid = os.path.join(kwargs["target_path"],flvid)
+                # ptvid = fcwd(ptvid)
+                outpt = kwargs["output_file"].format(cnt)
+                # outpt = fcwd(outpt)
+                drun["source_img"] = ptface
+                drun["target_path"] = ptvid
+                drun["output_file"] = outpt
+                run.start(drun)
+    
+if __name__ == "__main__":
+    global status_label, window
+    if args['source_img']:
+        if os.path.isdir(args['source_img']):
+            batch_mode(**args)
+        else:
+            args['cli_mode'] = True
+            start()
+            quit()
+    else:
+        create_gui()
+        
