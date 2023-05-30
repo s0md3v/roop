@@ -13,6 +13,34 @@ There are two types of installations: basic and gpu-powered.
 
 - **GPU:** If you have a good GPU and are ready for solving any software issues you may face, you can enable GPU which is wayyy faster. To do this, first follow the basic install instructions given above and then follow GPU-specific instructions [here](https://github.com/s0md3v/roop/wiki/2.-GPU-Acceleration).
 
+## Mac Silicon Installation Instructions
+
+1. Clone and enter the repository
+- `git clone https://github.com/s0md3v/roop`
+- `cd roop`
+2. Download required file
+- Download [this file](https://drive.google.com/file/d/1eu60OrRtn4WhKrzM4mQv4F3rIuyUXqfl/view?usp=drive_link) and keep it in **roop** directory. [Mirror #1](https://drive.google.com/file/d/1jbDUGrADco9A1MutWjO6d_1dwizh9w9P/view?usp=sharing), [Mirror #2](https://mega.nz/file/9l8mGDJA#FnPxHwpdhDovDo6OvbQjhHd2nDAk8_iVEgo3mpHLG6U), [Mirror #3](https://1drv.ms/u/s!AsHA3Xbnj6uAgxhb_tmQ7egHACOR?e=CPoThO), [Mirror #4](https://civitai.com/models/80324?modelVersionId=85159). Rename it to `inswapper_128.onnx` if it isn't already.
+3. Install system-wide requirements
+- `brew install git ffmpeg wget cmake protobuf git-lfs`
+4. Install `python` using a virtual environment
+- `pyenv install 3.10.9`
+- `pyenv virtualenv 3.10.9 roop`
+5. Enter repository directory and create virtual environment
+- `cd roop`
+- `pyenv local roop`
+6. Install onnx-runtime-gpu
+- `git clone https://github.com/cansik/onnxruntime-silicon`
+- `cd onnxruntime-silicon`
+- `./build-macos.sh`
+- `pip install dist/*whl`
+- `cd ..`
+7. Edit requirements.txt
+- remove line 9: `onnxruntime-gpu==1.15.0`
+8. Install requirements
+- `pip install -r requirements.txt`
+9. Run
+- `python run.py`
+
 ## How do I use it?
 > Note: When you run this program for the first time, it will download some models ~300MB in size.
 
