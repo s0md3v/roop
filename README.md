@@ -38,10 +38,6 @@ options:
   --keep-frames         keep frames directory
   --max-memory MAX_MEMORY
                         set max memory
-  --max-cpu-cores MAX_CPU_CORES
-                        set max cpu cores
-  --max-cpu-usage MAX_CPU_USAGE
-                        set cpu usage in percent
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
