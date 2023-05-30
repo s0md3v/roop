@@ -26,7 +26,6 @@ def process_video(source_img, frame_paths):
             else:
                 print('S', end='', flush=True)
         except Exception as e:
-            print(e, flush=True)
             print('E', end='', flush=True)
             pass
 
