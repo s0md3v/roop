@@ -123,7 +123,10 @@ def toggle_keep_frames():
 
 
 def save_file():
-    args['output_file'] = asksaveasfilename(initialfile='output.mp4', defaultextension=".mp4", filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+    # args['output_file'] = asksaveasfilename(initialfile='output.mp4', defaultextension=".mp4", filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+    output_filename = 'output.mp4'
+    dir_name = os.path.dirname(args['target_path'])
+    args['output_file'] = os.path.join(dir_name, output_filename)
 
 
 def status(string):
