@@ -252,7 +252,7 @@ def batch_mode(**kwargs):
                 drun["source_img"] = ptsrc
                 drun["target_path"] = pttrg
                 drun["output_file"] = outpt
-                run.start(drun)
+                start(drun)
     
 if __name__ == "__main__":
     global status_label, window
