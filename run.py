@@ -123,7 +123,10 @@ def toggle_keep_frames():
 
 
 def save_file():
-    args['output_file'] = asksaveasfilename(initialfile='output.mp4', defaultextension=".mp4", filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+    filename, ext = 'output.mp4', '.mp4'
+    if is_img(args['target_path']):
+        filename, ext = 'output.png', '.png'
+    args['output_file'] = asksaveasfilename(initialfile=filename, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")])
 
 
 def status(string):
@@ -142,6 +145,8 @@ def start():
     elif not args['target_path'] or not os.path.isfile(args['target_path']):
         print("\n[WARNING] Please select a video/image to swap face in.")
         return
+    if not args['output_file']:
+        args['output_file'] = rreplace(args['target_path'], "/", "/swapped-", 1) if "/" in target_path else "swapped-"+target_path
     global pool
     pool = mp.Pool(psutil.cpu_count()-1)
     target_path = args['target_path']
@@ -150,7 +155,7 @@ def start():
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return
     if is_img(target_path):
-        process_img(args['source_img'], target_path)
+        process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
         return
     video_name = target_path.split("/")[-1].split(".")[0]
