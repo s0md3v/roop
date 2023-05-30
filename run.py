@@ -239,8 +239,8 @@ def batch_mode(**kwargs):
     drun["cli_mode"] = True
     for flsrc in os.listdir(kwargs["source_img"]):
         for fltrg in os.listdir(kwargs["target_path"]):
-            srcext = os.path.splitext(flsrc)
-            trgext = os.path.splitext(fltrg)
+            srcext = os.path.splitext(flsrc)[-1]
+            trgext = os.path.splitext(fltrg)[-1]
             if srcext in VALID_SOURCE and trgext in VALID_TARGET:
                 cnt = cnt + 1
                 ptsrc = os.path.join(kwargs["source_img"],flsrc)
