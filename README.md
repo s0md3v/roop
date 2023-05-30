@@ -38,6 +38,12 @@ cd onnxruntime
 pip install build/Linux/Release/dist/*.whl
 ```
 
+### Mac
+```
+pip uninstall onnxruntime
+pip install onnxruntime-silicon
+```
+
 ## Usage
 > Note: When you run this program for the first time, it will download some models ~300MB in size.
 
