@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import sys
 import time
-import torch
 import shutil
 import core.globals
 
@@ -10,6 +9,11 @@ if not shutil.which('ffmpeg'):
     quit()
 if '--gpu' not in sys.argv:
     core.globals.providers = ['CPUExecutionProvider']
+
+if 'ROCMExecutionProvider' not in core.globals.providers:
+    import torch
+    if not torch.cuda.is_available():
+        quit("You are using --gpu flag but CUDA isn't available on your system.")
 
 import glob
 import argparse
@@ -42,8 +46,6 @@ parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_fr
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
 
-if not torch.cuda.is_available() and args['gpu']:
-    quit("You are using --gpu flag but CUDA isn't available on your system.")
 
 sep = "/"
 if os.name == "nt":
