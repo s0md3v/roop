@@ -161,9 +161,10 @@ def start():
         process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
         return
-    video_name = target_path.split("/")[-1].split(".")[0]
-    output_dir = target_path.replace(target_path.split("/")[-1], "").rstrip("/") + "/" + video_name
-    Path(output_dir).mkdir(exist_ok=True)
+    video_name = os.path.basename(target_path)
+    video_name = os.path.splitext(video_name)[0]
+    output_dir = os.path.join(os.path.dirname(target_path),video_name)
+    os.makedirs(output_dir, exist_ok = True)
     status("detecting video's FPS...")
     fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
