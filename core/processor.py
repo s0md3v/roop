@@ -1,14 +1,19 @@
 import os
+
 import cv2
 import insightface
-import core.globals
 from core.config import get_face
 from core.utils import rreplace
 
-if os.path.isfile('inswapper_128.onnx'):
-    face_swapper = insightface.model_zoo.get_model('inswapper_128.onnx', providers=core.globals.providers)
-else:
-    quit('File "inswapper_128.onnx" does not exist!')
+FACE_SWAPPER = None
+
+
+def get_face_swapper():
+    global FACE_SWAPPER
+    if FACE_SWAPPER is None:
+        model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../inswapper_128.onnx')
+        FACE_SWAPPER = insightface.model_zoo.get_model(model_path)
+    return FACE_SWAPPER
 
 
 def process_video(source_img, frame_paths):
@@ -18,7 +23,7 @@ def process_video(source_img, frame_paths):
         try:
             face = get_face(frame)
             if face:
-                result = face_swapper.get(frame, face, source_face, paste_back=True)
+                result = get_face_swapper().get(frame, face, source_face, paste_back=True)
                 cv2.imwrite(frame_path, result)
                 print('.', end='', flush=True)
             else:

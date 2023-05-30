@@ -1,19 +1,11 @@
 #!/usr/bin/env python3
+
+import platform
 import sys
 import time
+import torch
 import shutil
 import core.globals
-
-if not shutil.which('ffmpeg'):
-    print('ffmpeg is not installed. Read the docs: https://github.com/s0md3v/roop#installation.\n' * 10)
-    quit()
-if '--gpu' not in sys.argv:
-    core.globals.providers = ['CPUExecutionProvider']
-elif 'ROCMExecutionProvider' not in core.globals.providers:
-    import torch
-    if not torch.cuda.is_available():
-        quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
-
 import glob
 import argparse
 import multiprocessing as mp
@@ -38,10 +30,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--face', help='use this face', dest='source_img')
 parser.add_argument('-t', '--target', help='replace this face', dest='target_path')
 parser.add_argument('-o', '--output', help='save output to this file', dest='output_file')
-parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
+parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
-parser.add_argument('--cores', help='number of cores to use', dest='cores_count', type=int, default=psutil.cpu_count()-1)
+parser.add_argument('--max-memory', help='set max memory', default=16, type=int)
+parser.add_argument('--max-cores', help='number of cores to use', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
@@ -49,6 +42,45 @@ for name, value in vars(parser.parse_args()).items():
 sep = "/"
 if os.name == "nt":
     sep = "\\"
+
+
+def limit_resources():
+    if args['max_memory'] >= 1:
+        memory = args['max_memory'] * 1024 * 1024 * 1024
+        if str(platform.system()).lower() == 'windows':
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            kernel32.SetProcessWorkingSetSize(-1, ctypes.c_size_t(memory), ctypes.c_size_t(memory))
+        else:
+            import resource
+            resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))
+
+
+def pre_check():
+    if sys.version_info < (3, 8):
+        quit(f'Python version is not supported - please upgrade to 3.8 or higher')
+    if not shutil.which('ffmpeg'):
+        quit('ffmpeg is not installed!')
+    model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inswapper_128.onnx')
+    if not os.path.isfile(model_path):
+        quit('File "inswapper_128.onnx" does not exist!')
+    if '--gpu' in sys.argv:
+        CUDA_VERSION = torch.version.cuda
+        CUDNN_VERSION = torch.backends.cudnn.version()
+
+        if 'ROCMExecutionProvider' not in core.globals.providers:
+            if not torch.cuda.is_available() or not CUDA_VERSION:
+                quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
+            if CUDA_VERSION > '11.8':
+                quit(f"CUDA version {CUDA_VERSION} is not supported - please downgrade to 11.8.")
+            if CUDA_VERSION < '11.4':
+                quit(f"CUDA version {CUDA_VERSION} is not supported - please upgrade to 11.8")
+            if CUDNN_VERSION < 8220:
+                quit(f"CUDNN version {CUDNN_VERSION} is not supported - please upgrade to 8.9.1")
+            if CUDNN_VERSION > 8910:
+                quit(f"CUDNN version {CUDNN_VERSION} is not supported - please downgrade to 8.9.1")
+    else:
+        core.globals.providers = ['CPUExecutionProvider']
 
 
 def start_processing():
@@ -72,6 +104,7 @@ def start_processing():
     end_time = time.time()
     print(flush=True)
     print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
+
 
 def preview_image(image_path):
     img = Image.open(image_path)
@@ -189,6 +222,10 @@ def start():
 
 if __name__ == "__main__":
     global status_label, window
+
+    pre_check()
+    limit_resources()
+
     if args['source_img']:
         args['cli_mode'] = True
         start()
