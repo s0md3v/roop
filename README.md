@@ -17,7 +17,7 @@ pip install -r requirements.txt
 ```
 4. Download [this file](https://mega.nz/file/9l8mGDJA#FnPxHwpdhDovDo6OvbQjhHd2nDAk8_iVEgo3mpHLG6U) and keep it in **roop** directory. [Mirror #1](https://drive.google.com/file/d/1jbDUGrADco9A1MutWjO6d_1dwizh9w9P/view?usp=sharing), [Mirror #2](https://drive.google.com/file/d/1eu60OrRtn4WhKrzM4mQv4F3rIuyUXqfl/view?usp=drive_link), [Mirror #3](https://1drv.ms/u/s!AsHA3Xbnj6uAgxhb_tmQ7egHACOR?e=CPoThO)
 
-5. If you are on windows, you will need to install `Microsoft Visual C++ 14.0`. Google how to do that.
+5. If you plan on using CPU, install `onnxruntime` with `pip install onnxruntime==1.15.0`. If you have a good GPU, read ahead.
 
 ### GPU Accleration (Optional)
 If you have a good enough GPU, you can use it to speed-up the face-swapping process by running `run.py` with `--gpu` flag.
