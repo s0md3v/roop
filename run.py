@@ -179,7 +179,7 @@ def start():
     status("swapping in progress...")
     start_processing()
     status("creating video...")
-    create_video(video_name, fps, output_dir)
+    create_video(video_name, fps, output_dir, gpu = args['gpu'])
     status("adding audio...")
     add_audio(output_dir, target_path, args['keep_frames'], args['output_file'])
     save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
