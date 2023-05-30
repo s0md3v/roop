@@ -26,7 +26,7 @@ If you plan on doing it, you will need to install the appropriate `onnxruntime-*
 #### NVIDIA
 Install `cuda` and then,
 ```
-pip install onnxruntime-gpu
+pip install onnxruntime-gpu==1.15.0
 ```
 #### AMD
 Install ROCM-based torch packages from [here](https://pytorch.org/get-started/locally/) and then,
