@@ -39,7 +39,7 @@ def create_video(video_name, fps, output_dir, gpu = False):
     if not gpu:
         os.system(f'ffmpeg -framerate {fps} -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
     else:
-        os.system(f'ffmpeg -framerate {fps} -i "{output_dir}{sep}%04d.png" -preset:v p7 -tune:v hq -rc:v vbr -cq:v 30 -b:v 0 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
+        os.system(f'ffmpeg -framerate {fps} -i "{output_dir}{sep}%04d.png" -vcodec hevc_nvenc -preset:v p7 -tune:v hq -rc:v vbr -cq:v 30 -b:v 0 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
 
 
 def extract_frames(input_path, output_dir):
