@@ -34,9 +34,12 @@ def set_fps(input_path, output_path, fps):
     os.system(f'ffmpeg -i "{input_path}" -filter:v fps=fps={fps} "{output_path}"')
 
 
-def create_video(video_name, fps, output_dir):
+def create_video(video_name, fps, output_dir, gpu = False):
     output_dir = path(output_dir)
-    os.system(f'ffmpeg -framerate {fps} -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
+    if not gpu:
+        os.system(f'ffmpeg -framerate {fps} -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
+    else:
+        os.system(f'ffmpeg -framerate {fps} -i "{output_dir}{sep}%04d.png" -preset:v p7 -tune:v hq -rc:v vbr -cq:v 30 -b:v 0 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
 
 
 def extract_frames(input_path, output_dir):
