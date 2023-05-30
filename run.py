@@ -46,12 +46,12 @@ if os.name == "nt":
 def limit_resources():
     if args['max_memory'] >= 1:
         memory = args['max_memory'] * 1024 * 1024 * 1024
-        if str(platform.system()).lower() == 'linux':
-            import resource
-            resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))
         if str(platform.system()).lower() == 'windows':
             import win32api
             win32api.SetProcessWorkingSetSize(-1, memory, memory)
+        else:
+            import resource
+            resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))
 
 
 def pre_check():
