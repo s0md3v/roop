@@ -1,19 +1,9 @@
 #!/usr/bin/env python3
 import sys
 import time
+import torch
 import shutil
 import core.globals
-
-if not shutil.which('ffmpeg'):
-    print('ffmpeg is not installed. Read the docs: https://github.com/s0md3v/roop#installation.\n' * 10)
-    quit()
-if '--gpu' not in sys.argv:
-    core.globals.providers = ['CPUExecutionProvider']
-elif 'ROCMExecutionProvider' not in core.globals.providers:
-    import torch
-    if not torch.cuda.is_available():
-        quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
-
 import glob
 import argparse
 import multiprocessing as mp
@@ -45,10 +35,33 @@ parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_fr
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
 
-
 sep = "/"
 if os.name == "nt":
     sep = "\\"
+
+
+def pre_check():
+    if not shutil.which('ffmpeg'):
+        quit('ffmpeg is not installed!')
+    if os.path.isfile('../inswapper_128.onnx'):
+        quit('File "inswapper_128.onnx" does not exist!')
+    if '--gpu' in sys.argv:
+        CUDA_VERSION = torch.version.cuda
+        CUDNN_VERSION = torch.backends.cudnn.version()
+
+        if 'ROCMExecutionProvider' not in core.globals.providers:
+            if CUDA_VERSION > '11.8':
+                quit(f"CUDA version {CUDA_VERSION} is not supported - please downgrade to 11.8.")
+            if CUDA_VERSION < '11.6':
+                quit(f"CUDA version {CUDA_VERSION} is not supported - please upgrade to 11.8.")
+            if CUDNN_VERSION < 8220:
+                quit(f"CUDNN version {CUDNN_VERSION} is not supported - please upgrade to 8.9.1")
+            if CUDNN_VERSION > 8910:
+                quit(f"CUDNN version {CUDNN_VERSION} is not supported - please downgrade to 8.9.1")
+            if not torch.cuda.is_available():
+                quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
+    else:
+        core.globals.providers = ['CPUExecutionProvider']
 
 
 def start_processing():
@@ -72,6 +85,7 @@ def start_processing():
     end_time = time.time()
     print(flush=True)
     print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
+
 
 def preview_image(image_path):
     img = Image.open(image_path)
@@ -183,6 +197,8 @@ def start():
 
 if __name__ == "__main__":
     global status_label, window
+
+    pre_check()
     if args['source_img']:
         start()
         quit()
