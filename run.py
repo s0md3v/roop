@@ -67,6 +67,8 @@ def pre_check():
         CUDNN_VERSION = torch.backends.cudnn.version()
 
         if 'ROCMExecutionProvider' not in core.globals.providers:
+            if not torch.cuda.is_available() or not CUDA_VERSION:
+                quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
             if CUDA_VERSION > '11.8':
                 quit(f"CUDA version {CUDA_VERSION} is not supported - please downgrade to 11.8.")
             if CUDA_VERSION < '11.4':
@@ -75,8 +77,6 @@ def pre_check():
                 quit(f"CUDNN version {CUDNN_VERSION} is not supported - please upgrade to 8.9.1")
             if CUDNN_VERSION > 8910:
                 quit(f"CUDNN version {CUDNN_VERSION} is not supported - please downgrade to 8.9.1")
-            if not torch.cuda.is_available():
-                quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
     else:
         core.globals.providers = ['CPUExecutionProvider']
 
