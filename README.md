@@ -24,6 +24,7 @@ Choose a face (image with desired face) and the target image/video (image/video 
 Don't touch the FPS checkbox unless you know what you are doing.
 
 Additional command line arguments are given below:
+
 ```
 options:
   -h, --help            show this help message and exit
@@ -31,12 +32,15 @@ options:
                         use this face
   -t TARGET_PATH, --target TARGET_PATH
                         replace this face
--o OUTPUT_FILE, --output OUTPUT_FILE
-                      save output to this file
---keep-fps            keep original fps
---gpu                 use gpu
---keep-frames         don't delete frames directory
---cores               number of cores to use
+  -o OUTPUT_FILE, --output OUTPUT_FILE
+                        save output to this file
+  --gpu                 use gpu
+  --keep-fps            maintain original fps
+  --keep-frames         keep frames directory
+  --max-memory MAX_MEMORY
+                        set max memory
+  --max-cores CORES_COUNT
+                        set max cpu cores
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
