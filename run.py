@@ -128,9 +128,12 @@ def save_file():
 
 
 def status(string):
-    status_label["text"] = "Status: " + string
-    window.update()
-
+    if args['source_img']:
+        print("Status: " + string)
+    else:
+        status_label["text"] = "Status: " + string
+        window.update()
+        
 
 def start():
     print("DON'T WORRY. IT'S NOT STUCK/CRASHED.\n" * 5)
