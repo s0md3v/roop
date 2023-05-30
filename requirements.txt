@@ -1,12 +1,16 @@
 numpy==1.24.3
 opencv-python==4.7.0.72
 onnx==1.14.0
-onnxruntime-gpu==1.15.0
+onnxruntime==1.15.0
 insightface==0.7.3
 psutil==5.9.5
 tk==0.1.0
+<<<<<<< HEAD
 <<<<<<< HEAD
 pillow==9.0.1
 =======
 torch==2.0.1
 >>>>>>> 54f800d (Add GPU support, Quit on missing model, Remove globals (sorry))
+=======
+torch==2.0.1
+>>>>>>> 36e960e (restore onnxruntime)
