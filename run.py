@@ -41,13 +41,10 @@ parser.add_argument('-o', '--output', help='save output to this file', dest='out
 parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
-parser.add_argument('--cores', help='number of cores to use', dest='cores_count', type=int)
+parser.add_argument('--cores', help='number of cores to use', dest='cores_count', type=int, default=psutil.cpu_count()-1)
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
-
-if not args['cores_count']:
-    args['cores_count'] = psutil.cpu_count()-1
 
 sep = "/"
 if os.name == "nt":
