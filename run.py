@@ -42,7 +42,7 @@ parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_fr
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
 
-if torch.cuda.is_available() not args['gpu']:
+if not torch.cuda.is_available() and args['gpu']:
     quit("You are using --gpu flag but CUDA isn't available on your system.")
 
 sep = "/"
