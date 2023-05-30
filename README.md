@@ -25,16 +25,23 @@ Don't touch the FPS checkbox unless you know what you are doing.
 
 Additional command line arguments are given below:
 ```
--h, --help            show this help message and exit
--f SOURCE_IMG, --face SOURCE_IMG
+options:
+  -h, --help            show this help message and exit
+  -f SOURCE_IMG, --face SOURCE_IMG
                         use this face
--t TARGET_PATH, --target TARGET_PATH
+  -t TARGET_PATH, --target TARGET_PATH
                         replace this face
--o OUTPUT_FILE, --output OUTPUT_FILE
-                      save output to this file
---keep-fps            keep original fps
---gpu                 use gpu
---keep-frames         don't delete frames directory
+  -o OUTPUT_FILE, --output OUTPUT_FILE
+                        save output to this file
+  --keep-fps            maintain original fps
+  --gpu                 use gpu
+  --keep-frames         keep frames directory
+  --max-memory MAX_MEMORY
+                        set max memory
+  --max-cpu-cores MAX_CPU_CORES
+                        set max cpu cores
+  --max-cpu-usage MAX_CPU_USAGE
+                        set cpu usage in percent
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import multiprocessing
 import sys
 import time
 import torch
@@ -20,6 +21,7 @@ import psutil
 import cv2
 import threading
 from PIL import Image, ImageTk
+import resource
 
 pool = None
 args = {}
@@ -31,6 +33,9 @@ parser.add_argument('-o', '--output', help='save output to this file', dest='out
 parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
+parser.add_argument('--max-memory', help='set max memory', default=16, type=int)
+parser.add_argument('--max-cpu-cores', help='set max cpu cores', default=multiprocessing.cpu_count(), type=int)
+parser.add_argument('--max-cpu-usage', help='set cpu usage in percent', default=100, type=int)
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
@@ -38,6 +43,16 @@ for name, value in vars(parser.parse_args()).items():
 sep = "/"
 if os.name == "nt":
     sep = "\\"
+
+
+def limit_resources():
+    current_cpu_usage, current_cpu_cores = resource.getrlimit(resource.RLIMIT_CPU)
+    if args['max_memory'] < 1:
+        resource.setrlimit(resource.RLIMIT_DATA, (args['max_memory'] * 1024 * 1024 * 1024, -1))
+    if args['max_cpu_usage'] < 1:
+        resource.setrlimit(resource.RLIMIT_CPU, (args['max_cpu_usage'], current_cpu_cores))
+    if args['max_cpu_cores'] < multiprocessing.cpu_count():
+        resource.setrlimit(resource.RLIMIT_CPU, (current_cpu_usage, args['max_cpu_cores']))
 
 
 def pre_check():
@@ -199,6 +214,8 @@ if __name__ == "__main__":
     global status_label, window
 
     pre_check()
+    limit_resources()
+
     if args['source_img']:
         start()
         quit()
