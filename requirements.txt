@@ -4,16 +4,5 @@ onnx==1.14.0
 insightface==0.7.3
 psutil==5.9.5
 tk==0.1.0
-<<<<<<< HEAD
-torch==2.0.1
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
 pillow==9.0.1
-=======
 torch==2.0.1
->>>>>>> 54f800d (Add GPU support, Quit on missing model, Remove globals (sorry))
-=======
-torch==2.0.1
->>>>>>> 36e960e (restore onnxruntime)
->>>>>>> TitasDas-feature/preview-for-face-image-and-input-video
