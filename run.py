@@ -164,7 +164,7 @@ def start():
     video_name = os.path.basename(target_path)
     video_name = os.path.splitext(video_name)[0]
     output_dir = os.path.join(os.path.dirname(target_path),video_name)
-    os.makedirs(output_dir, exist_ok = True)
+    Path(output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
     fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
