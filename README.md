@@ -35,6 +35,7 @@ Additional command line arguments are given below:
 --keep-fps            keep original fps
 --gpu                 use gpu
 --keep-frames         don't delete frames directory
+--cores               number of cores to use
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
