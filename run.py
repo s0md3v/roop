@@ -52,7 +52,7 @@ def pre_check():
         if 'ROCMExecutionProvider' not in core.globals.providers:
             if CUDA_VERSION > '11.8':
                 quit(f"CUDA version {CUDA_VERSION} is not supported - please downgrade to 11.8.")
-            if CUDA_VERSION < '11.0':
+            if CUDA_VERSION < '11.4':
                 quit(f"CUDA version {CUDA_VERSION} is not supported - please upgrade to 11.8.")
             if CUDNN_VERSION < 8220:
                 quit(f"CUDNN version {CUDNN_VERSION} is not supported - please upgrade to 8.9.1")
