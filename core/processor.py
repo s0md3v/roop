@@ -31,11 +31,10 @@ def process_video(source_img, frame_paths):
             pass
 
 
-def process_img(source_img, target_path):
+def process_img(source_img, target_path, output_file):
     frame = cv2.imread(target_path)
     face = get_face(frame)
     source_face = get_face(cv2.imread(source_img))
     result = face_swapper.get(frame, face, source_face, paste_back=True)
-    target_path = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
-    print(target_path)
-    cv2.imwrite(target_path, result)
+    cv2.imwrite(output_file, result)
+    print("\n\nImage saved as:", output_file, "\n\n")
