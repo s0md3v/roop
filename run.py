@@ -1,4 +1,7 @@
+#!/usr/bin/env python3
 import sys
+import time
+import torch
 import shutil
 import core.globals
 
@@ -31,7 +34,8 @@ parser.add_argument('-f', '--face', help='use this face', dest='source_img')
 parser.add_argument('-t', '--target', help='replace this face', dest='target_path')
 parser.add_argument('-o', '--output', help='save output to this file', dest='output_file')
 parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
-parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
+if torch.cuda.is_available():
+    parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
 
 for name, value in vars(parser.parse_args()).items():
@@ -44,8 +48,12 @@ if os.name == "nt":
 
 
 def start_processing():
+    start_time = time.time()
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
+        end_time = time.time()
+        print(flush=True)
+        print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
         return
     frame_paths = args["frame_paths"]
     n = len(frame_paths)//(psutil.cpu_count()-1)
@@ -57,6 +65,9 @@ def start_processing():
         p.get()
     pool.close()
     pool.join()
+    end_time = time.time()
+    print(flush=True)
+    print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
 
 
 def select_face():

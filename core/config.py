@@ -1,5 +1,4 @@
 import insightface
-import onnxruntime
 import core.globals
 
 face_analyser = insightface.app.FaceAnalysis(name='buffalo_l', providers=core.globals.providers)

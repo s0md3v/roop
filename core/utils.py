@@ -17,6 +17,7 @@ def run_command(command, mode="silent"):
         return os.system(command)
     return os.popen(command).read()
 
+
 def detect_fps(input_path):
     input_path = path(input_path)
     output = os.popen(f'ffprobe -v error -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream=r_frame_rate "{input_path}"').read()
@@ -57,6 +58,7 @@ def add_audio(output_dir, target_path, keep_frames, output_file):
 
 def is_img(path):
     return path.lower().endswith(("png", "jpg", "jpeg", "bmp"))
+
 
 def rreplace(s, old, new, occurrence):
     li = s.rsplit(old, occurrence)
