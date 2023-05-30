@@ -13,6 +13,12 @@ There are two types of installations: basic and gpu-powered.
 
 - **GPU:** If you have a good GPU and are ready for solving any software issues you may face, you can enable GPU which is wayyy faster. To do this, first follow the basic install instructions given above and then follow GPU-specific instructions [here](https://github.com/s0md3v/roop/wiki/2.-GPU-Acceleration).
 
+## Tutorial Video On YouTube
+
+[**Mind-Blowing Deepfake Tutorial: Turn Anyone into Your Favorite Movie Star! PC & Google Colab - roop**](https://youtu.be/OI1LEN-SgLM)
+
+[![image](https://github.com/FurkanGozukara/Stable-Diffusion/assets/19240467/4ce2ccf1-e5fd-4afd-a7ff-a8b65b69adc6)](https://youtu.be/OI1LEN-SgLM)
+
 ## How do I use it?
 > Note: When you run this program for the first time, it will download some models ~300MB in size.
 
