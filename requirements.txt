@@ -6,3 +6,4 @@ psutil==5.9.5
 tk==0.1.0
 pillow==9.0.1
 torch==2.0.1
+onnxruntime-gpu==1.15.0
