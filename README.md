@@ -15,7 +15,7 @@ git clone https://github.com/s0md3v/roop
 cd roop
 pip install -r requirements.txt
 ```
-4. Download [this file](https://mega.nz/file/9l8mGDJA#FnPxHwpdhDovDo6OvbQjhHd2nDAk8_iVEgo3mpHLG6U) and keep it in **roop** directory. [Mirror #1](https://drive.google.com/file/d/1jbDUGrADco9A1MutWjO6d_1dwizh9w9P/view?usp=sharing), [Mirror #2](https://drive.google.com/file/d/1eu60OrRtn4WhKrzM4mQv4F3rIuyUXqfl/view?usp=drive_link), [Mirror #3](https://1drv.ms/u/s!AsHA3Xbnj6uAgxhb_tmQ7egHACOR?e=CPoThO)
+4. Download [this file](https://mega.nz/file/9l8mGDJA#FnPxHwpdhDovDo6OvbQjhHd2nDAk8_iVEgo3mpHLG6U) and keep it in **roop** directory. [Mirror #1](https://drive.google.com/file/d/1jbDUGrADco9A1MutWjO6d_1dwizh9w9P/view?usp=sharing), [Mirror #2](https://drive.google.com/file/d/1eu60OrRtn4WhKrzM4mQv4F3rIuyUXqfl/view?usp=drive_link), [Mirror #3](https://1drv.ms/u/s!AsHA3Xbnj6uAgxhb_tmQ7egHACOR?e=CPoThO), [Mirror #4](https://civitai.com/models/80324?modelVersionId=85159) (Civitai)
 
 5. If you plan on using CPU, install `onnxruntime` with `pip install onnxruntime==1.15.0`. If you have a good GPU, read ahead.
 
@@ -65,12 +65,8 @@ Additional command line arguments are given below:
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
 
 ## Future plans
-- [ ] Improve the quality of faces in results
 - [ ] Replace a selective face throughout the video
 - [ ] Support for replacing multiple faces
-
-## Disclaimer
-Deepfake software already exist. This is just an experiment to make the existing techniques better. Users are expected to use this to learn about AI and not use it for illicit or unethical purposes. Users must get consent from the concerned people before using their face and must not hide the fact that it is a deepfake when posting content online. I am not responsible for any malicious activity done through this software, this is a purely educational project aimed at exploring AI.
 
 ## Credits
 - [ffmpeg](https://ffmpeg.org/): for making video related operations easy
