@@ -158,12 +158,12 @@ def save_file():
 
 
 def status(string):
-    if args['source_img']:
+    if 'cli_mode' in args:
         print("Status: " + string)
     else:
         status_label["text"] = "Status: " + string
         window.update()
-        
+
 
 def start():
     print("DON'T WORRY. IT'S NOT STUCK/CRASHED.\n" * 5)
@@ -219,6 +219,7 @@ if __name__ == "__main__":
     limit_resources()
 
     if args['source_img']:
+        args['cli_mode'] = True
         start()
         quit()
     window = tk.Tk()

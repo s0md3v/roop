@@ -36,7 +36,7 @@ def set_fps(input_path, output_path, fps):
 
 def create_video(video_name, fps, output_dir):
     output_dir = path(output_dir)
-    os.system(f'ffmpeg -framerate {fps} -i "{output_dir}{sep}%04d.png" -c:v libx264 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
+    os.system(f'ffmpeg -framerate {fps} -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 32 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
 
 
 def extract_frames(input_path, output_dir):
