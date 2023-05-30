@@ -9,10 +9,9 @@ if not shutil.which('ffmpeg'):
     quit()
 if '--gpu' not in sys.argv:
     core.globals.providers = ['CPUExecutionProvider']
-
-if 'ROCMExecutionProvider' not in core.globals.providers:
+else if 'ROCMExecutionProvider' not in core.globals.providers:
     import torch
-    if not torch.cuda.is_available():
+    if not torch.cuda.is_available() and args['gpu']:
         quit("You are using --gpu flag but CUDA isn't available on your system.")
 
 import glob
