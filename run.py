@@ -243,14 +243,14 @@ def batch_mode(**kwargs):
             trgext = os.path.splitext(fltrg)
             if srcext in VALID_SOURCE and trgext in VALID_TARGET:
                 cnt = cnt + 1
-                ptsrc = os.path.join(kwargs["source_img"],flface)
-                # ptface = fcwd(ptface)
-                ptvid = os.path.join(kwargs["target_path"],flvid)
-                # ptvid = fcwd(ptvid)
+                ptsrc = os.path.join(kwargs["source_img"],flsrc)
+                # ptsrc = fcwd(ptsrc)
+                pttrg = os.path.join(kwargs["target_path"],fltrg)
+                # pttrg = fcwd(pttrg)
                 outpt = kwargs["output_file"].format(cnt)
                 # outpt = fcwd(outpt)
-                drun["source_img"] = ptface
-                drun["target_path"] = ptvid
+                drun["source_img"] = ptsrc
+                drun["target_path"] = pttrg
                 drun["output_file"] = outpt
                 run.start(drun)
     
