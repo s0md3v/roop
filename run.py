@@ -34,10 +34,13 @@ parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', de
 parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
 parser.add_argument('--max-memory', help='set max memory', default=16, type=int)
-parser.add_argument('--max-cores', help='set max cpu cores', dest='cores_count', type=int, default=psutil.cpu_count()-1)
+parser.add_argument('--max-cores', help='set max cpu cores', dest='cores_count', type=int)
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
+
+if not args['cores_count']:
+    args['cores_count'] = psutil.cpu_count()-1
 
 sep = "/"
 if os.name == "nt":
@@ -61,7 +64,8 @@ def pre_check():
         quit(f'Python version is not supported - please upgrade to 3.8 or higher')
     if not shutil.which('ffmpeg'):
         quit('ffmpeg is not installed!')
-    if not os.path.isfile('inswapper_128.onnx'):
+    model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inswapper_128.onnx')
+    if not os.path.isfile(model_path):
         quit('File "inswapper_128.onnx" does not exist!')
     if '--gpu' in sys.argv:
         CUDA_VERSION = torch.version.cuda
