@@ -47,8 +47,9 @@ def limit_resources():
     if args['max_memory'] >= 1:
         memory = args['max_memory'] * 1024 * 1024 * 1024
         if str(platform.system()).lower() == 'windows':
-            import win32api
-            win32api.SetProcessWorkingSetSize(-1, memory, memory)
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            kernel32.SetProcessWorkingSetSize(-1, ctypes.c_size_t(memory), ctypes.c_size_t(memory))
         else:
             import resource
             resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))
@@ -69,7 +70,7 @@ def pre_check():
             if CUDA_VERSION > '11.8':
                 quit(f"CUDA version {CUDA_VERSION} is not supported - please downgrade to 11.8.")
             if CUDA_VERSION < '11.4':
-                quit(f"CUDA version {CUDA_VERSION} is not supported - please upgrade to 11.8.")
+                quit(f"CUDA version {CUDA_VERSION} is not supported - please upgrade to 11.8")
             if CUDNN_VERSION < 8220:
                 quit(f"CUDNN version {CUDNN_VERSION} is not supported - please upgrade to 8.9.1")
             if CUDNN_VERSION > 8910:
