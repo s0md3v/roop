@@ -31,13 +31,12 @@ options:
                         use this face
   -t TARGET_PATH, --target TARGET_PATH
                         replace this face
-  -o OUTPUT_FILE, --output OUTPUT_FILE
-                        save output to this file
-  --keep-fps            maintain original fps
-  --gpu                 use gpu
-  --keep-frames         keep frames directory
-  --max-memory MAX_MEMORY
-                        set max memory
+-o OUTPUT_FILE, --output OUTPUT_FILE
+                      save output to this file
+--keep-fps            keep original fps
+--gpu                 use gpu
+--keep-frames         don't delete frames directory
+--cores               number of cores to use
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
