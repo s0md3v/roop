@@ -5,44 +5,13 @@ That's it, that's the software. You can watch some demos [here](https://drive.go
 ![demo-gif](demo.gif)
 
 ## Installation
-> Do not create any issues regarding installation problems. I am only responsible for issues in this program, use google for help.
+> Note: The instructions may or may not work for you. Use google or look through issues people have created here to solve your problems.
 
-1. install `python`, `pip` and `git`
-2. install `ffmpeg`
-3. run the following commands in terminal:
-```
-git clone https://github.com/s0md3v/roop
-cd roop
-pip install -r requirements.txt
-```
-4. Download [this file](https://civitai.com/models/80324?modelVersionId=85159) and keep it in **roop** directory. [Mirror #1](https://drive.google.com/file/d/1jbDUGrADco9A1MutWjO6d_1dwizh9w9P/view?usp=sharing), [Mirror #2](https://mega.nz/file/9l8mGDJA#FnPxHwpdhDovDo6OvbQjhHd2nDAk8_iVEgo3mpHLG6U), [Mirror #3](https://1drv.ms/u/s!AsHA3Xbnj6uAgxhb_tmQ7egHACOR?e=CPoThO), [Mirror #4](https://drive.google.com/file/d/1eu60OrRtn4WhKrzM4mQv4F3rIuyUXqfl/view?usp=drive_link)
+There are two types of installations: basic and gpu-powered.
 
-5. If you plan on using CPU, install `onnxruntime` with `pip install onnxruntime==1.15.0`. If you have a good GPU, read ahead.
+- **Basic:** It is more likely to work on your computer but it will also be very slow. You can follow instructions for the basic install [here](https://github.com/s0md3v/roop/wiki/1.-Installation).
 
-### GPU Accleration (Optional)
-If you have a good enough GPU, you can use it to speed-up the face-swapping process by running `run.py` with `--gpu` flag.
-If you plan on doing it, you will need to install the appropriate `onnxruntime-*` package as follows:
-
-#### NVIDIA
-Install `cuda` and then,
-```
-pip install onnxruntime-gpu==1.15.0
-```
-#### AMD
-Install ROCM-based torch packages from [here](https://pytorch.org/get-started/locally/) and then,
-
-```
-git clone https://github.com/microsoft/onnxruntime
-cd onnxruntime
-./build.sh --config Release --build_wheel --update --build --parallel --cmake_extra_defines CMAKE_PREFIX_PATH=/opt/rocm/lib/cmake ONNXRUNTIME_VERSION=$ONNXRUNTIME_VERSION onnxruntime_BUILD_UNIT_TESTS=off --use_rocm --rocm_home=/opt/rocm
-pip install build/Linux/Release/dist/*.whl
-```
-
-### Mac
-```
-pip uninstall onnxruntime
-pip install onnxruntime-silicon
-```
+- **GPU:** If you have a good GPU and are ready for solving any software issues you may face, you can enable GPU which is wayyy faster. To do this, first follow the basic install instructions given above and then follow GPU-specific instructions [here](https://github.com/s0md3v/roop/wiki/2.-GPU-Acceleration).
 
 ## Usage
 > Note: When you run this program for the first time, it will download some models ~300MB in size.
