@@ -151,8 +151,8 @@ def select_face():
 
 
 def select_target():
-    args['target_path'] = filedialog.askopenfilename(title="Select a target")
-    threading.Thread(target=preview_video, args=(args['target_path'],)).start()
+    args['target_path'] = filedialog.askopenfilenames(title="Select a target")
+    threading.Thread(target=preview_video, args=(args['target_path'][0],)).start()
 
 
 def toggle_fps_limit():
@@ -164,10 +164,9 @@ def toggle_keep_frames():
 
 
 def save_file():
-    filename, ext = 'output.mp4', '.mp4'
-    if is_img(args['target_path']):
-        filename, ext = 'output.png', '.png'
-    args['output_file'] = asksaveasfilename(initialfile=filename, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+    filename = 'output'
+    args['output_file'] = asksaveasfilename(initialfile=filename, filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+        
 
 
 def status(string):
@@ -183,52 +182,49 @@ def start():
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
         return
-    elif not args['target_path'] or not os.path.isfile(args['target_path']):
-        print("\n[WARNING] Please select a video/image to swap face in.")
-        return
-    if not args['output_file']:
-        target_path = args['target_path']
-        args['output_file'] = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
     global pool
     pool = mp.Pool(args['cores_count'])
-    target_path = args['target_path']
     test_face = get_face(cv2.imread(args['source_img']))
     if not test_face:
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return
-    if is_img(target_path):
-        if face_check(target_path) > 0.7:
-            quit("[WARNING] Unable to determine location of the face in the target. Please make sure the target isn't wearing clothes matching to their skin.")
-        process_img(args['source_img'], target_path, args['output_file'])
+    for i, target_path in enumerate(args['target_path']):
+        if not args['output_file']:
+            args['output_file'] = rreplace(args['target_path'], "/", "/swapped-", 1) if "/" in target_path else "swapped-"+target_path
+        if not target_path or not os.path.isfile(target_path):
+            print("\n[WARNING] Please select a video/image to swap face in.")
+            return
+        if is_img(target_path):
+            process_img(args['source_img'], target_path, os.path.splitext(args['output_file'])[0] + f"_{i+1}.png")
+            status("swap successful!")
+            return
+        video_name_full = target_path.split("/")[-1]
+        video_name = os.path.splitext(video_name_full)[0]
+        output_dir = os.path.join(os.path.dirname(target_path),video_name)
+        Path(output_dir).mkdir(exist_ok=True)
+        status("detecting video's FPS...")
+        fps, _ = detect_fps(target_path)
+        if not args['keep_fps'] and fps > 30:
+            this_path = output_dir + "/" + video_name + ".mp4"
+            set_fps(target_path, this_path, 30)
+            target_path, fps = this_path, 30
+        else:
+            shutil.copy(target_path, output_dir)
+        status("extracting frames...")
+        extract_frames(target_path, output_dir)
+        args['frame_paths'] = tuple(sorted(
+            glob.glob(output_dir + f"/*.png"),
+            key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
+        ))
+        status("swapping in progress...")
+        start_processing()
+        status("creating video...")
+        create_video(video_name, fps, output_dir)
+        status("adding audio...")
+        add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'], i)
+        save_path = args['output_file'] + ".mp4" if args['output_file'] else output_dir + "/" + video_name + ".mp4"
+        print("\n\nVideo saved as:", save_path, "\n\n")
         status("swap successful!")
-        return
-    video_name_full = target_path.split("/")[-1]
-    video_name = os.path.splitext(video_name_full)[0]
-    output_dir = os.path.join(os.path.dirname(target_path),video_name)
-    Path(output_dir).mkdir(exist_ok=True)
-    status("detecting video's FPS...")
-    fps, exact_fps = detect_fps(target_path)
-    if not args['keep_fps'] and fps > 30:
-        this_path = output_dir + "/" + video_name + ".mp4"
-        set_fps(target_path, this_path, 30)
-        target_path, exact_fps = this_path, 30
-    else:
-        shutil.copy(target_path, output_dir)
-    status("extracting frames...")
-    extract_frames(target_path, output_dir)
-    args['frame_paths'] = tuple(sorted(
-        glob.glob(output_dir + "/*.png"),
-        key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
-    ))
-    status("swapping in progress...")
-    start_processing()
-    status("creating video...")
-    create_video(video_name, exact_fps, output_dir)
-    status("adding audio...")
-    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'])
-    save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
-    print("\n\nVideo saved as:", save_path, "\n\n")
-    status("swap successful!")
 
 
 if __name__ == "__main__":
