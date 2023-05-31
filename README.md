@@ -10,7 +10,8 @@ Better deepfake software than this already exist, this is just a hobby project I
 To prevent misuse, it has a built-in check which prevents the program from working on inappropriate media.
 
 ## How do I install it?
-> Note: The instructions may or may not work for you. Use google or look through issues people have created here to solve your problems.
+
+**Issues according installation will be closed without ceremony from now on, we cannot handle the amount of requests.**
 
 There are two types of installations: basic and gpu-powered.
 
