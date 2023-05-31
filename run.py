@@ -219,10 +219,10 @@ def start():
         status("swapping in progress...")
         start_processing()
         status("creating video...")
-        create_video(video_name, fps, output_dir)
+        create_video(video_name, exact_fps, output_dir)
         status("adding audio...")
         add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'], i)
-        save_path = args['output_file'] + ".mp4" if args['output_file'] else output_dir + "/" + video_name + ".mp4"
+        save_path = args['output_file']+ f"_{i+1}" + ".mp4" if args['output_file'] else output_dir + "/" + video_name + ".mp4"
         print("\n\nVideo saved as:", save_path, "\n\n")
         status("swap successful!")
 
