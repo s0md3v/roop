@@ -4,7 +4,6 @@ import cv2
 import insightface
 import core.globals
 from core.config import get_face
-from tqdm import tqdm
 
 FACE_SWAPPER = None
 
