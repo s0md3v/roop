@@ -157,6 +157,10 @@ def toggle_fps_limit():
     args['keep_fps'] = limit_fps.get() != True
 
 
+def toggle_all_faces():
+    core.globals.all_faces = True if all_faces.get() == 1 else False
+
+
 def toggle_keep_frames():
     args['keep_frames'] = keep_frames.get() != True
 
@@ -261,16 +265,21 @@ if __name__ == "__main__":
     target_button = tk.Button(window, text="Select a target", command=select_target, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
     target_button.place(x=360,y=320,width=180,height=80)
 
+    # All faces checkbox
+    all_faces = tk.IntVar()
+    all_faces_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Process all faces in frame", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=all_faces, command=toggle_all_faces)
+    all_faces_checkbox.place(x=30,y=500,width=240,height=31)
+
     # FPS limit checkbox
     limit_fps = tk.IntVar()
-    fps_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
-    fps_checkbox.place(x=30,y=500,width=240,height=31)
+    fps_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30           ", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
+    fps_checkbox.place(x=30,y=475,width=240,height=31)
     fps_checkbox.select()
 
     # Keep frames checkbox
     keep_frames = tk.IntVar()
-    frames_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
-    frames_checkbox.place(x=37,y=450,width=240,height=31)
+    frames_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir           ", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
+    frames_checkbox.place(x=30,y=450,width=240,height=31)
 
     # Start button
     start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
@@ -279,5 +288,5 @@ if __name__ == "__main__":
     # Status label
     status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
     status_label.place(x=10,y=640,width=580,height=30)
-    
+
     window.mainloop()

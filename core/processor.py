@@ -2,7 +2,7 @@ import os
 import cv2
 import insightface
 import core.globals
-from core.config import get_face
+from core.config import get_face, get_all_faces
 
 FACE_SWAPPER = None
 
@@ -19,13 +19,15 @@ def process_video(source_img, frame_paths):
     source_face = get_face(cv2.imread(source_img))
     for frame_path in frame_paths:
         frame = cv2.imread(frame_path)
+
+        swapper = get_face_swapper()
         try:
             if core.globals.all_faces:
                 all_faces = get_all_faces(frame)
                 result = frame
                 for singleFace in all_faces:
                     if singleFace:
-                        result = get_face_swapper().get(result, singleFace, source_face, paste_back=True)
+                        result = swapper.get(result, singleFace, source_face, paste_back=True)
                         print('.', end='', flush=True)
                     else:
                         print('S', end='', flush=True)
@@ -33,7 +35,7 @@ def process_video(source_img, frame_paths):
             else:
                 face = get_face(frame)
                 if face:
-                    result = get_face_swapper().get(frame, face, source_face, paste_back=True)
+                    result = swapper.get(frame, face, source_face, paste_back=True)
                     cv2.imwrite(frame_path, result)
                     print('.', end='', flush=True)
                 else:

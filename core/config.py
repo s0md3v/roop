@@ -21,8 +21,7 @@ def get_face(img_data):
 
 
 def get_all_faces(img_data):
-    analysed = face_analyser.get(img_data)
     try:
-        return analysed
+        return get_face_analyser().get(img_data)
     except IndexError:
         return None
