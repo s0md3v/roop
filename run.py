@@ -67,8 +67,8 @@ def pre_check():
     if '--gpu' in sys.argv:
         CUDA_VERSION = torch.version.cuda
         CUDNN_VERSION = torch.backends.cudnn.version()
-
-        if 'ROCMExecutionProvider' not in core.globals.providers:
+        NVIDIA_PROVIDERS = ['CUDAExecutionProvider', 'TensorrtExecutionProvider']
+        if list(set(core.globals.providers) - set(NVIDIA_PROVIDERS)) > 1:
             if not torch.cuda.is_available() or not CUDA_VERSION:
                 quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
             if CUDA_VERSION > '11.8':
