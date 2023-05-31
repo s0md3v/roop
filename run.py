@@ -89,12 +89,8 @@ def pre_check():
 
 
 def start_processing():
-    start_time = time.time()
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
-        end_time = time.time()
-        print(flush=True)
-        print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
         return
     frame_paths = args["frame_paths"]
     n = len(frame_paths)//(args['cores_count'])
@@ -106,9 +102,6 @@ def start_processing():
         p.get()
     pool.close()
     pool.join()
-    end_time = time.time()
-    print(flush=True)
-    print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
 
 
 def preview_image(image_path):
