@@ -38,7 +38,7 @@ options:
   --keep-fps            maintain original fps
   --keep-frames         keep frames directory
   --max-memory MAX_MEMORY
-                        set max memory
+                        set maximum amount of RAM memory
   --max-cores CORES_COUNT
                         set max cpu cores
 ```
