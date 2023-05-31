@@ -40,7 +40,7 @@ options:
   --max-memory MAX_MEMORY
                         set maximum amount of RAM memory
   --max-cores CORES_COUNT
-                        set max cpu cores
+                        set max CPU cores (not applicable when using --gpu, as only one core is utilized)
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
