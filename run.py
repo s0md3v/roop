@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import platform
+import signal
 import sys
 import time
 import shutil
@@ -30,6 +31,7 @@ if 'ROCMExecutionProvider' in core.globals.providers:
 pool = None
 args = {}
 
+signal.signal(signal.SIGINT, lambda signal_number, frame: quit())
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--face', help='use this face', dest='source_img')
 parser.add_argument('-t', '--target', help='replace this face', dest='target_path')
