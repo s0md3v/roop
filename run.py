@@ -13,6 +13,9 @@ elif 'ROCMExecutionProvider' not in core.globals.providers:
     import torch
     if not torch.cuda.is_available():
         quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
+if '--all-faces' in sys.argv or '-a' in sys.argv:
+    core.globals.all_faces = True
+
 
 import glob
 import argparse
@@ -41,6 +44,7 @@ parser.add_argument('-o', '--output', help='save output to this file', dest='out
 parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
+parser.add_argument('-a', '--all-faces', help='swap all faces in frame', dest='all_faces', default=False)
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value

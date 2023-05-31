@@ -16,13 +16,26 @@ def process_video(source_img, frame_paths):
     for frame_path in frame_paths:
         frame = cv2.imread(frame_path)
         try:
-            face = get_face(frame)
-            if face:
-                result = face_swapper.get(frame, face, source_face, paste_back=True)
-                cv2.imwrite(frame_path, result)
-                print('.', end='', flush=True)
+            if core.globals.all_faces:
+                all_faces = get_all_faces(frame)
+                result = frame
+                for singleFace in all_faces:
+                    if singleFace:
+                        result = face_swapper.get(result, singleFace, source_face, paste_back=True)
+                        print('.', end='', flush=True)
+                    else:
+                        print('S', end='', flush=True)
+                if result is not None:
+                    cv2.imwrite(frame_path, result)
             else:
-                print('S', end='', flush=True)
+                face = get_face(frame)
+                if face:
+                    result = face_swapper.get(frame, face, source_face, paste_back=True)
+                    cv2.imwrite(frame_path, result)
+                    print('.', end='', flush=True)
+                else:
+                    print('S', end='', flush=True)
+
         except Exception as e:
             print('E', end='', flush=True)
             pass

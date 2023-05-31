@@ -11,3 +11,11 @@ def get_face(img_data):
         return sorted(analysed, key=lambda x: x.bbox[0])[0]
     except IndexError:
         return None
+
+
+def get_all_faces(img_data):
+    analysed = face_analyser.get(img_data)
+    try:
+        return analysed
+    except IndexError:
+        return None
