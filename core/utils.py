@@ -45,7 +45,7 @@ def extract_frames(input_path, output_dir):
 
 
 def add_audio(output_dir, target_path, video, keep_frames, output_file, index):
-    video_name = video.split(".")[0]
+    video_name = os.path.splitext(video)[0]
     save_to = output_file + f"_{index+1}" + ".mp4" if output_file else output_dir + f"/swapped-" + video_name + f"_{index+1}" + ".mp4"
     save_to_ff, output_dir_ff = path(save_to), path(output_dir)
     os.system(f'ffmpeg -i "{output_dir_ff}{sep}output.mp4" -i "{output_dir_ff}{sep}{video}" -c:v copy -map 0:v:0 -map 1:a:0 -y "{save_to_ff}"')

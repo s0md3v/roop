@@ -91,7 +91,7 @@ def start_processing():
     start_time = time.time()
     threshold = len(['frame_args']) if len(args['frame_paths']) <= 10 else 10
     for i in range(threshold):
-        if face_check(random.choice(args['frame_paths'])) > 0.7:
+        if face_check(random.choice(args['frame_paths'])) > 0.8:
             quit("[WARNING] Unable to determine location of the face in the target. Please make sure the target isn't wearing clothes matching to their skin.")
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
