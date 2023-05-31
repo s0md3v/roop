@@ -169,7 +169,6 @@ def status(string):
 
 
 def start():
-    print("DON'T WORRY. IT'S NOT STUCK/CRASHED.\n" * 5)
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
         return
@@ -192,7 +191,7 @@ def start():
         process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
         return
-    seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=50)
+    seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=100)
     if any(probability > 0.7 for probability in probabilities):
         quit()
     video_name_full = target_path.split("/")[-1]
