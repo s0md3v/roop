@@ -183,12 +183,11 @@ def start():
     elif not args['target_path'] or not os.path.isfile(args['target_path']):
         print("\n[WARNING] Please select a video/image to swap face in.")
         return
+    target_path = args['target_path']
     if not args['output_file']:
-        target_path = args['target_path']
         args['output_file'] = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
     global pool
     pool = mp.Pool(args['cores_count'])
-    target_path = args['target_path']
     test_face = get_face(cv2.imread(args['source_img']))
     if not test_face:
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
