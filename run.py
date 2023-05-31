@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import platform
+import signal
 import sys
-import time
 import shutil
 import glob
 import argparse
@@ -20,9 +20,9 @@ import cv2
 import threading
 from PIL import Image, ImageTk
 import core.globals
-from core.processor import process_video, process_img
+from core.swapper import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
-from core.config import get_face
+from core.analyser import get_face
 
 if 'ROCMExecutionProvider' in core.globals.providers:
     del torch
@@ -30,6 +30,7 @@ if 'ROCMExecutionProvider' in core.globals.providers:
 pool = None
 args = {}
 
+signal.signal(signal.SIGINT, lambda signal_number, frame: quit())
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--face', help='use this face', dest='source_img')
 parser.add_argument('-t', '--target', help='replace this face', dest='target_path')
@@ -87,12 +88,8 @@ def pre_check():
 
 
 def start_processing():
-    start_time = time.time()
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
-        end_time = time.time()
-        print(flush=True)
-        print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
         return
     frame_paths = args["frame_paths"]
     n = len(frame_paths)//(args['cores_count'])
@@ -104,9 +101,6 @@ def start_processing():
         p.get()
     pool.close()
     pool.join()
-    end_time = time.time()
-    print(flush=True)
-    print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
 
 
 def preview_image(image_path):
@@ -173,7 +167,6 @@ def status(string):
 
 
 def start():
-    print("DON'T WORRY. IT'S NOT STUCK/CRASHED.\n" * 5)
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
         return
@@ -195,7 +188,7 @@ def start():
             process_img(args['source_img'], target_path, os.path.splitext(args['output_file'])[0] + f"_{i+1}.png")
             status("swap successful!")
             return
-        seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=50)
+        seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=100)
         if any(probability > 0.7 for probability in probabilities):
             quit()
         video_name_full = target_path.split("/")[-1]
