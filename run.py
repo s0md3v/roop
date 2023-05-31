@@ -183,42 +183,48 @@ def start():
     if not test_face:
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return
-    if is_img(target_path):
-        if predict_image(target_path) > 0.7:
+    for i, target_path in enumerate(args['target_path']):
+        if not args['output_file']:
+            args['output_file'] = rreplace(args['target_path'], "/", "/swapped-", 1) if "/" in target_path else "swapped-"+target_path
+        if not target_path or not os.path.isfile(target_path):
+            print("\n[WARNING] Please select a video/image to swap face in.")
+            return
+        if is_img(target_path):
+            if predict_image(target_path) > 0.7:
+                quit()
+            process_img(args['source_img'], target_path, os.path.splitext(args['output_file'])[0] + f"_{i+1}.png")
+            status("swap successful!")
+            return
+        seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=50)
+        if any(probability > 0.7 for probability in probabilities):
             quit()
-        process_img(args['source_img'], target_path, args['output_file'])
+        video_name_full = target_path.split("/")[-1]
+        video_name = os.path.splitext(video_name_full)[0]
+        output_dir = os.path.dirname(target_path) + "/" + video_name
+        Path(output_dir).mkdir(exist_ok=True)
+        status("detecting video's FPS...")
+        fps, exact_fps = detect_fps(target_path)
+        if not args['keep_fps'] and fps > 30:
+            this_path = output_dir + "/" + video_name + ".mp4"
+            set_fps(target_path, this_path, 30)
+            target_path, exact_fps = this_path, 30
+        else:
+            shutil.copy(target_path, output_dir)
+        status("extracting frames...")
+        extract_frames(target_path, output_dir)
+        args['frame_paths'] = tuple(sorted(
+            glob.glob(output_dir + f"/*.png"),
+            key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
+        ))
+        status("swapping in progress...")
+        start_processing()
+        status("creating video...")
+        create_video(video_name, fps, output_dir)
+        status("adding audio...")
+        add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'], i)
+        save_path = args['output_file'] + ".mp4" if args['output_file'] else output_dir + "/" + video_name + ".mp4"
+        print("\n\nVideo saved as:", save_path, "\n\n")
         status("swap successful!")
-        return
-    seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=50)
-    if any(probability > 0.7 for probability in probabilities):
-        quit()
-    video_name_full = target_path.split("/")[-1]
-    video_name = os.path.splitext(video_name_full)[0]
-    output_dir = os.path.dirname(target_path) + "/" + video_name
-    Path(output_dir).mkdir(exist_ok=True)
-    status("detecting video's FPS...")
-    fps, exact_fps = detect_fps(target_path)
-    if not args['keep_fps'] and fps > 30:
-        this_path = output_dir + "/" + video_name + ".mp4"
-        set_fps(target_path, this_path, 30)
-        target_path, exact_fps = this_path, 30
-    else:
-        shutil.copy(target_path, output_dir)
-    status("extracting frames...")
-    extract_frames(target_path, output_dir)
-    args['frame_paths'] = tuple(sorted(
-        glob.glob(output_dir + "/*.png"),
-        key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
-    ))
-    status("swapping in progress...")
-    start_processing()
-    status("creating video...")
-    create_video(video_name, exact_fps, output_dir)
-    status("adding audio...")
-    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'])
-    save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
-    print("\n\nVideo saved as:", save_path, "\n\n")
-    status("swap successful!")
 
 if __name__ == "__main__":
     global status_label, window
