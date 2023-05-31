@@ -8,24 +8,24 @@ import glob
 import argparse
 import multiprocessing as mp
 import os
-import random
+import torch
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog
-from opennsfw2 import predict_image as face_check
+from opennsfw2 import predict_video_frames, predict_image
 from tkinter.filedialog import asksaveasfilename
-import core.globals
-from core.processor import process_video, process_img
-from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
-from core.config import get_face
 import webbrowser
 import psutil
 import cv2
 import threading
 from PIL import Image, ImageTk
+import core.globals
+from core.processor import process_video, process_img
+from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
+from core.config import get_face
 
-if 'ROCMExecutionProvider' not in core.globals.providers:
-    import torch
+if 'ROCMExecutionProvider' in core.globals.providers:
+    del torch
 
 pool = None
 args = {}
@@ -37,9 +37,9 @@ parser.add_argument('-o', '--output', help='save output to this file', dest='out
 parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
 parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
-parser.add_argument('--max-memory', help='set max memory', type=int)
-parser.add_argument('--max-cores', help='number of cores to use', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
-parser.add_argument('-a', '--all-faces', help='swap all faces in frame', dest='all_faces', default=False)
+parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', type=int)
+parser.add_argument('--max-cores', help='number of cores to be use for CPU mode', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
+parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true', default=False)
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
@@ -70,8 +70,7 @@ def pre_check():
     if not os.path.isfile(model_path):
         quit('File "inswapper_128.onnx" does not exist!')
     if '--gpu' in sys.argv:
-        NVIDIA_PROVIDERS = ['CUDAExecutionProvider', 'TensorrtExecutionProvider']
-        if len(list(set(core.globals.providers) - set(NVIDIA_PROVIDERS))) == 1:
+        if 'ROCMExecutionProvider' not in core.globals.providers:
             CUDA_VERSION = torch.version.cuda
             CUDNN_VERSION = torch.backends.cudnn.version()
             if not torch.cuda.is_available() or not CUDA_VERSION:
@@ -92,10 +91,6 @@ def pre_check():
 
 def start_processing():
     start_time = time.time()
-    threshold = len(['frame_args']) if len(args['frame_paths']) <= 10 else 10
-    for i in range(threshold):
-        if face_check(random.choice(args['frame_paths'])) > 0.8:
-            quit("[WARNING] Unable to determine location of the face in the target. Please make sure the target isn't wearing clothes matching to their skin.")
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
         end_time = time.time()
@@ -200,11 +195,14 @@ def start():
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return
     if is_img(target_path):
-        if face_check(target_path) > 0.7:
-            quit("[WARNING] Unable to determine location of the face in the target. Please make sure the target isn't wearing clothes matching to their skin.")
+        if predict_image(target_path) > 0.7:
+            quit()
         process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
         return
+    seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=50)
+    if any(probability > 0.7 for probability in probabilities):
+        quit()
     video_name_full = target_path.split("/")[-1]
     video_name = os.path.splitext(video_name_full)[0]
     output_dir = os.path.dirname(target_path) + "/" + video_name
