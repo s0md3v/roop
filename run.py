@@ -192,7 +192,7 @@ def start():
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return
     if is_img(target_path):
-        if predict_image(args[target_path]) > 0.7:
+        if predict_image(target_path) > 0.7:
             quit()
         process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
