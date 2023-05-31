@@ -38,9 +38,9 @@ options:
   --keep-fps            maintain original fps
   --keep-frames         keep frames directory
   --max-memory MAX_MEMORY
-                        set max memory
+                        maximum amount of RAM in GB to be used
   --max-cores CORES_COUNT
-                        set max cpu cores
+                        number of cores to be use for CPU mode
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
