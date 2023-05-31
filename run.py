@@ -4,7 +4,6 @@ import platform
 import sys
 import time
 import shutil
-import core.globals
 import glob
 import argparse
 import multiprocessing as mp
@@ -15,6 +14,7 @@ import tkinter as tk
 from tkinter import filedialog
 from opennsfw2 import predict_image as face_check
 from tkinter.filedialog import asksaveasfilename
+import core.globals
 from core.processor import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from core.config import get_face
