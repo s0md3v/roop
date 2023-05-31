@@ -15,7 +15,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter.filedialog import asksaveasfilename
 from core.processor import process_video, process_img
-from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames
+from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from core.config import get_face
 import webbrowser
 import psutil
