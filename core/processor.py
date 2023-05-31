@@ -18,7 +18,7 @@ def get_face_swapper():
 
 def process_video(source_img, frame_paths):
     source_face = get_face(cv2.imread(source_img))
-    with tqdm(total=len(frame_paths), desc="Processing", unit="frame", dynamic_ncols=True, bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]') as pbar:
+    with tqdm(total=len(frame_paths), desc="Processing", unit="frame", dynamic_ncols=True, bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]') as progress:
         for frame_path in frame_paths:
             frame = cv2.imread(frame_path)
             try:
@@ -26,13 +26,13 @@ def process_video(source_img, frame_paths):
                 if face:
                     result = get_face_swapper().get(frame, face, source_face, paste_back=True)
                     cv2.imwrite(frame_path, result)
-                    pbar.set_postfix(status='.', refresh=True)
+                    progress.set_postfix(status='.', refresh=True)
                 else:
-                    pbar.set_postfix(status='S', refresh=True)
+                    progress.set_postfix(status='S', refresh=True)
             except Exception:
-                pbar.set_postfix(status='E', refresh=True)
+                progress.set_postfix(status='E', refresh=True)
                 pass
-            pbar.update(1)
+            progress.update(1)
 
 
 def process_img(source_img, target_path, output_file):
