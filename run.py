@@ -3,7 +3,6 @@
 import platform
 import signal
 import sys
-import time
 import shutil
 import glob
 import argparse
@@ -63,8 +62,8 @@ def limit_resources():
 
 
 def pre_check():
-    if sys.version_info < (3, 8):
-        quit('Python version is not supported - please upgrade to 3.8 or higher')
+    if sys.version_info < (3, 9):
+        quit('Python version is not supported - please upgrade to 3.9 or higher')
     if not shutil.which('ffmpeg'):
         quit('ffmpeg is not installed!')
     model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inswapper_128.onnx')
@@ -89,12 +88,8 @@ def pre_check():
 
 
 def start_processing():
-    start_time = time.time()
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
-        end_time = time.time()
-        print(flush=True)
-        print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
         return
     frame_paths = args["frame_paths"]
     n = len(frame_paths)//(args['cores_count'])
@@ -106,9 +101,6 @@ def start_processing():
         p.get()
     pool.close()
     pool.join()
-    end_time = time.time()
-    print(flush=True)
-    print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
 
 
 def preview_image(image_path):
@@ -176,7 +168,6 @@ def status(string):
 
 
 def start():
-    print("DON'T WORRY. IT'S NOT STUCK/CRASHED.\n" * 5)
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
         return
@@ -199,7 +190,7 @@ def start():
         process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
         return
-    seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=50)
+    seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=100)
     if any(probability > 0.7 for probability in probabilities):
         quit()
     video_name_full = target_path.split("/")[-1]
