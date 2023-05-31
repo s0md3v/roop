@@ -9,3 +9,4 @@ torch==2.0.1
 onnxruntime-gpu==1.15.0
 opennsfw2==0.10.2
 protobuf==3.20.2
+tqdm==4.65.0
