@@ -179,7 +179,8 @@ def start():
         print("\n[WARNING] Please select a video/image to swap face in.")
         return
     if not args['output_file']:
-        args['output_file'] = rreplace(args['target_path'], "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
+        target_path = args['target_path']
+        args['output_file'] = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
     global pool
     pool = mp.Pool(args['cores_count'])
     target_path = args['target_path']
