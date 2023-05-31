@@ -3,7 +3,7 @@ from tqdm import tqdm
 import cv2
 import insightface
 import core.globals
-from core.analyser import get_face
+from core.analyser import get_face, get_all_faces
 
 FACE_SWAPPER = None
 
@@ -21,14 +21,29 @@ def process_video(source_img, frame_paths):
     with tqdm(total=len(frame_paths), desc="Processing", unit="frame", dynamic_ncols=True, bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]') as progress:
         for frame_path in frame_paths:
             frame = cv2.imread(frame_path)
+            swapper = get_face_swapper()
             try:
-                face = get_face(frame)
-                if face:
-                    result = get_face_swapper().get(frame, face, source_face, paste_back=True)
+                if core.globals.all_faces:
+                    all_faces = get_all_faces(frame)
+                    result = frame
+                    if len(all_faces) > 0:
+                        for singleFace in all_faces:
+                            if singleFace:
+                                result = swapper.get(result, singleFace, source_face, paste_back=True)
+                                progress.set_postfix(status='.', refresh=True)
+                            else:
+                                progress.set_postfix(status='S', refresh=True)
+                    else:
+                        progress.set_postfix(status='S', refresh=True)
                     cv2.imwrite(frame_path, result)
-                    progress.set_postfix(status='.', refresh=True)
                 else:
-                    progress.set_postfix(status='S', refresh=True)
+                    face = get_face(frame)
+                    if face:
+                        result = swapper.get(frame, face, source_face, paste_back=True)
+                        cv2.imwrite(frame_path, result)
+                        progress.set_postfix(status='.', refresh=True)
+                    else:
+                        progress.set_postfix(status='S', refresh=True)
             except Exception:
                 progress.set_postfix(status='E', refresh=True)
                 pass
