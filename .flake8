@@ -1,0 +1,2 @@
+[flake8]
+select = E3, E4, F
