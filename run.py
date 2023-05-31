@@ -62,8 +62,8 @@ def limit_resources():
 
 
 def pre_check():
-    if sys.version_info < (3, 8):
-        quit('Python version is not supported - please upgrade to 3.8 or higher')
+    if sys.version_info < (3, 9):
+        quit('Python version is not supported - please upgrade to 3.9 or higher')
     if not shutil.which('ffmpeg'):
         quit('ffmpeg is not installed!')
     model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inswapper_128.onnx')
