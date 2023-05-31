@@ -58,7 +58,7 @@ def limit_resources():
 
 def pre_check():
     if sys.version_info < (3, 8):
-        quit(f'Python version is not supported - please upgrade to 3.8 or higher')
+        quit('Python version is not supported - please upgrade to 3.8 or higher')
     if not shutil.which('ffmpeg'):
         quit('ffmpeg is not installed!')
     model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inswapper_128.onnx')
@@ -72,7 +72,7 @@ def pre_check():
             if not torch.cuda.is_available() or not CUDA_VERSION:
                 quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
             if CUDA_VERSION > '11.8':
-                quit(f"CUDA version {CUDA_VERSION} is not supported - please downgrade to 11.8.")
+                quit(f"CUDA version {CUDA_VERSION} is not supported - please downgrade to 11.8")
             if CUDA_VERSION < '11.4':
                 quit(f"CUDA version {CUDA_VERSION} is not supported - please upgrade to 11.8")
             if CUDNN_VERSION < 8220:
@@ -179,7 +179,8 @@ def start():
         print("\n[WARNING] Please select a video/image to swap face in.")
         return
     if not args['output_file']:
-        args['output_file'] = rreplace(args['target_path'], "/", "/swapped-", 1) if "/" in target_path else "swapped-"+target_path
+        target_path = args['target_path']
+        args['output_file'] = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
     global pool
     pool = mp.Pool(args['cores_count'])
     target_path = args['target_path']
@@ -206,7 +207,7 @@ def start():
     status("extracting frames...")
     extract_frames(target_path, output_dir)
     args['frame_paths'] = tuple(sorted(
-        glob.glob(output_dir + f"/*.png"),
+        glob.glob(output_dir + "/*.png"),
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")

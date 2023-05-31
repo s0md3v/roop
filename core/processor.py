@@ -3,7 +3,6 @@ import os
 import cv2
 import insightface
 from core.config import get_face
-from core.utils import rreplace
 
 FACE_SWAPPER = None
 
@@ -28,7 +27,7 @@ def process_video(source_img, frame_paths):
                 print('.', end='', flush=True)
             else:
                 print('S', end='', flush=True)
-        except Exception as e:
+        except Exception:
             print('E', end='', flush=True)
             pass
 

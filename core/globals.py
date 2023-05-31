@@ -1,4 +1,3 @@
-import torch
 import onnxruntime
 
 use_gpu = False
