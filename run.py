@@ -3,7 +3,6 @@
 import platform
 import signal
 import sys
-import time
 import shutil
 import glob
 import argparse
