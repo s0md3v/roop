@@ -97,7 +97,7 @@ def start_processing():
     n = len(frame_paths)//(args['cores_count'])
     for i in range(n):
         if dataset(random.choice(frame_paths)) > 0.7:
-            quit("[WARNING] Unable to determine location of the face in the target. Please make sure the target isn't wearing clothes matching to their skin.")
+            return
     processes = []
     for i in range(0, len(frame_paths), n):
         p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
