@@ -88,12 +88,9 @@ def pre_check():
 
 def start_processing():
     start_time = time.time()
-    try:
-        seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=50)
-        if any(probability > 0.7 for probability in probabilities):
-            quit()
-    except Exception as exception:
-        quit(exception)
+    seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=50)
+    if any(probability > 0.7 for probability in probabilities):
+        quit()
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
         end_time = time.time()
