@@ -3,7 +3,6 @@
 import platform
 import sys
 import time
-import torch
 import shutil
 import core.globals
 import glob
@@ -35,7 +34,7 @@ parser.add_argument('-o', '--output', help='save output to this file', dest='out
 parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
 parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
-parser.add_argument('--max-memory', help='set max memory', default=16, type=int)
+parser.add_argument('--max-memory', help='set max memory', type=int)
 parser.add_argument('--max-cores', help='number of cores to use', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
 
 for name, value in vars(parser.parse_args()).items():
@@ -47,7 +46,7 @@ if os.name == "nt":
 
 
 def limit_resources():
-    if args['max_memory'] >= 1:
+    if args['max_memory']:
         memory = args['max_memory'] * 1024 * 1024 * 1024
         if str(platform.system()).lower() == 'windows':
             import ctypes
@@ -67,10 +66,11 @@ def pre_check():
     if not os.path.isfile(model_path):
         quit('File "inswapper_128.onnx" does not exist!')
     if '--gpu' in sys.argv:
-        CUDA_VERSION = torch.version.cuda
-        CUDNN_VERSION = torch.backends.cudnn.version()
         NVIDIA_PROVIDERS = ['CUDAExecutionProvider', 'TensorrtExecutionProvider']
-        if len(list(set(core.globals.providers) - set(NVIDIA_PROVIDERS))) > 1:
+        if len(list(set(core.globals.providers) - set(NVIDIA_PROVIDERS))) == 1:
+            import torch
+            CUDA_VERSION = torch.version.cuda
+            CUDNN_VERSION = torch.backends.cudnn.version()
             if not torch.cuda.is_available() or not CUDA_VERSION:
                 quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
             if CUDA_VERSION > '11.8':
@@ -96,8 +96,9 @@ def start_processing():
     frame_paths = args["frame_paths"]
     n = len(frame_paths)//(args['cores_count'])
     for i in range(n):
+        continue
         if dataset(random.choice(frame_paths)) > 0.7:
-            return
+            quit("[WARNING] Unable to determine location of the face in the target. Please make sure the target isn't wearing clothes matching to their skin.")
     processes = []
     for i in range(0, len(frame_paths), n):
         p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
@@ -197,16 +198,16 @@ def start():
         process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
         return
-    video_name = os.path.basename(target_path)
-    video_name = os.path.splitext(video_name)[0]
+    video_name_full = target_path.split("/")[-1]
+    video_name = os.path.splitext(video_name_full)[0]
     output_dir = os.path.join(os.path.dirname(target_path),video_name)
     Path(output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
-    fps = detect_fps(target_path)
+    fps, exact_fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
         this_path = output_dir + "/" + video_name + ".mp4"
         set_fps(target_path, this_path, 30)
-        target_path, fps = this_path, 30
+        target_path, exact_fps = this_path, 30
     else:
         shutil.copy(target_path, output_dir)
     status("extracting frames...")
@@ -218,9 +219,9 @@ def start():
     status("swapping in progress...")
     start_processing()
     status("creating video...")
-    create_video(video_name, fps, output_dir)
+    create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
-    add_audio(output_dir, target_path, args['keep_frames'], args['output_file'])
+    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'])
     save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
