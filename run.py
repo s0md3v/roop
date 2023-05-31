@@ -1,38 +1,31 @@
 #!/usr/bin/env python3
+
+import platform
 import sys
 import time
 import shutil
-import core.globals
-
-if not shutil.which('ffmpeg'):
-    print('ffmpeg is not installed. Read the docs: https://github.com/s0md3v/roop#installation.\n' * 10)
-    quit()
-if '--gpu' not in sys.argv:
-    core.globals.providers = ['CPUExecutionProvider']
-elif 'ROCMExecutionProvider' not in core.globals.providers:
-    import torch
-    if not torch.cuda.is_available():
-        quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
-if '--all-faces' in sys.argv or '-a' in sys.argv:
-    core.globals.all_faces = True
-
-
 import glob
 import argparse
 import multiprocessing as mp
 import os
+import random
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog
+from opennsfw2 import predict_image as face_check
 from tkinter.filedialog import asksaveasfilename
+import core.globals
 from core.processor import process_video, process_img
-from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames
+from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from core.config import get_face
 import webbrowser
 import psutil
 import cv2
 import threading
 from PIL import Image, ImageTk
+
+if 'ROCMExecutionProvider' not in core.globals.providers:
+    import torch
 
 pool = None
 args = {}
@@ -41,22 +34,68 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--face', help='use this face', dest='source_img')
 parser.add_argument('-t', '--target', help='replace this face', dest='target_path')
 parser.add_argument('-o', '--output', help='save output to this file', dest='output_file')
-parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
+parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
+parser.add_argument('--max-memory', help='set max memory', type=int)
+parser.add_argument('--max-cores', help='number of cores to use', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
 parser.add_argument('-a', '--all-faces', help='swap all faces in frame', dest='all_faces', default=False)
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
-
 
 sep = "/"
 if os.name == "nt":
     sep = "\\"
 
 
+def limit_resources():
+    if args['max_memory']:
+        memory = args['max_memory'] * 1024 * 1024 * 1024
+        if str(platform.system()).lower() == 'windows':
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            kernel32.SetProcessWorkingSetSize(-1, ctypes.c_size_t(memory), ctypes.c_size_t(memory))
+        else:
+            import resource
+            resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))
+
+
+def pre_check():
+    if sys.version_info < (3, 8):
+        quit('Python version is not supported - please upgrade to 3.8 or higher')
+    if not shutil.which('ffmpeg'):
+        quit('ffmpeg is not installed!')
+    model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inswapper_128.onnx')
+    if not os.path.isfile(model_path):
+        quit('File "inswapper_128.onnx" does not exist!')
+    if '--gpu' in sys.argv:
+        NVIDIA_PROVIDERS = ['CUDAExecutionProvider', 'TensorrtExecutionProvider']
+        if len(list(set(core.globals.providers) - set(NVIDIA_PROVIDERS))) == 1:
+            CUDA_VERSION = torch.version.cuda
+            CUDNN_VERSION = torch.backends.cudnn.version()
+            if not torch.cuda.is_available() or not CUDA_VERSION:
+                quit("You are using --gpu flag but CUDA isn't available or properly installed on your system.")
+            if CUDA_VERSION > '11.8':
+                quit(f"CUDA version {CUDA_VERSION} is not supported - please downgrade to 11.8")
+            if CUDA_VERSION < '11.4':
+                quit(f"CUDA version {CUDA_VERSION} is not supported - please upgrade to 11.8")
+            if CUDNN_VERSION < 8220:
+                quit(f"CUDNN version {CUDNN_VERSION} is not supported - please upgrade to 8.9.1")
+            if CUDNN_VERSION > 8910:
+                quit(f"CUDNN version {CUDNN_VERSION} is not supported - please downgrade to 8.9.1")
+    else:
+        core.globals.providers = ['CPUExecutionProvider']
+    if '--all-faces' in sys.argv or '-a' in sys.argv:
+        core.globals.all_faces = True
+
+
 def start_processing():
     start_time = time.time()
+    threshold = len(['frame_args']) if len(args['frame_paths']) <= 10 else 10
+    for i in range(threshold):
+        if face_check(random.choice(args['frame_paths'])) > 0.8:
+            quit("[WARNING] Unable to determine location of the face in the target. Please make sure the target isn't wearing clothes matching to their skin.")
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
         end_time = time.time()
@@ -64,7 +103,7 @@ def start_processing():
         print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
         return
     frame_paths = args["frame_paths"]
-    n = len(frame_paths)//(psutil.cpu_count()-1)
+    n = len(frame_paths)//(args['cores_count'])
     processes = []
     for i in range(0, len(frame_paths), n):
         p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
@@ -76,6 +115,7 @@ def start_processing():
     end_time = time.time()
     print(flush=True)
     print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
+
 
 def preview_image(image_path):
     img = Image.open(image_path)
@@ -150,41 +190,45 @@ def start():
         print("\n[WARNING] Please select a video/image to swap face in.")
         return
     if not args['output_file']:
-        args['output_file'] = rreplace(args['target_path'], "/", "/swapped-", 1) if "/" in target_path else "swapped-"+target_path
+        target_path = args['target_path']
+        args['output_file'] = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
     global pool
-    pool = mp.Pool(psutil.cpu_count()-1)
+    pool = mp.Pool(args['cores_count'])
     target_path = args['target_path']
     test_face = get_face(cv2.imread(args['source_img']))
     if not test_face:
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return
     if is_img(target_path):
+        if face_check(target_path) > 0.7:
+            quit("[WARNING] Unable to determine location of the face in the target. Please make sure the target isn't wearing clothes matching to their skin.")
         process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
         return
-    video_name = target_path.split("/")[-1].split(".")[0]
-    output_dir = target_path.replace(target_path.split("/")[-1], "").rstrip("/") + "/" + video_name
+    video_name_full = target_path.split("/")[-1]
+    video_name = os.path.splitext(video_name_full)[0]
+    output_dir = os.path.dirname(target_path) + "/" + video_name
     Path(output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
-    fps = detect_fps(target_path)
+    fps, exact_fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
         this_path = output_dir + "/" + video_name + ".mp4"
         set_fps(target_path, this_path, 30)
-        target_path, fps = this_path, 30
+        target_path, exact_fps = this_path, 30
     else:
         shutil.copy(target_path, output_dir)
     status("extracting frames...")
     extract_frames(target_path, output_dir)
     args['frame_paths'] = tuple(sorted(
-        glob.glob(output_dir + f"/*.png"),
+        glob.glob(output_dir + "/*.png"),
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")
     start_processing()
     status("creating video...")
-    create_video(video_name, fps, output_dir)
+    create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
-    add_audio(output_dir, target_path, args['keep_frames'], args['output_file'])
+    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'])
     save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
@@ -192,6 +236,10 @@ def start():
 
 if __name__ == "__main__":
     global status_label, window
+
+    pre_check()
+    limit_resources()
+
     if args['source_img']:
         args['cli_mode'] = True
         start()

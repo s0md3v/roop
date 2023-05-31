@@ -24,17 +24,23 @@ Choose a face (image with desired face) and the target image/video (image/video 
 Don't touch the FPS checkbox unless you know what you are doing.
 
 Additional command line arguments are given below:
+
 ```
--h, --help            show this help message and exit
--f SOURCE_IMG, --face SOURCE_IMG
+options:
+  -h, --help            show this help message and exit
+  -f SOURCE_IMG, --face SOURCE_IMG
                         use this face
--t TARGET_PATH, --target TARGET_PATH
+  -t TARGET_PATH, --target TARGET_PATH
                         replace this face
--o OUTPUT_FILE, --output OUTPUT_FILE
-                      save output to this file
---keep-fps            keep original fps
---gpu                 use gpu
---keep-frames         don't delete frames directory
+  -o OUTPUT_FILE, --output OUTPUT_FILE
+                        save output to this file
+  --gpu                 use gpu
+  --keep-fps            maintain original fps
+  --keep-frames         keep frames directory
+  --max-memory MAX_MEMORY
+                        set max memory
+  --max-cores CORES_COUNT
+                        set max cpu cores
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
@@ -45,7 +51,7 @@ Looking for a CLI mode? Using the -f/--face argument will make the program in cl
 - [ ] Support for replacing multiple faces
 
 ## Disclaimer
-Deepfake software already exist. This is just an experiment to make the existing techniques better. Users are expected to use this to learn about AI and not use it for illicit or unethical purposes. Users must get consent from the concerned people before using their face and must not hide the fact that it is a deepfake when posting content online. I am not responsible for any malicious activity done through this software, this is a purely educational project aimed at exploring AI.
+Better deepfake software than this already exist, this is just a hobby project I created to learn about AI. Users are expected to use this program for learning programming and using the software in good faith. Users must get consent from the concerned people before using their face and must not hide the fact that it is a deepfake when posting content online. I am not responsible for malicious behaviour of end-users.
 
 ## Credits
 - [ffmpeg](https://ffmpeg.org/): for making video related operations easy
