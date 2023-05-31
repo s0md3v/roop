@@ -1,8 +1,9 @@
 import os
+from tqdm import tqdm
 import cv2
 import insightface
 import core.globals
-from core.config import get_face, get_all_faces
+from core.analyser import get_face
 
 FACE_SWAPPER = None
 
@@ -17,33 +18,21 @@ def get_face_swapper():
 
 def process_video(source_img, frame_paths):
     source_face = get_face(cv2.imread(source_img))
-    for frame_path in frame_paths:
-        frame = cv2.imread(frame_path)
-
-        swapper = get_face_swapper()
-        try:
-            if core.globals.all_faces:
-                all_faces = get_all_faces(frame)
-                result = frame
-                for singleFace in all_faces:
-                    if singleFace:
-                        result = swapper.get(result, singleFace, source_face, paste_back=True)
-                        print('.', end='', flush=True)
-                    else:
-                        print('S', end='', flush=True)
-                cv2.imwrite(frame_path, result)
-            else:
+    with tqdm(total=len(frame_paths), desc="Processing", unit="frame", dynamic_ncols=True, bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]') as progress:
+        for frame_path in frame_paths:
+            frame = cv2.imread(frame_path)
+            try:
                 face = get_face(frame)
                 if face:
-                    result = swapper.get(frame, face, source_face, paste_back=True)
+                    result = get_face_swapper().get(frame, face, source_face, paste_back=True)
                     cv2.imwrite(frame_path, result)
-                    print('.', end='', flush=True)
+                    progress.set_postfix(status='.', refresh=True)
                 else:
-                    print('S', end='', flush=True)
-
-        except Exception as e:
-            print('E', end='', flush=True)
-            pass
+                    progress.set_postfix(status='S', refresh=True)
+            except Exception:
+                progress.set_postfix(status='E', refresh=True)
+                pass
+            progress.update(1)
 
 
 def process_img(source_img, target_path, output_file):
