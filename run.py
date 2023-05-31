@@ -21,9 +21,9 @@ import cv2
 import threading
 from PIL import Image, ImageTk
 import core.globals
-from core.processor import process_video, process_img
+from core.swapper import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
-from core.config import get_face
+from core.analyser import get_face
 
 if 'ROCMExecutionProvider' in core.globals.providers:
     del torch
