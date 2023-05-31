@@ -4,6 +4,8 @@ That's it, that's the software. You can watch some demos [here](https://drive.go
 
 ![demo-gif](demo.gif)
 
+[Try it on Replicate](https://replicate.com/okaris/roop)
+
 ## How do I install it?
 > Note: The instructions may or may not work for you. Use google or look through issues people have created here to solve your problems.
 

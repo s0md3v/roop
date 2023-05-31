@@ -1,0 +1,24 @@
+build:
+  gpu: true
+  cuda: "11.8"
+  python_version: "3.8"
+  run:
+    - pip uninstall onnxruntime onnxruntime-gpu -y
+    - pip install onnxruntime-gpu==1.15.0
+    - pip install torch==2.0.0+cu118 torchvision==0.15.1+cu118 torchaudio==2.0.1 --force-reinstall --extra-index-url https://download.pytorch.org/whl/cu118
+  python_packages:
+    - "opencv-contrib-python==4.7.0.72"
+    - "ftfy==6.1.1"
+    - "scipy==1.9.3"
+    - "Pillow==9.4.0"
+    - "mediapipe==0.9.0.1"
+    - "numpy==1.24.3"
+    - "opencv-python==4.7.0.72"
+    - "onnx==1.14.0"
+    - "insightface==0.7.3"
+    - "psutil==5.9.5"
+  system_packages:
+    - ffmpeg
+    - libsm6 
+    - libxext6
+predict: "predict.py:Predictor"

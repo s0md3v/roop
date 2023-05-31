@@ -1,19 +1,14 @@
 import os
-
 import cv2
 import insightface
+import core.globals
 from core.config import get_face
 from core.utils import rreplace
 
-FACE_SWAPPER = None
-
-
-def get_face_swapper():
-    global FACE_SWAPPER
-    if FACE_SWAPPER is None:
-        model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../inswapper_128.onnx')
-        FACE_SWAPPER = insightface.model_zoo.get_model(model_path)
-    return FACE_SWAPPER
+if os.path.isfile('inswapper_128.onnx'):
+    face_swapper = insightface.model_zoo.get_model('inswapper_128.onnx', providers=core.globals.providers)
+else:
+    quit('File "inswapper_128.onnx" does not exist!')
 
 
 def process_video(source_img, frame_paths):
@@ -23,20 +18,22 @@ def process_video(source_img, frame_paths):
         try:
             face = get_face(frame)
             if face:
-                result = get_face_swapper().get(frame, face, source_face, paste_back=True)
+                result = face_swapper.get(frame, face, source_face, paste_back=True)
                 cv2.imwrite(frame_path, result)
-                print('.', end='', flush=True)
+                print('.', end='')
             else:
-                print('S', end='', flush=True)
+                print('S', end='')
         except Exception as e:
-            print('E', end='', flush=True)
+            print('E', end='')
             pass
 
 
-def process_img(source_img, target_path, output_file):
+def process_img(source_img, target_path):
     frame = cv2.imread(target_path)
     face = get_face(frame)
     source_face = get_face(cv2.imread(source_img))
     result = face_swapper.get(frame, face, source_face, paste_back=True)
-    cv2.imwrite(output_file, result)
-    print("\n\nImage saved as:", output_file, "\n\n")
+    target_path = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-"+target_path
+    print(target_path)
+    cv2.imwrite(target_path, result)
+    return target_path
