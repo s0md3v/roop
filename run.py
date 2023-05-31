@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import platform
+import signal
 import sys
 import time
 import shutil
@@ -20,9 +21,9 @@ import cv2
 import threading
 from PIL import Image, ImageTk
 import core.globals
-from core.processor import process_video, process_img
+from core.swapper import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
-from core.config import get_face
+from core.analyser import get_face
 
 if 'ROCMExecutionProvider' in core.globals.providers:
     del torch
@@ -30,6 +31,7 @@ if 'ROCMExecutionProvider' in core.globals.providers:
 pool = None
 args = {}
 
+signal.signal(signal.SIGINT, lambda signal_number, frame: quit())
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--face', help='use this face', dest='source_img')
 parser.add_argument('-t', '--target', help='replace this face', dest='target_path')
