@@ -1,4 +1,4 @@
-numpy==1.24.3
+numpy==1.23.5
 opencv-python==4.7.0.72
 onnx==1.14.0
 insightface==0.7.3
