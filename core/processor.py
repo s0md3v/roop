@@ -4,6 +4,7 @@ import cv2
 import insightface
 import core.globals
 from core.config import get_face
+from tqdm import tqdm
 
 FACE_SWAPPER = None
 
@@ -18,19 +19,20 @@ def get_face_swapper():
 
 def process_video(source_img, frame_paths):
     source_face = get_face(cv2.imread(source_img))
-    for frame_path in frame_paths:
+    for frame_path in tqdm(frame_paths, desc="Processing frames", ncols=70):
         frame = cv2.imread(frame_path)
         try:
             face = get_face(frame)
             if face:
                 result = get_face_swapper().get(frame, face, source_face, paste_back=True)
                 cv2.imwrite(frame_path, result)
-                print('.', end='', flush=True)
+                print('✅', end='', flush=True)
             else:
-                print('S', end='', flush=True)
+                print('❌', end='', flush=True)
         except Exception:
             print('E', end='', flush=True)
             pass
+
 
 
 def process_img(source_img, target_path, output_file):
