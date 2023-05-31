@@ -37,8 +37,8 @@ parser.add_argument('-o', '--output', help='save output to this file', dest='out
 parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
 parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
-parser.add_argument('--max-memory', help='set max memory', type=int)
-parser.add_argument('--max-cores', help='number of cores to use', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
+parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', type=int)
+parser.add_argument('--max-cores', help='number of cores to be use for CPU mode', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
