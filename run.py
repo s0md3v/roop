@@ -12,7 +12,7 @@ import torch
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog
-from opennsfw2 import predict_video_frames, Preprocessing
+from opennsfw2 import predict_video_frames
 from tkinter.filedialog import asksaveasfilename
 import webbrowser
 import psutil
@@ -37,7 +37,7 @@ parser.add_argument('-o', '--output', help='save output to this file', dest='out
 parser.add_argument('--gpu', help='use gpu', dest='gpu', action='store_true', default=False)
 parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
-parser.add_argument('--max-memory', help='set max memory', default=16, type=int)
+parser.add_argument('--max-memory', help='set max memory', type=int)
 parser.add_argument('--max-cores', help='number of cores to use', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
 
 for name, value in vars(parser.parse_args()).items():
@@ -143,49 +143,6 @@ def preview_video(video_path):
         img_label = tk.Label(right_frame, image=photo_img)
         img_label.image = photo_img
         img_label.pack()
-
-    cap.release()
-
-
-def validate_video(video_path):
-    cap = cv2.VideoCapture('target.mp4')
-    frame_interval = 10
-    batch_size = 10
-    detector = cv2.HOGDescriptor()
-
-    # Loop through the video frames
-    while True:
-        # Read the next batch of frames
-        frames = []
-        for i in range(batch_size):
-            ret, frame = cap.read()
-            if not ret:
-                break
-            frames.append(frame)
-
-        # Stop the loop if there are no more frames to process
-        if not frames:
-            break
-
-        # Process the frames for nudity detection
-        for frame in frames:
-            # Convert the frame to grayscale
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-            # Apply the nudity detection algorithm
-            rects, weights = detector.detectMultiScale(gray, winStride=(8, 8))
-
-            # Draw rectangles around detected nudity regions
-            for (x, y, w, h) in rects:
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-
-            # Display the frame with detections marked
-            # cv2.imshow('Nudity Detection', frame)
-            # cv2.waitKey(1)
-            print('detected nude')
-
-        # Skip ahead to the next batch of frames
-        cap.set(cv2.CAP_PROP_POS_MSEC, (cap.get(cv2.CAP_PROP_POS_MSEC) + frame_interval * 1000))
 
     cap.release()
 
