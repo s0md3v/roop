@@ -153,7 +153,7 @@ def select_target():
 
 
 def toggle_fps_limit():
-    args['keep_fps'] = int(limit_fps.get() != True)a
+    args['keep_fps'] = int(limit_fps.get() != True)
 
 
 def toggle_keep_frames():
