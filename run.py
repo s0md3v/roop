@@ -200,7 +200,7 @@ def start():
             return
         video_name_full = target_path.split("/")[-1]
         video_name = os.path.splitext(video_name_full)[0]
-        output_dir = os.path.join(os.path.dirname(target_path),video_name)
+        output_dir = os.path.dirname(target_path) + "/" + video_name
         Path(output_dir).mkdir(exist_ok=True)
         status("detecting video's FPS...")
         fps, _ = detect_fps(target_path)
@@ -225,7 +225,6 @@ def start():
         save_path = args['output_file'] + ".mp4" if args['output_file'] else output_dir + "/" + video_name + ".mp4"
         print("\n\nVideo saved as:", save_path, "\n\n")
         status("swap successful!")
-
 
 if __name__ == "__main__":
     global status_label, window
