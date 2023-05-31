@@ -182,7 +182,7 @@ def start():
         args['output_file'] = rreplace(args['target_path'], "/", "/swapped-", 1) if "/" in target_path else "swapped-"+target_path
     global pool
     pool = mp.Pool(args['cores_count'])
-    target_path = args['target_path']
+    target_path = Path(args['target_path'])
     test_face = get_face(cv2.imread(args['source_img']))
     if not test_face:
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
@@ -191,14 +191,13 @@ def start():
         process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
         return
-    video_name = os.path.basename(target_path)
-    video_name = os.path.splitext(video_name)[0]
-    output_dir = os.path.join(os.path.dirname(target_path),video_name)
-    Path(output_dir).mkdir(exist_ok=True)
+    video_name = target_path.name
+    output_dir = target_path.parent / target_path.stem
+    (output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
     fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
-        this_path = output_dir + "/" + video_name + ".mp4"
+        this_path = output_dir / video_name
         set_fps(target_path, this_path, 30)
         target_path, fps = this_path, 30
     else:
@@ -206,8 +205,8 @@ def start():
     status("extracting frames...")
     extract_frames(target_path, output_dir)
     args['frame_paths'] = tuple(sorted(
-        glob.glob(output_dir + f"/*.png"),
-        key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
+        output_dir.glob("*.png"),
+        key=lambda x: int(x.stem)
     ))
     status("swapping in progress...")
     start_processing()

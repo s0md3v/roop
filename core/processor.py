@@ -19,6 +19,7 @@ def get_face_swapper():
 def process_video(source_img, frame_paths):
     source_face = get_face(cv2.imread(source_img))
     for frame_path in frame_paths:
+        frame_path = str(frame_path)
         frame = cv2.imread(frame_path)
         try:
             face = get_face(frame)
