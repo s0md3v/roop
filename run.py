@@ -145,11 +145,11 @@ def select_target():
 
 
 def toggle_fps_limit():
-    args['keep_fps'] = limit_fps.get() != True
+    args['keep_fps'] = int(limit_fps.get() != True)
 
 
 def toggle_keep_frames():
-    args['keep_frames'] = keep_frames.get() != True
+    args['keep_frames'] = int(keep_frames.get())
 
 
 def save_file():
@@ -252,13 +252,12 @@ if __name__ == "__main__":
     target_button.place(x=360,y=320,width=180,height=80)
 
     # FPS limit checkbox
-    limit_fps = tk.IntVar()
+    limit_fps = tk.IntVar(None, not args['keep_fps'])
     fps_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
     fps_checkbox.place(x=30,y=500,width=240,height=31)
-    fps_checkbox.select()
 
     # Keep frames checkbox
-    keep_frames = tk.IntVar()
+    keep_frames = tk.IntVar(None, args['keep_frames'])
     frames_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
     frames_checkbox.place(x=37,y=450,width=240,height=31)
 
