@@ -1,10 +1,11 @@
 import os
 import shutil
 
-sep = "/"
-if os.name == "nt":
-    sep = "\\"
 
+def get_os_separator():
+    return "\\" if os.name == "nt" else "/"
+
+sep = get_os_separator()
 
 def path(string):
     if sep == "\\":

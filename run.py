@@ -21,7 +21,7 @@ import threading
 from PIL import Image, ImageTk
 import core.globals
 from core.swapper import process_video, process_img
-from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
+from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace, get_os_separator
 from core.analyser import get_face
 
 if 'ROCMExecutionProvider' in core.globals.providers:
@@ -44,9 +44,7 @@ parser.add_argument('--max-cores', help='number of cores to be use for CPU mode'
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
 
-sep = "/"
-if os.name == "nt":
-    sep = "\\"
+sep = get_os_separator()
 
 
 def limit_resources():
