@@ -14,7 +14,6 @@ import tkinter as tk
 from tkinter import filedialog
 from opennsfw2 import predict_video_frames, predict_image
 from tkinter.filedialog import asksaveasfilename
-import webbrowser
 import psutil
 import cv2
 import threading
