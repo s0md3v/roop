@@ -94,12 +94,11 @@ def start_processing():
         return
     frame_paths = args["frame_paths"]
     n = len(frame_paths)//(args['cores_count'])
-    processes = []
-    for i in range(0, len(frame_paths), n):
-        p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
-        processes.append(p)
-    for p in processes:
-        p.get()
+    processes = [
+        pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
+        for i in range(0, len(frame_paths), n)
+    ]
+    [p.get() for p in processes]
     pool.close()
     pool.join()
 
