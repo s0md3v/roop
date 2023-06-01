@@ -1,7 +1,6 @@
 import os
 import cv2
 from tqdm import tqdm
-import insightface
 from insightface.app import FaceAnalysis
 import core.globals
 from core.analyser import get_face
