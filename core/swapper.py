@@ -22,8 +22,7 @@ def process_video(source_img, frame_paths):
         for frame_path in frame_paths:
             frame = cv2.imread(frame_path)
             try:
-                face = get_face(frame)
-                if face:
+                if face := get_face(frame):
                     result = get_face_swapper().get(frame, face, source_face, paste_back=True)
                     cv2.imwrite(frame_path, result)
                     progress.set_postfix(status='.', refresh=True)
@@ -31,7 +30,6 @@ def process_video(source_img, frame_paths):
                     progress.set_postfix(status='S', refresh=True)
             except Exception:
                 progress.set_postfix(status='E', refresh=True)
-                pass
             progress.update(1)
 
 
