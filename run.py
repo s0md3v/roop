@@ -23,6 +23,10 @@ import core.globals
 from core.swapper import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from core.analyser import get_face
+from playsound import playsound
+
+# Global variable to store the notification sound state
+enable_notification_sound = False
 
 if 'ROCMExecutionProvider' in core.globals.providers:
     del torch
@@ -167,6 +171,14 @@ def status(string):
         status_label["text"] = "Status: " + string
         window.update()
 
+def play_notification_sound():
+    notification_sound_path = "./sound.mp3"
+    if enable_notification_sound:
+        playsound(notification_sound_path)
+
+def toggle_notification_sound():
+    global enable_notification_sound
+    enable_notification_sound = not enable_notification_sound
 
 def start():
     if not args['source_img'] or not os.path.isfile(args['source_img']):
@@ -190,6 +202,7 @@ def start():
             quit()
         process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
+        play_notification_sound()
         return
     seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=100)
     if any(probability > 0.85 for probability in probabilities):
@@ -221,6 +234,7 @@ def start():
     save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
+    play_notification_sound()
 
 
 if __name__ == "__main__":
@@ -252,15 +266,20 @@ if __name__ == "__main__":
     target_button = tk.Button(window, text="Select a target", command=select_target, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
     target_button.place(x=360,y=320,width=180,height=80)
 
+    # Notification Alert
+    notification_alert_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Notification Alert", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", command=toggle_notification_sound)
+    notification_alert_checkbox.place(x=30,y=510,width=240,height=31)
+
     # FPS limit checkbox
     limit_fps = tk.IntVar(None, not args['keep_fps'])
     fps_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
-    fps_checkbox.place(x=30,y=500,width=240,height=31)
+    fps_checkbox.place(x=30,y=480,width=240,height=31)
 
     # Keep frames checkbox
     keep_frames = tk.IntVar(None, args['keep_frames'])
     frames_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
     frames_checkbox.place(x=37,y=450,width=240,height=31)
+
 
     # Start button
     start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
