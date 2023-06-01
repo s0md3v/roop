@@ -225,6 +225,14 @@ def start():
 if __name__ == "__main__":
     global status_label, window
 
+    pre_check()
+    limit_resources()
+
+    if args['source_img']:
+        args['cli_mode'] = True
+        start()
+        quit()
+
     window = tk.Tk()
     window.geometry("600x700")
     window.title("Roop - Face Replacement Software")
