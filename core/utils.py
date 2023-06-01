@@ -23,7 +23,7 @@ def detect_fps(input_path):
     output = os.popen(f'ffprobe -v error -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream=r_frame_rate "{input_path}"').read()
     if "/" in output:
         try:
-            return int(output.split("/")[0]) // int(output.split("/")[1]), output.removesuffix('\n')
+            return int(output.split("/")[0]) // int(output.split("/")[1].strip()), output.strip()
         except:
             pass
     return 30, 30
