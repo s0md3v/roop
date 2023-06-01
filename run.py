@@ -22,7 +22,7 @@ from PIL import Image, ImageTk
 import core.globals
 from core.swapper import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
-from core.analyser import get_face
+from core.analyser import get_face_single
 
 if 'ROCMExecutionProvider' in core.globals.providers:
     del torch
@@ -188,7 +188,7 @@ def start():
     global pool
     pool = mp.Pool(args['cores_count'])
     target_path = args['target_path']
-    test_face = get_face(cv2.imread(args['source_img']))
+    test_face = get_face_single(cv2.imread(args['source_img']))
     if not test_face:
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return

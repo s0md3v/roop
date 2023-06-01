@@ -12,7 +12,7 @@ def get_face_analyser():
     return FACE_ANALYSER
 
 
-def get_face(img_data):
+def get_face_single(img_data):
     face = get_face_analyser().get(img_data)
     try:
         return sorted(face, key=lambda x: x.bbox[0])[0]
@@ -20,7 +20,7 @@ def get_face(img_data):
         return None
 
 
-def get_all_faces(img_data):
+def get_face_many(img_data):
     try:
         return get_face_analyser().get(img_data)
     except IndexError:
