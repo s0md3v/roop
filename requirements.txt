@@ -8,7 +8,8 @@ pillow==9.5.0
 torch==2.0.1
 onnxruntime==1.15.0; sys_platform == 'darwin'
 onnxruntime-gpu==1.15.0; sys_platform != 'darwin'
-tensorflow==2.12.0
+tensorflow-macos==2.12.0; sys_platform == 'darwin'
+tensorflow==2.12.0; sys_platform != 'darwin'
 opennsfw2==0.10.2
 protobuf==4.23.2
 tqdm==4.65.0
