@@ -22,7 +22,7 @@ def swap_face_in_frame(source_face, target_face, frame):
     return frame
 
 
-def process_faces(source_face, frame, progress, all_faces=True):
+def process_faces(source_face, frame, progress, all_faces=False):
     if all_faces:
         many_faces = get_face_many(frame)
         if many_faces:
