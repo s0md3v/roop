@@ -14,3 +14,15 @@ jobs:
      python-version: 3.9
   - run: pip install flake8
   - run: flake8 run.py core
+ test:
+  runs-on: ubuntu-latest
+  steps:
+  - name: Checkout
+    uses: actions/checkout@v2
+  - name: Set up Python 3.9
+    uses: actions/setup-python@v2
+    with:
+     python-version: 3.9
+  - run: pip install -r requirements.txt
+  - run: ./run.py -f=examples/face.jpg -t=examples/target.mp4 -o=examples/output.mp4
+  - run: diff examples/snapshot.mp4 examples/output.mp4 || exit 1
