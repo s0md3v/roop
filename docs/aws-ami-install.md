@@ -1,5 +1,5 @@
 
-If you are tired of making GPU work, you can just an AWS instance with GPU. AWS already provides AMI with NVIDIA driver installed. Here are high level steps:
+If you are tired of making GPU work, you can just use an AWS instance with GPU. AWS already provides AMI with NVIDIA driver installed. Here are high level steps:
 
 
 # AWS Marketplace. 
