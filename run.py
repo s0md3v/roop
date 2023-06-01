@@ -109,7 +109,7 @@ def preview_image(image_path):
     img = img.resize((180, 180), Image.ANTIALIAS)
     photo_img = ImageTk.PhotoImage(img)
     left_frame = tk.Frame(window)
-    left_frame.place(x=60, y=100)
+    left_frame.place(x=50, y=50)
     img_label = tk.Label(left_frame, image=photo_img)
     img_label.image = photo_img
     img_label.pack()
@@ -127,7 +127,7 @@ def preview_video(video_path):
         img = img.resize((180, 180), Image.ANTIALIAS)
         photo_img = ImageTk.PhotoImage(img)
         right_frame = tk.Frame(window)
-        right_frame.place(x=360, y=100)
+        right_frame.place(x=370, y=50)
         img_label = tk.Label(right_frame, image=photo_img)
         img_label.image = photo_img
         img_label.pack()
@@ -226,48 +226,36 @@ def start():
 if __name__ == "__main__":
     global status_label, window
 
-    pre_check()
-    limit_resources()
-
-    if args['source_img']:
-        args['cli_mode'] = True
-        start()
-        quit()
     window = tk.Tk()
     window.geometry("600x700")
-    window.title("roop")
-    window.configure(bg="#2d3436")
+    window.title("Roop - Face Replacement Software")
+    window.configure(bg="#161617")
     window.resizable(width=False, height=False)
 
-    # Contact information
-    support_link = tk.Label(window, text="Donate to project <3", fg="#fd79a8", bg="#2d3436", cursor="hand2", font=("Arial", 8))
-    support_link.place(x=180,y=20,width=250,height=30)
-    support_link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/sponsors/s0md3v"))
-
     # Select a face button
-    face_button = tk.Button(window, text="Select a face", command=select_face, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
-    face_button.place(x=60,y=320,width=180,height=80)
+    face_button = tk.Button(window, text="Select a face", command=select_face, bg="#1f1f21", fg="#8442ff", relief="flat", activeforeground="#8442ff", borderwidth=2, padx=10, pady=10, highlightbackground="#8442ff", highlightcolor="#8442ff", highlightthickness=2, bd=0, font=("Arial", 10))
+    face_button.place(relx=0.17, rely=0.42, anchor=tk.CENTER)
 
     # Select a target button
-    target_button = tk.Button(window, text="Select a target", command=select_target, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
-    target_button.place(x=360,y=320,width=180,height=80)
+    target_button = tk.Button(window, text="Select a target", command=select_target, bg="#1f1f21", fg="#8442ff", relief="flat", activeforeground="#8442ff", borderwidth=2, padx=10, pady=10, highlightbackground="#8442ff", highlightcolor="#8442ff", highlightthickness=2, bd=0, font=("Arial", 10))
+    target_button.place(relx=0.83, rely=0.42, anchor=tk.CENTER)
 
     # FPS limit checkbox
-    limit_fps = tk.IntVar(None, not args['keep_fps'])
-    fps_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
-    fps_checkbox.place(x=30,y=500,width=240,height=31)
+    limit_fps = tk.IntVar(value=not args['keep_fps'])
+    fps_checkbox = tk.Checkbutton(window, relief="flat", activebackground="#161617", activeforeground="#8442ff", selectcolor="#161617", text="Limit FPS to 30", fg="#dfe6e9", bg="#161617", variable=limit_fps, command=toggle_fps_limit, font=("Arial", 10))
+    fps_checkbox.place(relx=0.07, rely=0.71, anchor=tk.W)
 
     # Keep frames checkbox
-    keep_frames = tk.IntVar(None, args['keep_frames'])
-    frames_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
-    frames_checkbox.place(x=37,y=450,width=240,height=31)
+    keep_frames = tk.IntVar(value=args['keep_frames'])
+    frames_checkbox = tk.Checkbutton(window, relief="flat", activebackground="#161617", activeforeground="#8442ff", selectcolor="#161617", text="Keep frames dir", fg="#dfe6e9", bg="#161617", variable=keep_frames, command=toggle_keep_frames, font=("Arial", 10))
+    frames_checkbox.place(relx=0.07, rely=0.64, anchor=tk.W)
 
     # Start button
-    start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
-    start_button.place(x=240,y=560,width=120,height=49)
+    start_button = tk.Button(window, text="Start", bg="#814ce6", fg="#161617", relief="flat", padx=20, pady=10, command=lambda: [save_file(), start()], highlightbackground="#814ce6", highlightcolor="#814ce6", highlightthickness=2, bd=0, font=("Arial", 12, "bold"))
+    start_button.place(relx=0.5, rely=0.88, anchor=tk.CENTER)
 
     # Status label
-    status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
-    status_label.place(x=10,y=640,width=580,height=30)
-    
+    status_label = tk.Label(window, width=52, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#161617")
+    status_label.place(relx=0.5, rely=0.96, anchor=tk.S)
+
     window.mainloop()
