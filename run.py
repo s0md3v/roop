@@ -42,7 +42,6 @@ parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_fr
 parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', type=int)
 parser.add_argument('--max-cores', help='number of cores to be use for CPU mode', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
 parser.add_argument('--gpu-threads', help='number of threads for gpu to run in parallel', dest='gpu_threads', type=int, default=4)
-parser.add_argument('--run_from_camera', help='if we run the code from camera or not', dest='camera_run', action='store_true', default=False)
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
