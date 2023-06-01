@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-
+#This code includes functions to run in real time (from camera I mean, not real time speed yet).
+#Also this code includes functions to run faster on gpu, which might break sometimes and consumes more VRAM than normal code.
 import platform
 import signal
 import sys
@@ -20,7 +21,7 @@ import cv2
 import threading
 from PIL import Image, ImageTk
 import core.globals
-from core.swapper import process_video, process_img
+from core.swapper import process_video, process_img, process_video_gpu
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from core.analyser import get_face
 
@@ -40,14 +41,11 @@ parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps',
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
 parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', type=int)
 parser.add_argument('--max-cores', help='number of cores to be use for CPU mode', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
+parser.add_argument('--gpu-threads', help='number of threads for gpu to run in parallel', dest='gpu_threads', type=int, default=4)
+parser.add_argument('--run_from_camera', help='if we run the code from camera or not', dest='camera_run', action='store_true', default=False)
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
-
-sep = "/"
-if os.name == "nt":
-    sep = "\\"
-
 
 def limit_resources():
     if args['max_memory']:
@@ -88,9 +86,10 @@ def pre_check():
         core.globals.providers = ['CPUExecutionProvider']
 
 
-def start_processing():
+def start_processing(fps):
     if args['gpu']:
-        process_video(args['source_img'], args["frame_paths"])
+        
+        process_video_gpu(args['source_img'], args['target_path'],   os.path.dirname(args['target_path']), fps, int(args['gpu_threads']))
         return
     frame_paths = args["frame_paths"]
     n = len(frame_paths)//(args['cores_count'])
@@ -131,7 +130,6 @@ def preview_video(video_path):
         img_label = tk.Label(right_frame, image=photo_img)
         img_label.image = photo_img
         img_label.pack()
-
     cap.release()
 
 
@@ -196,30 +194,34 @@ def start():
         quit()
     video_name_full = target_path.split("/")[-1]
     video_name = os.path.splitext(video_name_full)[0]
-    output_dir = os.path.dirname(target_path) + "/" + video_name
-    Path(output_dir).mkdir(exist_ok=True)
+    output_dir = str(os.path.join(os.path.dirname(target_path), video_name))
+    if not args['gpu']:
+        Path(output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
     fps, exact_fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
-        this_path = output_dir + "/" + video_name + ".mp4"
+        this_path = str(os.path.join(output_dir, f"{video_name}.mp4"))
         set_fps(target_path, this_path, 30)
         target_path, exact_fps = this_path, 30
     else:
-        shutil.copy(target_path, output_dir)
+        if not args['gpu']:
+            shutil.copy(target_path, output_dir)
     status("extracting frames...")
-    extract_frames(target_path, output_dir)
-    args['frame_paths'] = tuple(sorted(
-        glob.glob(output_dir + "/*.png"),
-        key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
-    ))
+    if not args["gpu"]:
+        extract_frames(target_path, output_dir)
+        args['frame_paths'] = tuple(sorted(
+            glob.glob(output_dir + "/*.png"),
+            key=lambda x: int(os.path.split(x)[-1].replace(".png", ""))
+        ))
     status("swapping in progress...")
-    start_processing()
+    start_processing(fps)
     status("creating video...")
-    create_video(video_name, exact_fps, output_dir)
+    if not args['gpu']:
+        create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
-    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'])
-    save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
-    print("\n\nVideo saved as:", save_path, "\n\n")
+    add_audio(os.path.join(os.path.dirname(target_path)), target_path, video_name_full, args['keep_frames'], args['output_file'], gpu = args['gpu'])
+    save_path = args['output_file'] if args['output_file'] else str(os.path.join(output_dir, f"{video_name}.mp4")) 
+    print(f"\n\nVideo saved as: {save_path}\n\n")
     status("swap successful!")
 
 
