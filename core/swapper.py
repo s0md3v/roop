@@ -11,26 +11,38 @@ FACE_SWAPPER = None
 def get_face_swapper():
     global FACE_SWAPPER
     if FACE_SWAPPER is None:
-        model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../inswapper_128.onnx')
-        FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=core.globals.providers)
+        model_path = os.path.join(
+            os.path.abspath(os.path.dirname(__file__)), "../inswapper_128.onnx"
+        )
+        FACE_SWAPPER = insightface.model_zoo.get_model(
+            model_path, providers=core.globals.providers
+        )
     return FACE_SWAPPER
 
 
 def process_video(source_img, frame_paths):
     source_face = get_face(cv2.imread(source_img))
-    with tqdm(total=len(frame_paths), desc="Processing", unit="frame", dynamic_ncols=True, bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]') as progress:
+    with tqdm(
+        total=len(frame_paths),
+        desc="Processing",
+        unit="frame",
+        dynamic_ncols=True,
+        bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]",
+    ) as progress:
         for frame_path in frame_paths:
             frame = cv2.imread(frame_path)
             try:
                 face = get_face(frame)
                 if face:
-                    result = get_face_swapper().get(frame, face, source_face, paste_back=True)
+                    result = get_face_swapper().get(
+                        frame, face, source_face, paste_back=True
+                    )
                     cv2.imwrite(frame_path, result)
-                    progress.set_postfix(status='.', refresh=True)
+                    progress.set_postfix(status=".", refresh=True)
                 else:
-                    progress.set_postfix(status='S', refresh=True)
+                    progress.set_postfix(status="S", refresh=True)
             except Exception:
-                progress.set_postfix(status='E', refresh=True)
+                progress.set_postfix(status="E", refresh=True)
                 pass
             progress.update(1)
 
