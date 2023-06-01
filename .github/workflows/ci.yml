@@ -40,3 +40,12 @@ jobs:
         with:
           name: output
           path: docs/examples/latest-test.mp4
+      - name: Configure Git
+        run: |
+          git config --global user.name "Roop CI"
+          git config --global user.email "noreply@example.com"
+      - name: Commit and Push
+        run: |
+          git add docs/examples/latest-test.mp4
+          git commit -m ":white_check_mark: Test completed! Updates latest-test.mp4"
+          git push
