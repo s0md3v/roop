@@ -1,4 +1,4 @@
-numpy==1.23.5
+numpy==1.24.3
 opencv-python==4.7.0.72
 onnx==1.14.0
 insightface==0.7.3
@@ -8,8 +8,7 @@ pillow==9.5.0
 torch==2.0.1
 onnxruntime==1.15.0; sys_platform == 'darwin'
 onnxruntime-gpu==1.15.0; sys_platform != 'darwin'
-tensorflow==2.13.0rc1; sys_platform == 'darwin'
-tensorflow==2.12.0; sys_platform != 'darwin'
+tensorflow==2.13.0rc1
 opennsfw2==0.10.2
 protobuf==4.23.2
 tqdm==4.65.0
