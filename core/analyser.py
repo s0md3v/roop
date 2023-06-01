@@ -1,4 +1,3 @@
-import insightface
 from insightface.app import FaceAnalysis
 import core.globals
 
