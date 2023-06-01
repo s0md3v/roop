@@ -28,8 +28,6 @@ if 'ROCMExecutionProvider' in core.globals.providers:
     del torch
 
 pool = None
-args = {}
-
 signal.signal(signal.SIGINT, lambda signal_number, frame: quit())
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--face', help='use this face', dest='source_img')
@@ -41,12 +39,8 @@ parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_fr
 parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', type=int)
 parser.add_argument('--max-cores', help='number of cores to be use for CPU mode', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
 
-for name, value in vars(parser.parse_args()).items():
-    args[name] = value
-
-sep = "/"
-if os.name == "nt":
-    sep = "\\"
+args = dict(vars(parser.parse_args()))
+sep = "\\" if os.name == "nt" else "/"
 
 
 def limit_resources():
@@ -161,9 +155,9 @@ def save_file():
 
 def status(string):
     if 'cli_mode' in args:
-        print("Status: " + string)
+        print(f"Status: {string}")
     else:
-        status_label["text"] = "Status: " + string
+        status_label["text"] = f"Status: {string}"
         window.update()
 
 
@@ -176,7 +170,11 @@ def start():
         return
     if not args['output_file']:
         target_path = args['target_path']
-        args['output_file'] = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
+        args['output_file'] = (
+            rreplace(target_path, "/", "/swapped-", 1)
+            if "/" in target_path
+            else f"swapped-{target_path}"
+        )
     global pool
     pool = mp.Pool(args['cores_count'])
     target_path = args['target_path']
@@ -195,29 +193,35 @@ def start():
         quit()
     video_name_full = target_path.split("/")[-1]
     video_name = os.path.splitext(video_name_full)[0]
-    output_dir = os.path.dirname(target_path) + "/" + video_name
+    output_dir = f"{os.path.dirname(target_path)}/{video_name}"
     Path(output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
     fps, exact_fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
-        this_path = output_dir + "/" + video_name + ".mp4"
+        this_path = f"{output_dir}/{video_name}.mp4"
         set_fps(target_path, this_path, 30)
         target_path, exact_fps = this_path, 30
     else:
         shutil.copy(target_path, output_dir)
     status("extracting frames...")
     extract_frames(target_path, output_dir)
-    args['frame_paths'] = tuple(sorted(
-        glob.glob(output_dir + "/*.png"),
-        key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
-    ))
+    args['frame_paths'] = tuple(
+        sorted(
+            glob.glob(f"{output_dir}/*.png"),
+            key=lambda x: int(x.split(sep)[-1].replace(".png", "")),
+        )
+    )
     status("swapping in progress...")
     start_processing()
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
     add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'])
-    save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
+    save_path = (
+        args['output_file']
+        if args['output_file']
+        else f"{output_dir}/{video_name}.mp4"
+    )
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
 
