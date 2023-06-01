@@ -1,15 +1,9 @@
 import os
 import shutil
 
-sep = "/"
-if os.name == "nt":
-    sep = "\\"
-
 
 def path(string):
-    if sep == "\\":
-        return string.replace("/", "\\")
-    return string
+    return str(os.path.join(string))
 
 
 def run_command(command, mode="silent"):
@@ -36,22 +30,23 @@ def set_fps(input_path, output_path, fps):
 
 def create_video(video_name, fps, output_dir):
     output_dir = path(output_dir)
-    os.system(f'ffmpeg -framerate "{fps}" -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
+    os.system(f'ffmpeg -framerate "{fps}" -i "{output_dir}/%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}/output.mp4"')
 
 
 def extract_frames(input_path, output_dir):
     input_path, output_dir = path(input_path), path(output_dir)
-    os.system(f'ffmpeg -i "{input_path}" "{output_dir}{sep}%04d.png"')
+    os.system(f'ffmpeg -i "{input_path}" "{output_dir}/%04d.png"')
 
 
-def add_audio(output_dir, target_path, video, keep_frames, output_file):
+def add_audio(output_dir, target_path, video, keep_frames, output_file, gpu):
     video_name = os.path.splitext(video)[0]
-    save_to = output_file if output_file else output_dir + "/swapped-" + video_name + ".mp4"
+    save_to = output_file if output_file else os.path.join(output_dir, f"/swapped-{video_name}.mp4")
     save_to_ff, output_dir_ff = path(save_to), path(output_dir)
-    os.system(f'ffmpeg -i "{output_dir_ff}{sep}output.mp4" -i "{output_dir_ff}{sep}{video}" -c:v copy -map 0:v:0 -map 1:a:0 -y "{save_to_ff}"')
+    os.system(f'ffmpeg -i "{output_dir_ff}/output.mp4" -i "{output_dir_ff}/{video}" -c:v copy -map 0:v:0 -map 1:a:0 -y "{save_to_ff}"')
     if not os.path.isfile(save_to):
-        shutil.move(output_dir + "/output.mp4", save_to)
-    if not keep_frames:
+        shutil.move(os.path.join(output_dir, "output.mp4"), save_to)
+        os.remove(os.path.join(output_dir, "output.mp4"))
+    if not keep_frames and not gpu:
         shutil.rmtree(output_dir)
 
 
