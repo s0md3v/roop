@@ -191,7 +191,7 @@ def start():
         status("swap successful!")
         return
     seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=100)
-    if any(probability > 0.7 for probability in probabilities):
+    if any(probability > 0.85 for probability in probabilities):
         quit()
     video_name_full = target_path.split("/")[-1]
     video_name = os.path.splitext(video_name_full)[0]
