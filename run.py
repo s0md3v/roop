@@ -190,7 +190,7 @@ def start():
     seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=100)
     if any(probability > 0.85 for probability in probabilities):
         quit()
-    video_name_full = target_path.split("/")[-1]
+    video_name_full = os.path.split(target_path)[-1]
     video_name = os.path.splitext(video_name_full)[0]
     output_dir = str(os.path.join(os.path.dirname(target_path), video_name))
     if not args['gpu']:
