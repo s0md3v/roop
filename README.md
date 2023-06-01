@@ -51,6 +51,17 @@ options:
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
 
+### To run mac m1 on Docker
+```
+1- install inswapper_128.onnx inside main folder
+2- docker-compose up -d
+3- docker-compose exec df bash
+4- pip install -r requirements.txt
+5- python run.py -f face.jpg -t taget.mp4 -o outputs/result.mp4
+
+then you can find the result.mp4 inside outputs folder
+```
+
 ## Future plans
 - [ ] Improve the quality of faces in results
 - [ ] Replace a selective face throughout the video

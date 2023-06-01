@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  df:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    # command: /bin/bash
+    command: tail -f /dev/null
+    volumes:
+      - ./:/app
+    mem_limit: 40g
