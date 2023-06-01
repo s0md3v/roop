@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-#This code includes functions to run in real time (from camera I mean, not real time speed yet).
-#Also this code includes functions to run faster on gpu, which might break sometimes and consumes more VRAM than normal code.
+#This code includes functions to run faster on gpu, which might break sometimes and consumes more VRAM than normal code.
 import platform
 import signal
 import sys
