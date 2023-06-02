@@ -127,8 +127,19 @@ This guide will walk you through the installation and setup process for running 
    ```shell
    pip install -r requirements.txt
    ```
+   
+## Step 9: Download and Set up the AI Model
 
-## Step 9: Run the Project
+Download the AI model file by clicking [this link](https://drive.google.com/file/d/1eu60OrRtn4WhKrzM4mQv4F3rIuyUXqfl/view?usp=drive_link). Save the file in the **roop** directory.
+   - If the link is not accessible, you can use one of the alternative mirrors below:
+     - [Mirror #1](https://drive.google.com/file/d/1jbDUGrADco9A1MutWjO6d_1dwizh9w9P/view?usp=sharing)
+     - [Mirror #2](https://mega.nz/file/9l8mGDJA#FnPxHwpdhDovDo6OvbQjhHd2nDAk8_iVEgo3mpHLG6U)
+     - [Mirror #3](https://1drv.ms/u/s!AsHA3Xbnj6uAgxhb_tmQ7egHACOR?e=CPoThO)
+     - [Mirror #4](https://civitai.com/models/80324?modelVersionId=85159)
+   - Make sure to rename the downloaded file to `inswapper_128.onnx` if it doesn't have the correct name already.
+
+
+## Step 10: Run the Project
 
 1. Make sure you are in the root directory of the `roop` project.
 2. Run the following command to start the project:
