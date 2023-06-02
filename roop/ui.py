@@ -8,7 +8,6 @@ class PreviewWindow:
         self.preview_width = 600
         self.preview_height = 650
 
-
         self.master = master
         self.window = tk.Toplevel(self.master)
         # Override close button
