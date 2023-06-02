@@ -71,6 +71,7 @@ def pre_check():
     if not os.path.isfile(model_path):
         quit('File "inswapper_128.onnx" does not exist!')
     if '--gpu' in sys.argv:
+        core.globals.use_gpu = True
         NVIDIA_PROVIDERS = ['CUDAExecutionProvider', 'TensorrtExecutionProvider']
         if len(list(set(core.globals.providers) - set(NVIDIA_PROVIDERS))) == 1:
             CUDA_VERSION = torch.version.cuda
@@ -90,7 +91,7 @@ def pre_check():
 
 
 def start_processing():
-    if args['gpu']:
+    if core.globals.use_gpu:
         process_video(args['source_img'], args["frame_paths"])
         return
     frame_paths = args["frame_paths"]
@@ -207,12 +208,12 @@ def start():
     fps, exact_fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
         this_path = output_dir + "/" + video_name + ".mp4"
-        set_fps(target_path, this_path, 30)
+        set_fps(target_path, this_path, 30, core.globals.use_gpu)
         target_path, exact_fps = this_path, 30
     else:
         shutil.copy(target_path, output_dir)
     status("extracting frames...")
-    extract_frames(target_path, output_dir)
+    extract_frames(target_path, output_dir, core.globals.use_gpu)
     args['frame_paths'] = tuple(sorted(
         glob.glob(output_dir + "/*.png"),
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
@@ -220,9 +221,9 @@ def start():
     status("swapping in progress...")
     start_processing()
     status("creating video...")
-    create_video(video_name, exact_fps, output_dir)
+    create_video(video_name, exact_fps, output_dir, core.globals.use_gpu)
     status("adding audio...")
-    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'])
+    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'], core.globals.use_gpu)
     save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
