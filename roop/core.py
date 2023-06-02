@@ -208,8 +208,6 @@ def start():
     video_name_full = target_path.split("/")[-1]
     video_name = os.path.splitext(video_name_full)[0]
     output_dir = os.path.dirname(target_path) + "/" + video_name
-    if output_dir.startswith("/"):
-        output_dir = "." + output_dir
     Path(output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
     fps, exact_fps = detect_fps(target_path)
