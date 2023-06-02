@@ -22,7 +22,7 @@ from PIL import Image, ImageTk
 import core.globals
 from core.swapper import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
-from core.analyser import get_face
+from core.analyser import get_face_single
 
 if 'ROCMExecutionProvider' in core.globals.providers:
     del torch
@@ -40,6 +40,7 @@ parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps',
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
 parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', type=int)
 parser.add_argument('--max-cores', help='number of cores to be use for CPU mode', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
+parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true', default=False)
 
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
@@ -149,6 +150,10 @@ def toggle_fps_limit():
     args['keep_fps'] = int(limit_fps.get() != True)
 
 
+def toggle_all_faces():
+    core.globals.all_faces = True if all_faces.get() == 1 else False
+
+
 def toggle_keep_frames():
     args['keep_frames'] = int(keep_frames.get())
 
@@ -181,12 +186,12 @@ def start():
     global pool
     pool = mp.Pool(args['cores_count'])
     target_path = args['target_path']
-    test_face = get_face(cv2.imread(args['source_img']))
+    test_face = get_face_single(cv2.imread(args['source_img']))
     if not test_face:
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return
     if is_img(target_path):
-        if predict_image(target_path) > 0.7:
+        if predict_image(target_path) > 0.85:
             quit()
         process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
@@ -196,7 +201,7 @@ def start():
         quit()
     video_name_full = target_path.split("/")[-1]
     video_name = os.path.splitext(video_name_full)[0]
-    output_dir = os.path.dirname(target_path) + "/" + video_name
+    output_dir = os.path.dirname(target_path) + "/" + video_name if os.path.dirname(target_path) else video_name
     Path(output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
     fps, exact_fps = detect_fps(target_path)
@@ -252,15 +257,20 @@ if __name__ == "__main__":
     target_button = tk.Button(window, text="Select a target", command=select_target, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
     target_button.place(x=360,y=320,width=180,height=80)
 
+    # All faces checkbox
+    all_faces = tk.IntVar()
+    all_faces_checkbox = tk.Checkbutton(window, anchor="w", relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Process all faces in frame", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=all_faces, command=toggle_all_faces)
+    all_faces_checkbox.place(x=60,y=500,width=240,height=31)
+
     # FPS limit checkbox
     limit_fps = tk.IntVar(None, not args['keep_fps'])
-    fps_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
-    fps_checkbox.place(x=30,y=500,width=240,height=31)
+    fps_checkbox = tk.Checkbutton(window, anchor="w", relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
+    fps_checkbox.place(x=60,y=475,width=240,height=31)
 
     # Keep frames checkbox
     keep_frames = tk.IntVar(None, args['keep_frames'])
-    frames_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
-    frames_checkbox.place(x=37,y=450,width=240,height=31)
+    frames_checkbox = tk.Checkbutton(window, anchor="w", relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
+    frames_checkbox.place(x=60,y=450,width=240,height=31)
 
     # Start button
     start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
@@ -269,5 +279,5 @@ if __name__ == "__main__":
     # Status label
     status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
     status_label.place(x=10,y=640,width=580,height=30)
-    
+
     window.mainloop()
