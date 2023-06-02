@@ -96,19 +96,22 @@ def pre_check():
 
 
 def start_processing():
-    if args['gpu']:
+    frame_paths = args["frame_paths"]
+    n = len(frame_paths) // (args['cores_count'])
+    # single thread
+    if args['gpu'] or n < 2:
         process_video(args['source_img'], args["frame_paths"])
         return
-    frame_paths = args["frame_paths"]
-    n = len(frame_paths)//(args['cores_count'])
-    processes = []
-    for i in range(0, len(frame_paths), n):
-        p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
-        processes.append(p)
-    for p in processes:
-        p.get()
-    pool.close()
-    pool.join()
+    # multi thread of frames to cpu cores ratio is 2
+    if n > 2:
+        processes = []
+        for i in range(0, len(frame_paths), n):
+            p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
+            processes.append(p)
+        for p in processes:
+            p.get()
+        pool.close()
+        pool.join()
 
 
 def preview_image(image_path):
