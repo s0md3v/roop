@@ -31,7 +31,7 @@ def detect_fps(input_path):
 
 def run_ffmpeg(args):
     hwaccel_option = '-hwaccel cuda' if roop.globals.use_gpu else ''
-    log_level = '-loglevel {roop.globals.log_level}'
+    log_level = f'-loglevel {roop.globals.log_level}'
 
     os.system(f'ffmpeg {hwaccel_option} {log_level} {args}')
 
