@@ -247,11 +247,11 @@ if __name__ == "__main__":
     window.resizable(width=False, height=False)
 
     # Select a face button
-    face_button = tk.Button(window, text="Select a face", command=select_face, bg="#1f1f21", fg="#8442ff", relief="flat", activeforeground="#8442ff", bd=0, padx=10, pady=10, highlightbackground="#8442ff", highlightcolor="#8442ff", highlightthickness=2, bd=0, font=("Arial", 10))
+    face_button = tk.Button(window, text="Select a face", command=select_face, bg="#1f1f21", fg="#8442ff", relief="flat", activeforeground="#8442ff", padx=10, pady=10, highlightbackground="#8442ff", highlightcolor="#8442ff", highlightthickness=2, font=("Arial", 10))
     face_button.place(relx=0.17, rely=0.42, anchor=tk.CENTER)
 
     # Select a target button
-    target_button = tk.Button(window, text="Select a target", command=select_target, bg="#1f1f21", fg="#8442ff", relief="flat", activeforeground="#8442ff", bd=0, padx=10, pady=10, highlightbackground="#8442ff", highlightcolor="#8442ff", highlightthickness=2, bd=0, font=("Arial", 10))
+    target_button = tk.Button(window, text="Select a target", command=select_target, bg="#1f1f21", fg="#8442ff", relief="flat", activeforeground="#8442ff", padx=10, pady=10, highlightbackground="#8442ff", highlightcolor="#8442ff", highlightthickness=2, font=("Arial", 10))
     target_button.place(relx=0.83, rely=0.42, anchor=tk.CENTER)
 
     # All faces checkbox
@@ -270,7 +270,7 @@ if __name__ == "__main__":
     frames_checkbox.place(x=60, y=450, width=240, height=31)
 
     # Start button
-    start_button = tk.Button(window, text="Start", bg="#814ce6", fg="#161617", relief="flat", padx=20, pady=10, command=lambda: [save_file(), start()], bd=0, highlightbackground="#814ce6", highlightcolor="#814ce6", highlightthickness=2, bd=0, font=("Arial", 12, "bold"))
+    start_button = tk.Button(window, text="Start", bg="#814ce6", fg="#161617", relief="flat", padx=20, pady=10, command=lambda: [save_file(), start()], highlightbackground="#814ce6", highlightcolor="#814ce6", highlightthickness=2, font=("Arial", 12, "bold"))
     start_button.place(relx=0.5, rely=0.88, anchor=tk.CENTER)
 
     # Status label
