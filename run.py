@@ -91,13 +91,13 @@ def pre_check():
 
 def start_processing():
     if args['gpu']:
-        process_video(args['source_img'], args["frame_paths"])
+        process_video(args['source_img'], args["frame_paths"], preview_frame)
         return
     frame_paths = args["frame_paths"]
     n = len(frame_paths)//(args['cores_count'])
     processes = []
     for i in range(0, len(frame_paths), n):
-        p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
+        p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n], preview_frame))
         processes.append(p)
     for p in processes:
         p.get()
@@ -116,6 +116,16 @@ def preview_image(image_path):
     img_label.pack()
 
 
+def preview_frame(frame):
+    img = Image.fromarray(frame)
+    img = img.resize((180, 180), Image.ANTIALIAS)
+    photo_img = ImageTk.PhotoImage(img)
+    right_frame = tk.Frame(window)
+    right_frame.place(x=360, y=100)
+    img_label = tk.Label(right_frame, image=photo_img)
+    img_label.image = photo_img
+    img_label.pack()
+
 def preview_video(video_path):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -124,14 +134,7 @@ def preview_video(video_path):
     ret, frame = cap.read()
     if ret:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img = Image.fromarray(frame)
-        img = img.resize((180, 180), Image.ANTIALIAS)
-        photo_img = ImageTk.PhotoImage(img)
-        right_frame = tk.Frame(window)
-        right_frame.place(x=360, y=100)
-        img_label = tk.Label(right_frame, image=photo_img)
-        img_label.image = photo_img
-        img_label.pack()
+        preview_frame(frame)
 
     cap.release()
 
@@ -227,6 +230,8 @@ def start():
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
 
+def start_thread():
+    threading.Thread(target=start).start()
 
 if __name__ == "__main__":
     global status_label, window
@@ -273,7 +278,7 @@ if __name__ == "__main__":
     frames_checkbox.place(x=60,y=450,width=240,height=31)
 
     # Start button
-    start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
+    start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start_thread()])
     start_button.place(x=240,y=560,width=120,height=49)
 
     # Status label

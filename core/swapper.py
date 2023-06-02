@@ -41,7 +41,7 @@ def process_faces(source_face, frame, progress, all_faces=False):
     return frame
 
 
-def process_video(source_img, frame_paths):
+def process_video(source_img, frame_paths, process_frame):
     source_face = get_face_single(cv2.imread(source_img))
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
 
@@ -51,6 +51,8 @@ def process_video(source_img, frame_paths):
             try:
                 result = process_faces(source_face, frame, progress, core.globals.all_faces)
                 cv2.imwrite(frame_path, result)
+                if process_frame:
+                    process_frame(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
             except Exception:
                 progress.set_postfix(status='E', refresh=True)
                 pass
