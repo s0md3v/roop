@@ -36,25 +36,21 @@ def run_ffmpeg(args):
     os.system(f'ffmpeg {hwaccel_option} {log_level} {args}')
 
 def set_fps(input_path, output_path, fps):
-    basic_command = get_ffmpeg_cmd()
     input_path, output_path = path(input_path), path(output_path)
     run_ffmpeg(f'-i "{input_path}" -filter:v fps=fps={fps} "{output_path}"')
 
 
 def create_video(video_name, fps, output_dir):
-    basic_command = get_ffmpeg_cmd()
     output_dir = path(output_dir)
     run_ffmpeg(f'-framerate "{fps}" -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
 
 
 def extract_frames(input_path, output_dir):
-    basic_command = get_ffmpeg_cmd()
     input_path, output_dir = path(input_path), path(output_dir)
     run_ffmpeg(f'-i "{input_path}" "{output_dir}{sep}%04d.png"')
 
 
 def add_audio(output_dir, target_path, video, keep_frames, output_file):
-    basic_command = get_ffmpeg_cmd()
     video_name = os.path.splitext(video)[0]
     save_to = output_file if output_file else output_dir + "/swapped-" + video_name + ".mp4"
     save_to_ff, output_dir_ff = path(save_to), path(output_dir)
