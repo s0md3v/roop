@@ -7,5 +7,6 @@ assignees: ''
 
 ---
 
-**Describe your suggestion**
+## Describe your suggestion
+
 A clear and concise description of what you want to happen.

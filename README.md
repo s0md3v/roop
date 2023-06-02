@@ -1,62 +1,82 @@
-Take a video and replace the face in it with a face of your choice. You only need one image of the desired face. No dataset, no training.
+# Roop - Face Replacement Software
 
-That's it, that's the software. You can watch some demos [here](https://drive.google.com/drive/folders/1KHv8n_rd3Lcr2v7jBq1yPSTWM554Gq8e?usp=sharing).
+Roop is a face replacement software that allows you to replace faces in videos with a face of your choice using a single image. With Roop, you can create deepfake videos without the need for a dataset or training. Please note that this software is a hobby project created for learning purposes and should be used responsibly. Before using someone's face, ensure you have their consent and do not mislead others about the nature of the content. The developer of Roop is not responsible for any misuse or malicious behavior by end-users.
 
-![demo-gif](demo.gif)
+## Demo
+
+Check out some demos of Roop in action: [Demo Videos](https://drive.google.com/drive/folders/1KHv8n_rd3Lcr2v7jBq1yPSTWM554Gq8e?usp=sharing)
+
+![Demo GIF](/docs/demo.gif)
+
+Check out the latest video made by our test CI below:
+
+![Demo Video](/docs/examples/latest-test.mp4)
 
 ## Disclaimer
-Better deepfake software than this already exist, this is just a hobby project I created to learn about AI. Users must get consent from the concerned people before using their face and must not hide the fact that it is a deepfake when posting content online. I am not responsible for malicious behaviour of end-users.
 
-To prevent misuse, it has a built-in check which prevents the program from working on inappropriate media.
+Please be aware that there are more advanced deepfake software available. Roop is a personal project created to explore AI technologies. The software includes a built-in check to prevent inappropriate media from being processed.
 
-## How do I install it?
+## Installation
 
-**Issues according installation will be closed without ceremony from now on, we cannot handle the amount of requests.**
+To install Roop, there are two types of installations available: basic and GPU-powered.
 
-There are two types of installations: basic and gpu-powered.
+- **Basic Installation:** This option is more likely to work on most computers but may be slower. Follow the instructions for the basic install [here](/docs/INSTALLATION.md).
 
-- **Basic:** It is more likely to work on your computer but it will also be very slow. You can follow instructions for the basic install [here](https://github.com/s0md3v/roop/wiki/1.-Installation).
+- **GPU Installation:** If you have a powerful GPU and are comfortable troubleshooting potential software issues, you can enable GPU acceleration for faster processing. Start by following the basic installation instructions above, and then refer to the GPU-specific instructions [~~here~~](https://github.com/s0md3v/roop/wiki/2.-GPU-Acceleration). **Updated documentation coming soon!**
 
-- **GPU:** If you have a good GPU and are ready for solving any software issues you may face, you can enable GPU which is wayyy faster. To do this, first follow the basic install instructions given above and then follow GPU-specific instructions [here](https://github.com/s0md3v/roop/wiki/2.-GPU-Acceleration).
+## Usage
 
-## How do I use it?
-> Note: When you run this program for the first time, it will download some models ~300MB in size.
+> Note: When running Roop for the first time, it will download models of approximately 300MB in size.
 
-Executing `python run.py` command will launch this window:
-![gui-demo](gui-demo.png)
+1. Execute the following command to launch Roop:
 
-Choose a face (image with desired face) and the target image/video (image/video in which you want to replace the face) and click on `Start`. Open file explorer and navigate to the directory you select your output to be in. You will find a directory named `<video_title>` where you can see the frames being swapped in realtime. Once the processing is done, it will create the output file. That's it.
+   ```shell
+   python run.py
+   ```
 
-Don't touch the FPS checkbox unless you know what you are doing.
+2. The Roop graphical user interface (GUI) window will appear as shown below:
+   ![GUI Demo](/docs/gui-demo.png)
 
-Additional command line arguments are given below:
+3. Select a face image (the image with the desired face) and a target image/video (the image/video in which you want to replace the face) using the provided options.
 
+4. Click on the `Start` button to begin the face replacement process.
+
+5. Open the file explorer and navigate to the directory where you selected the output to be saved. You will find a directory named `<video_title>` where you can observe the frames being swapped in real-time. Once the processing is complete, Roop will create the output file.
+
+> Caution: Unless you are familiar with the workings of the software, avoid modifying the FPS checkbox.
+
+Additional command-line arguments for Roop are as follows:
+
+```shell
+Options:
+  -h, --help                   Show this help message and exit
+  -f SOURCE_IMG,
+     --face SOURCE_IMG         Use this face
+  -t TARGET_PATH,
+     --target TARGET_PATH      Replace this face
+  -o OUTPUT_FILE,
+     --output OUTPUT_FILE      Save output to this file
+  --gpu                        Use GPU
+  --keep-fps                   Maintain original FPS
+  --keep-frames                Keep frames directory
+  --max-memory MAX_MEMORY      Maximum amount of RAM in GB to be used
+  --max-cores CORES_COUNT      Number of cores to be used for CPU mode
 ```
-options:
-  -h, --help            show this help message and exit
-  -f SOURCE_IMG, --face SOURCE_IMG
-                        use this face
-  -t TARGET_PATH, --target TARGET_PATH
-                        replace this face
-  -o OUTPUT_FILE, --output OUTPUT_FILE
-                        save output to this file
-  --gpu                 use gpu
-  --keep-fps            maintain original fps
-  --keep-frames         keep frames directory
-  --max-memory MAX_MEMORY
-                        maximum amount of RAM in GB to be used
-  --max-cores CORES_COUNT
-                        number of cores to be use for CPU mode
-```
 
-Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
+If you prefer to use the CLI mode, you can use the `-f/--face` argument to run the program in CLI mode.
 
-## Future plans
-- [ ] Improve the quality of faces in results
-- [ ] Replace a selective face throughout the video
+## Future Plans
+
+The developer has outlined the following future plans for Roop:
+
+- [ ] Improve the quality of faces in the results
+- [ ] Enable selective face replacement throughout the video
 - [ ] Support for replacing multiple faces
 
 ## Credits
-- [ffmpeg](https://ffmpeg.org/): for making video related operations easy
-- [deepinsight](https://github.com/deepinsight): for their [insightface](https://github.com/deepinsight/insightface) project which provided a well-made library and models.
-- and all developers behind libraries used in this project.
+
+Roop acknowledges the following projects and libraries for their contributions:
+
+- [FFmpeg](https://ffmpeg.org/): For simplifying video-related operations
+- [Deepinsight](https://github.com/deepinsight): For their [InsightFace](https://github.com/deepinsight/insightface) project, providing a well-made library and models
+- All developers behind the libraries utilized in this project
