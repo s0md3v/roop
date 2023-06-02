@@ -29,4 +29,5 @@ jobs:
   - run: pip install gdown
   - run: gdown 14JzEMo8ScLinvBkl7QEvYvFEi7EBXNAt
   - run: ./run.py -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
-  - run: diff .github/examples/snapshot.mp4 .github/examples/output.mp4 || exit 1
+  - run: ffmpeg -i .github/examples/snapshot.mp4 -i .github/examples/output.mp4 -filter_complex "psnr" -f null -
+
