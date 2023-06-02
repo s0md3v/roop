@@ -238,7 +238,7 @@ def start():
 
 
 def run():
-    global status_label, window
+    global all_faces, keep_frames, limit_fps, status_label, window
 
     pre_check()
     limit_resources()
