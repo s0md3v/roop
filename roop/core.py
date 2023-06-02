@@ -217,12 +217,12 @@ def start():
     fps, exact_fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
         this_path = output_dir + "/" + video_name + ".mp4"
-        set_fps(target_path, this_path, 30, roop.globals.use_gpu)
+        set_fps(target_path, this_path, 30)
         target_path, exact_fps = this_path, 30
     else:
         shutil.copy(target_path, output_dir)
     status("extracting frames...")
-    extract_frames(target_path, output_dir, roop.globals.use_gpu)
+    extract_frames(target_path, output_dir)
     args['frame_paths'] = tuple(sorted(
         glob.glob(output_dir + "/*.png"),
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
@@ -230,9 +230,9 @@ def start():
     status("swapping in progress...")
     start_processing()
     status("creating video...")
-    create_video(video_name, exact_fps, output_dir, roop.globals.use_gpu)
+    create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
-    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'], roop.globals.use_gpu)
+    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'])
     save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
