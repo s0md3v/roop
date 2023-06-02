@@ -75,7 +75,7 @@ def pre_check():
     if not os.path.isfile(model_path):
         quit('File "inswapper_128.onnx" does not exist!')
     if '--gpu' in sys.argv:
-        core.globals.use_gpu = True
+        roop.globals.use_gpu = True
         NVIDIA_PROVIDERS = ['CUDAExecutionProvider', 'TensorrtExecutionProvider']
         if len(list(set(roop.globals.providers) - set(NVIDIA_PROVIDERS))) == 1:
             CUDA_VERSION = torch.version.cuda
@@ -100,7 +100,7 @@ def start_processing():
     frame_paths = args["frame_paths"]
     n = len(frame_paths) // (args['cores_count'])
     # single thread
-    if core.globals.use_gpu or n < 2:
+    if roop.globals.use_gpu or n < 2:
         process_video(args['source_img'], args["frame_paths"])
         return
     # multithread if total frames to cpu cores ratio is greater than 2
@@ -217,12 +217,12 @@ def start():
     fps, exact_fps = detect_fps(target_path)
     if not args['keep_fps'] and fps > 30:
         this_path = output_dir + "/" + video_name + ".mp4"
-        set_fps(target_path, this_path, 30, core.globals.use_gpu)
+        set_fps(target_path, this_path, 30, roop.globals.use_gpu)
         target_path, exact_fps = this_path, 30
     else:
         shutil.copy(target_path, output_dir)
     status("extracting frames...")
-    extract_frames(target_path, output_dir, core.globals.use_gpu)
+    extract_frames(target_path, output_dir, roop.globals.use_gpu)
     args['frame_paths'] = tuple(sorted(
         glob.glob(output_dir + "/*.png"),
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
@@ -230,9 +230,9 @@ def start():
     status("swapping in progress...")
     start_processing()
     status("creating video...")
-    create_video(video_name, exact_fps, output_dir, core.globals.use_gpu)
+    create_video(video_name, exact_fps, output_dir, roop.globals.use_gpu)
     status("adding audio...")
-    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'], core.globals.use_gpu)
+    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'], roop.globals.use_gpu)
     save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
