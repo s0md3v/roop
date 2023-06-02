@@ -126,6 +126,7 @@ def preview_frame(frame):
     img_label.image = photo_img
     img_label.pack()
 
+
 def preview_video(video_path):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -230,8 +231,10 @@ def start():
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
 
+
 def start_thread():
     threading.Thread(target=start).start()
+
 
 if __name__ == "__main__":
     global status_label, window
