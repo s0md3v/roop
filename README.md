@@ -47,6 +47,7 @@ options:
                         maximum amount of RAM in GB to be used
   --max-cores CORES_COUNT
                         number of cores to be use for CPU mode
+  --all-faces           swap all faces in frame
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
