@@ -29,31 +29,36 @@ def detect_fps(input_path):
             pass
     return 30, 30
 
+def get_ffmpeg_cmd():
+    hwaccel_option = '-hwaccel cuda' if roop.globals.use_gpu else ''
+    log_level = '-loglevel error' if roop.globals.debug else '-loglevel quiet'
+
+    return f'ffmpeg {hwaccel_option} {log_level}'
 
 def set_fps(input_path, output_path, fps):
+    basic_command = get_ffmpeg_cmd()
     input_path, output_path = path(input_path), path(output_path)
-    hwaccel_option = '-hwaccel cuda' if roop.globals.use_gpu else ''
-    os.system(f'ffmpeg {hwaccel_option} -i "{input_path}" -filter:v fps=fps={fps} "{output_path}" -loglevel error')
+    os.system(f'{basic_command} -i "{input_path}" -filter:v fps=fps={fps} "{output_path}"')
 
 
 def create_video(video_name, fps, output_dir):
+    basic_command = get_ffmpeg_cmd()
     output_dir = path(output_dir)
-    hwaccel_option = '-hwaccel cuda' if roop.globals.use_gpu else ''
-    os.system(f'ffmpeg {hwaccel_option} -framerate "{fps}" -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4" -loglevel error')
+    os.system(f'{basic_command} -framerate "{fps}" -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
 
 
 def extract_frames(input_path, output_dir):
+    basic_command = get_ffmpeg_cmd()
     input_path, output_dir = path(input_path), path(output_dir)
-    hwaccel_option = '-hwaccel cuda' if roop.globals.use_gpu else ''
-    os.system(f'ffmpeg {hwaccel_option} -i "{input_path}" "{output_dir}{sep}%04d.png" -loglevel error')
+    os.system(f'{basic_command} -i "{input_path}" "{output_dir}{sep}%04d.png"')
 
 
 def add_audio(output_dir, target_path, video, keep_frames, output_file):
+    basic_command = get_ffmpeg_cmd()
     video_name = os.path.splitext(video)[0]
     save_to = output_file if output_file else output_dir + "/swapped-" + video_name + ".mp4"
     save_to_ff, output_dir_ff = path(save_to), path(output_dir)
-    hwaccel_option = '-hwaccel cuda' if roop.globals.use_gpu else ''
-    os.system(f'ffmpeg {hwaccel_option} -i "{output_dir_ff}{sep}output.mp4" -i "{output_dir_ff}{sep}{video}" -c:v copy -map 0:v:0 -map 1:a:0 -y "{save_to_ff}" -loglevel error')
+    os.system(f'{basic_command} -i "{output_dir_ff}{sep}output.mp4" -i "{output_dir_ff}{sep}{video}" -c:v copy -map 0:v:0 -map 1:a:0 -y "{save_to_ff}"')
     if not os.path.isfile(save_to):
         shutil.move(output_dir + "/output.mp4", save_to)
     if not keep_frames:
