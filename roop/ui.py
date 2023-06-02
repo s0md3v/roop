@@ -3,7 +3,12 @@ from PIL import Image, ImageTk
 
 
 class PreviewWindow:
+
     def __init__(self, master):
+        self.preview_width = 600
+        self.preview_height = 650
+
+
         self.master = master
         self.window = tk.Toplevel(self.master)
         # Override close button
@@ -19,6 +24,10 @@ class PreviewWindow:
         self.frame.pack_propagate(0)
         self.frame.pack(fill='both', side='left', expand='True')
         
+        # Preview image
+        self.img_label = tk.Label(self.frame)
+        self.img_label.pack(side='top')
+
         # Bottom frame
         buttons_frame = tk.Frame(self.frame, background="#2d3436")
         buttons_frame.pack(fill='both', side='bottom')
@@ -60,12 +69,21 @@ class PreviewWindow:
     def update(self, frame):
         if not self.visible:
             return
-        
+
         img = Image.fromarray(frame)
-        img = img.resize((600, 650), Image.ANTIALIAS)
+        width, height = img.size
+        aspect_ratio = 1
+        if width > height:
+            aspect_ratio = self.preview_width / width
+        else:
+            aspect_ratio = self.preview_height / height
+        img = img.resize(
+            (
+                int(width * aspect_ratio), 
+                int(height * aspect_ratio)
+            ), 
+            Image.ANTIALIAS
+        )
         photo_img = ImageTk.PhotoImage(img)
-        img_frame = tk.Frame(self.frame)
-        img_frame.place(x=0, y=0)
-        img_label = tk.Label(img_frame, image=photo_img)
-        img_label.image = photo_img
-        img_label.pack(side='top')
+        self.img_label.configure(image=photo_img)
+        self.img_label.image = photo_img
