@@ -36,6 +36,7 @@ jobs:
       - run: ffmpeg -i .github/examples/snapshot.mp4 -i .github/examples/output.mp4 -filter_complex "psnr" -f null /dev/null
       - run: cp .github/examples/output.mp4 docs/examples/latest-test.mp4
       - name: Upload output artifact
+        if: github.ref == 'refs/heads/main'  # Only runs if the branch is 'main'
         uses: actions/upload-artifact@v2
         with:
           name: output
@@ -45,6 +46,7 @@ jobs:
           git config --global user.name "Roop CI"
           git config --global user.email "noreply@example.com"
       - name: Commit and Push
+        if: github.ref == 'refs/heads/main'  # Only runs if the branch is 'main'
         run: |
           git add docs/examples/latest-test.mp4
           git commit -m ":white_check_mark: Test completed! Updates latest-test.mp4"
