@@ -75,6 +75,7 @@ def pre_check():
     if not os.path.isfile(model_path):
         quit('File "inswapper_128.onnx" does not exist!')
     if '--gpu' in sys.argv:
+        roop.globals.use_gpu = True
         NVIDIA_PROVIDERS = ['CUDAExecutionProvider', 'TensorrtExecutionProvider']
         if len(list(set(roop.globals.providers) - set(NVIDIA_PROVIDERS))) == 1:
             CUDA_VERSION = torch.version.cuda
@@ -99,7 +100,7 @@ def start_processing():
     frame_paths = args["frame_paths"]
     n = len(frame_paths) // (args['cores_count'])
     # single thread
-    if args['gpu'] or n < 2:
+    if roop.globals.use_gpu or n < 2:
         process_video(args['source_img'], args["frame_paths"])
         return
     # multithread if total frames to cpu cores ratio is greater than 2
