@@ -23,25 +23,25 @@ def swap_face_in_frame(source_face, target_face, frame):
 
 
 def process_faces(source_face, frame, progress, all_faces=False):
+    progress_status = 'S'
     if all_faces:
         many_faces = get_face_many(frame)
         if many_faces:
             for face in many_faces:
                 frame = swap_face_in_frame(source_face, face, frame)
-            progress.set_postfix(status='.', refresh=True)
-        else:
-            progress.set_postfix(status='S', refresh=True)
+            progress_status='.'
     else:
         face = get_face_single(frame)
         if face:
             frame = swap_face_in_frame(source_face, face, frame)
-            progress.set_postfix(status='.', refresh=True)
-        else:
-            progress.set_postfix(status='S', refresh=True)
+            progress_status='.'
+
+    if progress:
+        progress.set_postfix(status=progress_status, refresh=True)
     return frame
 
 
-def process_video(source_img, frame_paths):
+def process_video(source_img, frame_paths, preview_callback):
     source_face = get_face_single(cv2.imread(source_img))
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
 
@@ -51,6 +51,8 @@ def process_video(source_img, frame_paths):
             try:
                 result = process_faces(source_face, frame, progress, roop.globals.all_faces)
                 cv2.imwrite(frame_path, result)
+                if preview_callback:
+                    preview_callback(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))                
             except Exception:
                 progress.set_postfix(status='E', refresh=True)
                 pass

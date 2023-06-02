@@ -21,9 +21,10 @@ import threading
 from PIL import Image, ImageTk
 
 import roop.globals
-from roop.swapper import process_video, process_img
+from roop.swapper import process_video, process_img, process_faces
 from roop.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from roop.analyser import get_face_single
+import roop.ui as ui
 
 if 'ROCMExecutionProvider' in roop.globals.providers:
     del torch
@@ -100,13 +101,13 @@ def start_processing():
     n = len(frame_paths) // (args['cores_count'])
     # single thread
     if args['gpu'] or n < 2:
-        process_video(args['source_img'], args["frame_paths"])
+        process_video(args['source_img'], args["frame_paths"], preview.update)
         return
     # multithread if total frames to cpu cores ratio is greater than 2
     if n > 2:
         processes = []
         for i in range(0, len(frame_paths), n):
-            p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
+            p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n], preview.update,))
             processes.append(p)
         for p in processes:
             p.get()
@@ -125,6 +126,20 @@ def preview_image(image_path):
     img_label.pack()
 
 
+def get_video_frame(video_path, frame_number = 1):
+    cap = cv2.VideoCapture(video_path)
+    amount_of_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, min(amount_of_frames, frame_number-1))
+    if not cap.isOpened():
+        print("Error opening video file")
+        return
+    ret, frame = cap.read()
+    if ret:
+        return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+    cap.release()
+
+
 def preview_video(video_path):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -132,7 +147,7 @@ def preview_video(video_path):
         return
     ret, frame = cap.read()
     if ret:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = get_video_frame(video_path)
         img = Image.fromarray(frame)
         img = img.resize((180, 180), Image.ANTIALIAS)
         photo_img = ImageTk.PhotoImage(img)
@@ -141,6 +156,26 @@ def preview_video(video_path):
         img_label = tk.Label(right_frame, image=photo_img)
         img_label.image = photo_img
         img_label.pack()
+
+        # Preview
+        preview.update(frame)
+        amount_of_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+        
+        def update_slider(frame_number):
+            preview.update(get_video_frame(video_path, frame_number))
+
+        preview.init_slider(amount_of_frames, update_slider)
+
+        def test_handler():
+            test_frame = process_faces(
+                get_face_single(cv2.imread(args['source_img'])), 
+                get_video_frame(video_path, preview.current_frame.get()),
+                None,
+                roop.globals.all_faces
+            )
+            preview.update(test_frame)
+            
+        preview.set_test_handler(lambda: preview_thread(test_handler))
 
     cap.release()
 
@@ -237,8 +272,22 @@ def start():
     status("swap successful!")
 
 
+def preview_thread(thread_function):
+    threading.Thread(target=thread_function).start()
+
+
+def open_preview():
+    if (preview.visible):
+        preview.hide()
+    else:
+        preview.show()
+        if args['target_path']:
+            frame = get_video_frame(args['target_path'])
+            preview.update(frame)
+
+
 def run():
-    global all_faces, keep_frames, limit_fps, status_label, window
+    global all_faces, keep_frames, limit_fps, status_label, window, preview
 
     pre_check()
     limit_resources()
@@ -252,6 +301,9 @@ def run():
     window.title("roop")
     window.configure(bg="#2d3436")
     window.resizable(width=False, height=False)
+
+    # Preview window
+    preview = ui.PreviewWindow(window)
 
     # Contact information
     support_link = tk.Label(window, text="Donate to project <3", fg="#fd79a8", bg="#2d3436", cursor="hand2", font=("Arial", 8))
@@ -282,8 +334,12 @@ def run():
     frames_checkbox.place(x=60,y=450,width=240,height=31)
 
     # Start button
-    start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
-    start_button.place(x=240,y=560,width=120,height=49)
+    start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), preview_thread(start)])
+    start_button.place(x=170,y=560,width=120,height=49)
+
+    # Preview button
+    preview_button = tk.Button(window, text="Preview", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [open_preview()])
+    preview_button.place(x=310,y=560,width=120,height=49)
 
     # Status label
     status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
