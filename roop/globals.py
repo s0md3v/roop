@@ -1,8 +1,8 @@
 import onnxruntime
 
-use_gpu = False
+gpu = None
 all_faces = False
-log_level = 'quiet'
+log_level = 'error'
 providers = onnxruntime.get_available_providers()
 
 if 'TensorrtExecutionProvider' in providers:
