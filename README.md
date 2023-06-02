@@ -61,6 +61,7 @@ Options:
   --keep-frames                Keep frames directory
   --max-memory MAX_MEMORY      Maximum amount of RAM in GB to be used
   --max-cores CORES_COUNT      Number of cores to be used for CPU mode
+  --all-faces                  Swap all faces in frame
 ```
 
 If you prefer to use the CLI mode, you can use the `-f/--face` argument to run the program in CLI mode.
