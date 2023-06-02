@@ -8,9 +8,26 @@ jobs:
   steps:
   - name: Checkout
     uses: actions/checkout@v2
-  - name: Set up Python 3.8
+  - name: Set up Python 3.9
     uses: actions/setup-python@v2
     with:
-     python-version: 3.8
+     python-version: 3.9
   - run: pip install flake8
   - run: flake8 run.py core
+ test:
+  runs-on: ubuntu-latest
+  steps:
+  - name: Checkout
+    uses: actions/checkout@v2
+  - name: Set up ffmpeg
+    uses: FedericoCarboni/setup-ffmpeg@v2
+  - name: Set up Python 3.9
+    uses: actions/setup-python@v2
+    with:
+     python-version: 3.9
+  - run: pip install -r requirements.txt
+  - run: pip install gdown
+  - run: gdown 14JzEMo8ScLinvBkl7QEvYvFEi7EBXNAt
+  - run: ./run.py -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
+  - run: ffmpeg -i .github/examples/snapshot.mp4 -i .github/examples/output.mp4 -filter_complex "psnr" -f null -
+
