@@ -12,7 +12,7 @@ def get_face_swapper():
     global FACE_SWAPPER
     if FACE_SWAPPER is None:
         model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../inswapper_128.onnx')
-        FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=core.globals.providers)
+        FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=roop.globals.providers)
     return FACE_SWAPPER
 
 
@@ -49,7 +49,7 @@ def process_video(source_img, frame_paths):
         for frame_path in frame_paths:
             frame = cv2.imread(frame_path)
             try:
-                result = process_faces(source_face, frame, progress, core.globals.all_faces)
+                result = process_faces(source_face, frame, progress, roop.globals.all_faces)
                 cv2.imwrite(frame_path, result)
             except Exception:
                 progress.set_postfix(status='E', refresh=True)

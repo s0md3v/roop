@@ -19,6 +19,7 @@ import psutil
 import cv2
 import threading
 from PIL import Image, ImageTk
+from roop.gpu_optimizer import process_video_gpu
 
 import roop.globals
 from roop.swapper import process_video, process_img
@@ -42,7 +43,7 @@ parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_fr
 parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', type=int)
 parser.add_argument('--max-cores', help='number of cores to be use for CPU mode', dest='cores_count', type=int, default=max(psutil.cpu_count() - 2, 2))
 parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true', default=False)
-
+parser.add_argument('--gpu-threads', help='number of threads for gpu to run in parallel', dest='gpu_threads', type=int, default=4)
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
 
@@ -95,23 +96,28 @@ def pre_check():
         roop.globals.all_faces = True
 
 
-def start_processing():
-    frame_paths = args["frame_paths"]
-    n = len(frame_paths) // (args['cores_count'])
-    # single thread
-    if args['gpu'] or n < 2:
-        process_video(args['source_img'], args["frame_paths"])
+def start_processing(fps):
+    if args['gpu']:
+        process_video_gpu(args['source_img'], 
+                          args['target_path'], 
+                          os.path.dirname(args['target_path']), 
+                          fps, 
+                          int(args['gpu_threads']),
+                          roop.globals.all_faces)
+        if args['keep_frames']:
+            os.makedirs(os.path.join(os.path.dirname(args['target_path']), "output_frames"), exist_ok=True)
+            extract_frames(os.path.join(os.path.dirname(args['target_path']), 'output.mp4'), os.path.join(os.path.dirname(args['target_path']), "output_frames"))
         return
-    # multi thread if video frames to cpu cores ratio is 2
-    if n > 2:
-        processes = []
-        for i in range(0, len(frame_paths), n):
-            p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
-            processes.append(p)
-        for p in processes:
-            p.get()
-        pool.close()
-        pool.join()
+    frame_paths = args["frame_paths"]
+    n = len(frame_paths)//(args['cores_count'])
+    processes = []
+    for i in range(0, len(frame_paths), n):
+        p = pool.apply_async(process_video, args=(args['source_img'], frame_paths[i:i+n],))
+        processes.append(p)
+    for p in processes:
+        p.get()
+    pool.close()
+    pool.join()
 
 
 def preview_image(image_path):
@@ -211,6 +217,8 @@ def start():
     video_name_full = target_path.split("/")[-1]
     video_name = os.path.splitext(video_name_full)[0]
     output_dir = os.path.dirname(target_path) + "/" + video_name
+    if output_dir.startswith("/"):
+        output_dir = "." + output_dir
     Path(output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
     fps, exact_fps = detect_fps(target_path)
@@ -220,25 +228,30 @@ def start():
         target_path, exact_fps = this_path, 30
     else:
         shutil.copy(target_path, output_dir)
-    status("extracting frames...")
-    extract_frames(target_path, output_dir)
-    args['frame_paths'] = tuple(sorted(
-        glob.glob(output_dir + "/*.png"),
-        key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
-    ))
+    if not args['gpu']:
+        status("extracting frames...")
+        extract_frames(target_path, output_dir)
+        args['frame_paths'] = tuple(sorted(
+            glob.glob(output_dir + "/*.png"),
+            key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
+        ))
     status("swapping in progress...")
-    start_processing()
+    start_processing(fps)
     status("creating video...")
-    create_video(video_name, exact_fps, output_dir)
+    if not args['gpu']:
+        create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
-    add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'])
+    if args['gpu']:
+        add_audio(os.path.join(os.path.dirname(target_path)), target_path, video_name_full, args['keep_frames'], args['output_file'], gpu = args['gpu'])
+    else:
+        add_audio(output_dir, target_path, video_name_full, args['keep_frames'], args['output_file'], gpu=False)
     save_path = args['output_file'] if args['output_file'] else output_dir + "/" + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
 
 
 def run():
-    global status_label, window
+    global status_label, window, all_faces, limit_fps, keep_frames
 
     pre_check()
     limit_resources()
