@@ -2,8 +2,8 @@ import os
 from tqdm import tqdm
 import cv2
 import insightface
-import core.globals
-from core.analyser import get_face_single, get_face_many
+import roop.globals
+from roop.analyser import get_face_single, get_face_many
 
 FACE_SWAPPER = None
 
