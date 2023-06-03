@@ -45,6 +45,7 @@ class PreviewWindow:
     def init_slider(self, frames_count, change_handler):
         self.frame_change = change_handler
         self.frame_slider.configure(to=frames_count)
+        self.frame_slider.set(0)
 
     def slider_changed(self, event):
         self.frame_change(self.frame_slider.get())
