@@ -31,7 +31,7 @@ jobs:
   - name: Install dependencies
     run: |
         apt-get update
-        apt-get install -y ffmpeg python3-pip
+        apt-get install -y ffmpeg python3-tk python3-pip
         pip install --upgrade pip
   - run: pip install -r requirements.txt gdown
   - run: gdown 13QpWFWJ37EB-nHrEOY64CEtQWY-tz7DZ
