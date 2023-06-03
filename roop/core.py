@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
+import os
+import sys
+# single thread doubles performance of gpu-mode - needs to be set before torch import
+if any(arg.startswith('--gpu-vendor=') for arg in sys.argv):
+    os.environ['OMP_NUM_THREADS'] = '1'
 import platform
 import signal
-import sys
 import shutil
 import glob
 import argparse
-import os
 import torch
 from pathlib import Path
 from opennsfw2 import predict_video_frames, predict_image

@@ -31,10 +31,8 @@ def detect_fps(input_path):
 
 
 def run_ffmpeg(args):
-
     log_level = f'-loglevel {roop.globals.log_level}'
-
-    os.system(f'ffmpeg {log_level} {args}')
+    run_command(f'ffmpeg {log_level} {args}')
 
 
 def set_fps(input_path, output_path, fps):
