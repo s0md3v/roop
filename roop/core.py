@@ -204,7 +204,7 @@ def start():
                 quit()
             process_img(args['source_img'], target_path, os.path.splitext(args['output_file'])[0] + f"_{i+1}.png")
             status("swap successful!")
-            return
+            continue
         seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=100)
         if any(probability > 0.85 for probability in probabilities):
             quit()
