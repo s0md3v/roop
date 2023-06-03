@@ -5,22 +5,19 @@ from PIL import Image, ImageTk
 class PreviewWindow:
 
     def __init__(self, master):
-        self.preview_width = 600
-        self.preview_height = 650
+        self.max_preview_size = 800
 
         self.master = master
         self.window = tk.Toplevel(self.master)
         # Override close button
         self.window.protocol("WM_DELETE_WINDOW", self.hide)
         self.window.withdraw()
-        self.window.geometry("600x700")
         self.window.title("Preview")
         self.window.configure(bg="red")
         self.window.resizable(width=False, height=False)
 
         self.visible = False
         self.frame = tk.Frame(self.window, background="#2d3436")
-        self.frame.pack_propagate(0)
         self.frame.pack(fill='both', side='left', expand='True')
         
         # Preview image
@@ -73,9 +70,9 @@ class PreviewWindow:
         width, height = img.size
         aspect_ratio = 1
         if width > height:
-            aspect_ratio = self.preview_width / width
+            aspect_ratio = self.max_preview_size / width
         else:
-            aspect_ratio = self.preview_height / height
+            aspect_ratio = self.max_preview_size / height
         img = img.resize(
             (
                 int(width * aspect_ratio), 
