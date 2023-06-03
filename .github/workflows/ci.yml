@@ -32,6 +32,9 @@ jobs:
     uses: actions/setup-python@v2
     with:
      python-version: 3.9
+  - uses: awalsh128/cache-apt-pkgs-action@latest
+    with:
+     packages: tensorrt
   - run: pip install -r requirements.txt
   - run: pip install gdown
   - run: gdown 13QpWFWJ37EB-nHrEOY64CEtQWY-tz7DZ
