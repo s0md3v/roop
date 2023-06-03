@@ -50,7 +50,7 @@ class PreviewWindow:
     def slider_changed(self, event):
         self.frame_change(self.frame_slider.get())
 
-    def set_test_handler(self, test_handler):
+    def set_preview_handler(self, test_handler):
         self.test_button.config(command = test_handler)
 
     # Show the window

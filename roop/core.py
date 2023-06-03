@@ -126,6 +126,23 @@ def get_video_frame(video_path, frame_number = 1):
     cap.release()
 
 
+def update_slider(video_path):
+    return lambda frame_number: preview.update(get_video_frame(video_path, frame_number))
+
+
+def process_test_preview(video_path):
+    test_frame = process_faces(
+        get_face_single(cv2.imread(args['source_img'])), 
+        get_video_frame(video_path, preview.current_frame.get()),
+        None
+    )
+    preview.update(test_frame)
+
+
+def preview_handler(video_path):
+    return lambda: preview_thread(process_test_preview(video_path))
+
+
 def preview_video(video_path):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -146,22 +163,8 @@ def preview_video(video_path):
         # Preview
         preview.update(frame)
         amount_of_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-        
-        def update_slider(frame_number):
-            preview.update(get_video_frame(video_path, frame_number))
-
-        preview.init_slider(amount_of_frames, update_slider)
-
-        def test_handler():
-            test_frame = process_faces(
-                get_face_single(cv2.imread(args['source_img'])), 
-                get_video_frame(video_path, preview.current_frame.get()),
-                None,
-                roop.globals.all_faces
-            )
-            preview.update(test_frame)
-            
-        preview.set_test_handler(lambda: preview_thread(test_handler))
+        preview.init_slider(amount_of_frames, update_slider(video_path))
+        preview.set_preview_handler(preview_handler(video_path))
 
     cap.release()
 
