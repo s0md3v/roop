@@ -8,88 +8,83 @@ import threading
 
 from roop.utils import is_img
 
-class PreviewWindow:
+max_preview_size = 800
 
-    def __init__(self, master):
-        self.max_preview_size = 800
 
-        self.master = master
-        self.window = tk.Toplevel(self.master)
-        # Override close button
-        self.window.protocol("WM_DELETE_WINDOW", self.hide)
-        self.window.withdraw()
-        self.window.title("Preview")
-        self.window.configure(bg="red")
-        self.window.resizable(width=False, height=False)
+def create_preview(parent):
+    global preview_image_frame, preview_frame_slider, test_button
 
-        self.visible = False
-        self.frame = tk.Frame(self.window, background="#2d3436")
-        self.frame.pack(fill='both', side='left', expand='True')
-        
-        # Preview image
-        self.img_label = tk.Label(self.frame)
-        self.img_label.pack(side='top')
+    preview_window = tk.Toplevel(parent)
+    # Override close button
+    preview_window.protocol("WM_DELETE_WINDOW", hide_preview)
+    preview_window.withdraw()
+    preview_window.title("Preview")
+    preview_window.configure(bg="red")
+    preview_window.resizable(width=False, height=False)
 
-        # Bottom frame
-        buttons_frame = tk.Frame(self.frame, background="#2d3436")
-        buttons_frame.pack(fill='both', side='bottom')
-
-        self.current_frame = tk.IntVar()
-        self.frame_slider = tk.Scale(
-            buttons_frame,
-            from_=0, 
-            to=0,
-            orient='horizontal',
-            variable=self.current_frame, 
-            command=self.slider_changed
-        )
-        self.frame_slider.pack(fill='both', side='left', expand='True')
-
-        self.test_button = tk.Button(buttons_frame, text="Test", bg="#f1c40f", relief="flat", width=15, borderwidth=0, highlightthickness=0)
-        self.test_button.pack( side='right', fill='y')
-
-    def init_slider(self, frames_count, change_handler):
-        self.frame_change = change_handler
-        self.frame_slider.configure(to=frames_count)
-        self.frame_slider.set(0)
-
-    def slider_changed(self, event):
-        self.frame_change(self.frame_slider.get())
-
-    def set_preview_handler(self, test_handler):
-        self.test_button.config(command = test_handler)
-
-    # Show the window
-    def show(self):
-        self.visible = True
-        self.window.deiconify()
+    frame = tk.Frame(preview_window, background="#2d3436")
+    frame.pack(fill='both', side='left', expand='True')
     
-    # Hide the window
-    def hide(self):
-        self.visible = False
-        self.window.withdraw()
+    # Preview image
+    preview_image_frame = tk.Label(frame)
+    preview_image_frame.pack(side='top')
 
-    def update(self, frame):
-        if not self.visible:
-            return
+    # Bottom frame
+    buttons_frame = tk.Frame(frame, background="#2d3436")
+    buttons_frame.pack(fill='both', side='bottom')
 
-        img = Image.fromarray(frame)
-        width, height = img.size
-        aspect_ratio = 1
-        if width > height:
-            aspect_ratio = self.max_preview_size / width
-        else:
-            aspect_ratio = self.max_preview_size / height
-        img = img.resize(
-            (
-                int(width * aspect_ratio), 
-                int(height * aspect_ratio)
-            ), 
-            Image.ANTIALIAS
-        )
-        photo_img = ImageTk.PhotoImage(img)
-        self.img_label.configure(image=photo_img)
-        self.img_label.image = photo_img
+    current_frame = tk.IntVar()
+    preview_frame_slider = tk.Scale(
+        buttons_frame,
+        from_=0, 
+        to=0,
+        orient='horizontal',
+        variable=current_frame
+    )
+    preview_frame_slider.pack(fill='both', side='left', expand='True')
+
+    test_button = tk.Button(buttons_frame, text="Test", bg="#f1c40f", relief="flat", width=15, borderwidth=0, highlightthickness=0)
+    test_button.pack(side='right', fill='y')
+    return preview_window
+
+
+def show_preview():
+    preview.deiconify()
+    preview_visible.set(True)
+
+
+def hide_preview():
+    preview.withdraw()
+    preview_visible.set(False)
+
+
+def set_preview_handler(test_handler):
+    test_button.config(command = test_handler)
+
+
+def init_slider(frames_count, change_handler):
+    preview_frame_slider.configure(to=frames_count, command=lambda value: change_handler(preview_frame_slider.get()))
+    preview_frame_slider.set(0)
+
+
+def update_preview(frame):
+    img = Image.fromarray(frame)
+    width, height = img.size
+    aspect_ratio = 1
+    if width > height:
+        aspect_ratio = max_preview_size / width
+    else:
+        aspect_ratio = max_preview_size / height
+    img = img.resize(
+        (
+            int(width * aspect_ratio), 
+            int(height * aspect_ratio)
+        ), 
+        Image.ANTIALIAS
+    )
+    photo_img = ImageTk.PhotoImage(img)
+    preview_image_frame.configure(image=photo_img)
+    preview_image_frame.image = photo_img
 
 
 def select_face(select_face_handler: Callable[[str], None]):
@@ -101,15 +96,17 @@ def select_face(select_face_handler: Callable[[str], None]):
 
 
 def update_slider_handler(get_video_frame, video_path):
-    return lambda frame_number: preview.update(get_video_frame(video_path, frame_number))
+    return lambda frame_number: update_preview(get_video_frame(video_path, frame_number))
+
 
 def test_preview(create_test_preview):
-    frame = create_test_preview(preview.current_frame.get())
-    preview.update(frame)
+    frame = create_test_preview(preview_frame_slider.get())
+    update_preview(frame)
+
 
 def update_slider(get_video_frame, create_test_preview, video_path, frames_amount):
-    preview.init_slider(frames_amount, update_slider_handler(get_video_frame, video_path))
-    preview.set_preview_handler(lambda: preview_thread(test_preview(create_test_preview)))
+    init_slider(frames_amount, update_slider_handler(get_video_frame, video_path))
+    set_preview_handler(lambda: preview_thread(lambda: test_preview(create_test_preview)))
 
 
 def analyze_target(select_target_handler: Callable[[str], Tuple[int, Any]], target_path: tk.StringVar, frames_amount: tk.IntVar):    
@@ -118,7 +115,7 @@ def analyze_target(select_target_handler: Callable[[str], Tuple[int, Any]], targ
     amount, frame = select_target_handler(path)
     frames_amount.set(amount)
     preview_target(frame)
-    preview.update(frame)
+    update_preview(frame)
 
 
 def select_target(select_target_handler: Callable[[str], Tuple[int, Any]], target_path: tk.StringVar, frames_amount: tk.IntVar):
@@ -135,6 +132,7 @@ def save_file(save_file_handler: Callable[[str], None], target_path: str):
     if save_file_handler:
         return save_file_handler(asksaveasfilename(initialfile=filename, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")]))
     return None
+
 
 def toggle_all_faces(toggle_all_faces_handler: Callable[[int], None], variable: tk.IntVar):
     if toggle_all_faces_handler:
@@ -202,13 +200,14 @@ def preview_thread(thread_function):
 
 
 def open_preview_window(get_video_frame, target_path):
-    if (preview.visible):
-        preview.hide()
+    if preview_visible.get():
+        hide_preview()
     else:
-        preview.show()
+        show_preview()
         if target_path:
             frame = get_video_frame(target_path)
-            preview.update(frame)
+            update_preview(frame)
+
 
 def preview_face(path):
     img = Image.open(path)
@@ -217,6 +216,7 @@ def preview_face(path):
     face_label.configure(image=photo_img)
     face_label.image = photo_img
 
+
 def preview_target(frame):
     img = Image.fromarray(frame)
     img = img.resize((180, 180), Image.ANTIALIAS)
@@ -224,9 +224,11 @@ def preview_target(frame):
     target_label.configure(image=photo_img)
     target_label.image = photo_img
 
+
 def update_status_label(value):
     status_label["text"] = value
     window.update()
+
 
 def init(
     initial_values: dict,
@@ -240,7 +242,7 @@ def init(
     get_video_frame: Callable[[str, int], None],
     create_test_preview: Callable[[int], Any],
 ):
-    global window, preview, face_label, target_label, status_label
+    global window, preview, preview_visible, face_label, target_label, status_label
 
     window = tk.Tk()
     window.geometry("600x700")
@@ -248,11 +250,12 @@ def init(
     window.configure(bg="#2d3436")
     window.resizable(width=False, height=False)
 
+    preview_visible = tk.BooleanVar(window, False)
     target_path = tk.StringVar()
     frames_amount = tk.IntVar()
 
     # Preview window
-    preview = PreviewWindow(window)
+    preview = create_preview(window)
 
     # Contact information
     support_link = tk.Label(window, text="Donate to project <3", fg="#fd79a8", bg="#2d3436", cursor="hand2", font=("Arial", 8))
@@ -298,7 +301,7 @@ def init(
     frames_checkbox.place(x=60,y=450,width=240,height=31)
 
     # Start button
-    start_button = create_button(window, "Start", lambda: [save_file(save_file_handler, target_path.get()), preview_thread(start)])
+    start_button = create_button(window, "Start", lambda: [save_file(save_file_handler, target_path.get()), preview_thread(lambda: start(update_preview))])
     start_button.place(x=170,y=560,width=120,height=49)
 
     # Preview button

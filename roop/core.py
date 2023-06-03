@@ -122,6 +122,7 @@ def preview_video(video_path):
     cap.release()
     return (amount_of_frames, frame)
 
+
 def status(string):
     value = "Status: " + string
     if 'cli_mode' in args:
@@ -130,7 +131,7 @@ def status(string):
         ui.update_status_label(value)
 
 
-def start():
+def start(preview_callback = None):
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
         return
@@ -173,7 +174,7 @@ def start():
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")
-    process_video(args['source_img'], args["frame_paths"], ui.preview.update if ui.preview else None)
+    process_video(args['source_img'], args["frame_paths"], preview_callback)
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
@@ -214,6 +215,7 @@ def create_test_preview(frame_number):
         get_video_frame(args['target_path'], frame_number),
         None
     )
+
 
 def run():
     global all_faces, keep_frames, limit_fps
