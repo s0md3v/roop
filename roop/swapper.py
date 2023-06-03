@@ -1,10 +1,12 @@
 import os
 from tqdm import tqdm
+import torch
+import onnxruntime
 import cv2
 import insightface
+
 import roop.globals
 from roop.analyser import get_face_single, get_face_many
-import onnxruntime
 
 FACE_SWAPPER = None
 
@@ -29,23 +31,17 @@ def swap_face_in_frame(source_face, target_face, frame):
     return frame
 
 
-def process_faces(source_face, frame, progress):
+def process_faces(source_face, target_frame, progress):
     if roop.globals.all_faces:
-        many_faces = get_face_many(frame)
+        many_faces = get_face_many(target_frame)
         if many_faces:
             for face in many_faces:
-                frame = swap_face_in_frame(source_face, face, frame)
-            progress.set_postfix(status='.', refresh=True)
-        else:
-            progress.set_postfix(status='S', refresh=True)
+                target_frame = swap_face_in_frame(source_face, face, target_frame)
     else:
-        face = get_face_single(frame)
+        face = get_face_single(target_frame)
         if face:
-            frame = swap_face_in_frame(source_face, face, frame)
-            progress.set_postfix(status='.', refresh=True)
-        else:
-            progress.set_postfix(status='S', refresh=True)
-    return frame
+            target_frame = swap_face_in_frame(source_face, face, target_frame)
+    return target_frame
 
 
 def process_video(source_img, frame_paths):
@@ -54,12 +50,13 @@ def process_video(source_img, frame_paths):
 
     with tqdm(total=len(frame_paths), desc="Processing", unit="frame", dynamic_ncols=True, bar_format=progress_bar_format) as progress:
         for frame_path in frame_paths:
+            if roop.globals.gpu_vendor == 'nvidia':
+                progress.set_postfix(cuda_utilization="{:02d}%".format(torch.cuda.utilization()), cuda_memory="{:02d}GB".format(torch.cuda.memory_usage()))
             frame = cv2.imread(frame_path)
             try:
                 result = process_faces(source_face, frame, progress)
                 cv2.imwrite(frame_path, result)
             except Exception:
-                progress.set_postfix(status='E', refresh=True)
                 pass
             progress.update(1)
 
