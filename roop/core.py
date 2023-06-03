@@ -172,7 +172,7 @@ def save_file():
     filename, ext = 'output.mp4', '.mp4'
     if is_img(args['target_path']):
         filename, ext = 'output.png', '.png'
-    file = asksaveasfilename(initialfile=filename, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+    file = asksaveasfilename(initialfile=filename, initialdir=last_output_path_dir, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")])
     if file: 
         last_output_path_dir = os.path.dirname(file)
         args['output_file'] = file
