@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
+import os
+# reducing num threads doubles performance of gpu-mode
+os.environ['OMP_NUM_THREADS'] = '1'
 import platform
 import signal
 import sys
 import shutil
 import glob
 import argparse
-import os
 import torch
 from pathlib import Path
 import tkinter as tk
@@ -16,7 +18,6 @@ from tkinter.filedialog import asksaveasfilename
 import webbrowser
 import cv2
 import threading
-from threadpoolctl import threadpool_limits
 from PIL import Image, ImageTk
 
 import roop.globals
