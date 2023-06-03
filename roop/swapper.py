@@ -29,8 +29,8 @@ def swap_face_in_frame(source_face, target_face, frame):
     return frame
 
 
-def process_faces(source_face, frame, progress, all_faces=False):
-    if all_faces:
+def process_faces(source_face, frame, progress):
+    if roop.globals.all_faces:
         many_faces = get_face_many(frame)
         if many_faces:
             for face in many_faces:
@@ -56,7 +56,7 @@ def process_video(source_img, frame_paths):
         for frame_path in frame_paths:
             frame = cv2.imread(frame_path)
             try:
-                result = process_faces(source_face, frame, progress, roop.globals.all_faces)
+                result = process_faces(source_face, frame, progress)
                 cv2.imwrite(frame_path, result)
             except Exception:
                 progress.set_postfix(status='E', refresh=True)
