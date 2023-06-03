@@ -47,7 +47,7 @@ for name, value in vars(parser.parse_args()).items():
     args[name] = value
 
 if 'all_faces' in args:
-    roop.globals.all_faces = True
+    roop.globals.all_faces = args['all_faces']
 
 if 'cpu_threads' in args and args['cpu_threads']:
     roop.globals.cpu_threads = args['cpu_threads']
@@ -62,6 +62,9 @@ sep = "/"
 if os.name == "nt":
     sep = "\\"
 
+last_source_img_dir = None
+last_target_path_dir = None
+last_output_path_dir = None
 
 def limit_resources():
     if args['max_memory']:
@@ -135,13 +138,21 @@ def preview_video(video_path):
 
 
 def select_face():
-    args['source_img'] = filedialog.askopenfilename(title="Select a face")
-    preview_image(args['source_img'])
+    global last_source_img_dir
+    file = filedialog.askopenfilename(title="Select a face", initialdir=last_source_img_dir)
+    if file:
+        args['source_img'] = file
+        last_source_img_dir = os.path.dirname(file)
+        preview_image(args['source_img'])
 
 
 def select_target():
-    args['target_path'] = filedialog.askopenfilename(title="Select a target")
-    threading.Thread(target=preview_video, args=(args['target_path'],)).start()
+    global last_target_path_dir
+    file =  filedialog.askopenfilename(title="Select a target", initialdir=last_target_path_dir)
+    if file: 
+        args['target_path'] = file
+        last_target_path_dir = os.path.dirname(file)
+        threading.Thread(target=preview_video, args=(args['target_path'],)).start()
 
 
 def toggle_fps_limit():
@@ -157,10 +168,19 @@ def toggle_keep_frames():
 
 
 def save_file():
+    global last_output_path_dir
     filename, ext = 'output.mp4', '.mp4'
     if is_img(args['target_path']):
         filename, ext = 'output.png', '.png'
-    args['output_file'] = asksaveasfilename(initialfile=filename, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+    file = asksaveasfilename(initialfile=filename, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+    if file: 
+        last_output_path_dir = os.path.dirname(file)
+        args['output_file'] = file
+        return True
+    else:
+        return False
+
+
 
 
 def status(string):
@@ -224,6 +244,12 @@ def start():
     status("swap successful!")
 
 
+def on_start_click():
+    saved = save_file()
+    if(saved == True):
+        start()
+
+
 def run():
     global all_faces, keep_frames, limit_fps, status_label, window
     pre_check()
@@ -267,7 +293,7 @@ def run():
     frames_checkbox.place(x=60,y=450,width=240,height=31)
 
     # Start button
-    start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
+    start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=on_start_click)
     start_button.place(x=240,y=560,width=120,height=49)
 
     # Status label
