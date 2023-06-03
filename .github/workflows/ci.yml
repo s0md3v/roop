@@ -16,6 +16,8 @@ jobs:
   - run: flake8 run.py core
  test:
   runs-on: ubuntu-latest
+  container:
+   image: nvidia/cuda:11.8.0-devel-ubuntu22.04
   strategy:
    matrix:
     include:
