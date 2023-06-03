@@ -16,12 +16,13 @@ jobs:
   - run: flake8 run.py core
  test:
   runs-on: ubuntu-latest
-  matrix:
+  strategy:
+   matrix:
     include:
-      - name: CPU
-        args: -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4 --gpu-vendor=nvidia
-      - name: GPU
-        args: -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
+    - name: CPU
+      args: -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4 --gpu-vendor=nvidia
+    - name: GPU
+      args: -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
   steps:
   - name: Checkout
     uses: actions/checkout@v2
