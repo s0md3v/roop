@@ -12,7 +12,7 @@ import torch
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog
-# from opennsfw2 import predict_video_frames, predict_image
+from opennsfw2 import predict_video_frames, predict_image
 from tkinter.filedialog import asksaveasfilename
 import webbrowser
 import psutil
@@ -200,14 +200,14 @@ def start():
         if not args['output_file']:
             args['output_file'] = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
         if is_img(target_path):
-            # if predict_image(target_path) > 0.85:
-            #     quit()
+            if predict_image(target_path) > 0.85:
+                quit()
             process_img(args['source_img'], target_path, os.path.splitext(args['output_file'])[0] + f"_{i+1}.png")
             status("swap successful!")
-            return
-        # seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=100)
-        # if any(probability > 0.85 for probability in probabilities):
-        #     quit()
+            continue
+        seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=100)
+        if any(probability > 0.85 for probability in probabilities):
+            quit()
         video_name_full = target_path.split("/")[-1]
         video_name = os.path.splitext(video_name_full)[0]
         output_dir = os.path.dirname(target_path) + "/" + video_name if os.path.dirname(target_path) else video_name
