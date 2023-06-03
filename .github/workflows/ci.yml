@@ -32,9 +32,9 @@ jobs:
     uses: actions/setup-python@v2
     with:
      python-version: 3.9
-  - run: sudo add-apt-repository ppa:graphics-drivers/ppa
-  - run: sudo apt-get update
-  - run: sudo apt install tensorrt libnvinfer7
+  - uses: Jimver/cuda-toolkit@v0.2.10
+    with:
+     cuda: '11.8.0'
   - run: pip install -r requirements.txt
   - run: pip install gdown
   - run: gdown 13QpWFWJ37EB-nHrEOY64CEtQWY-tz7DZ
