@@ -101,17 +101,6 @@ def pre_check():
         roop.globals.providers = ['CPUExecutionProvider']
 
 
-def start_processing():
-    # gpu mode
-    if roop.globals.gpu_vendor is not None:
-        process_video(args['source_img'], args["frame_paths"])
-        return
-    # cpu mode
-    with threadpool_limits(limits=roop.globals.cpu_threads):
-        process_video(args['source_img'], args["frame_paths"])
-        return
-
-
 def preview_image(image_path):
     img = Image.open(image_path)
     img = img.resize((180, 180), Image.ANTIALIAS)
@@ -223,7 +212,7 @@ def start():
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")
-    start_processing()
+    process_video(args['source_img'], args["frame_paths"])
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")

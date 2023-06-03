@@ -15,10 +15,9 @@ def get_face_swapper():
         session_options = onnxruntime.SessionOptions()
         if roop.globals.gpu_vendor is not None:
             session_options.intra_op_num_threads = roop.globals.gpu_threads
-            session_options.execution_mode = onnxruntime.ExecutionMode.ORT_PARALLEL
         else:
-            session_options.enable_cpu_mem_arena = True
-        session_options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_ENABLE_ALL
+            session_options.intra_op_num_threads = roop.globals.cpu_threads
+        session_options.execution_mode = onnxruntime.ExecutionMode.ORT_PARALLEL
         model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../inswapper_128.onnx')
         FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=roop.globals.providers, session_options=session_options)
     return FACE_SWAPPER
