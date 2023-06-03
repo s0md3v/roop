@@ -249,7 +249,7 @@ def start():
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")
-    process_video(args['source_img'], args["frame_paths"], preview.update)
+    process_video(args['source_img'], args["frame_paths"], preview.update if preview else None)
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
