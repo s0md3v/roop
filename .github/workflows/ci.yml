@@ -28,12 +28,10 @@ jobs:
   steps:
   - name: Checkout
     uses: actions/checkout@v2
-  - name: Set up ffmpeg
-    uses: FedericoCarboni/setup-ffmpeg@v2
-  - name: Set up Python 3.9
-    uses: actions/setup-python@v2
-    with:
-     python-version: 3.9
+    run: |
+        apt-get update
+        apt-get install -y ffmpeg python3-pip
+        pip install --upgrade pip
   - run: pip install -r requirements.txt gdown
   - run: gdown 13QpWFWJ37EB-nHrEOY64CEtQWY-tz7DZ
   - run: ${{ matrix.run }}
