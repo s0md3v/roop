@@ -263,12 +263,12 @@ def init(
     support_link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/sponsors/s0md3v"))
 
     left_frame = tk.Frame(window)
-    left_frame.place(x=60, y=100)
+    left_frame.place(x=60, y=100, width=180, height=180)
     face_label = tk.Label(left_frame)
     face_label.pack(fill='both', side='top', expand=True)
 
     right_frame = tk.Frame(window)
-    right_frame.place(x=360, y=100)
+    right_frame.place(x=360, y=100, width=180, height=180)
     target_label = tk.Label(right_frame)
     target_label.pack(fill='both', side='top', expand=True)
 
