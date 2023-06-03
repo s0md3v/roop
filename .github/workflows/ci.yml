@@ -16,6 +16,12 @@ jobs:
   - run: flake8 run.py core
  test:
   runs-on: ubuntu-latest
+  matrix:
+    include:
+      - name: CPU
+        args: -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4 --gpu-vendor=nvidia
+      - name: GPU
+        args: -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
   steps:
   - name: Checkout
     uses: actions/checkout@v2
@@ -28,6 +34,6 @@ jobs:
   - run: pip install -r requirements.txt
   - run: pip install gdown
   - run: gdown 13QpWFWJ37EB-nHrEOY64CEtQWY-tz7DZ
-  - run: ./run.py -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
+  - run: ./run.py {{ matrix.args }}
   - run: ffmpeg -i .github/examples/snapshot.mp4 -i .github/examples/output.mp4 -filter_complex "psnr" -f null -
 
