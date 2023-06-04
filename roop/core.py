@@ -10,6 +10,7 @@ import signal
 import shutil
 import glob
 import argparse
+import multiprocessing
 import torch
 from pathlib import Path
 from opennsfw2 import predict_video_frames, predict_image
@@ -57,6 +58,8 @@ sep = "/"
 if os.name == "nt":
     sep = "\\"
 
+POOL = None
+
 
 def limit_resources():
     if args['max_memory']:
@@ -99,6 +102,28 @@ def pre_check():
             quit(f"CUDNN version {CUDNN_VERSION} is not supported - please downgrade to 8.9.1")
     else:
         roop.globals.providers = ['CPUExecutionProvider']
+
+
+def start_processing(preview_callback):
+    global POOL
+
+    POOL = multiprocessing.Pool(args['cpu_threads'])
+    frame_paths = args["frame_paths"]
+    pool_amount = len(frame_paths) // (roop.globals.cpu_threads)
+    # single thread
+    if args['gpu_vendor'] is None or pool_amount < 2:
+        process_video(args['source_img'], args["frame_paths"], preview_callback)
+        return
+    # multithread if total frames to cpu cores ratio is greater than 2
+    if pool_amount > 2:
+        processes = []
+        for i in range(0, len(frame_paths), pool_amount):
+            p = POOL.apply_async(process_video, args=(args['source_img'], preview_callback, frame_paths[i:i+pool_amount],))
+            processes.append(p)
+        for p in processes:
+            p.get()
+        POOL.close()
+        POOL.join()
 
 
 def get_video_frame(video_path, frame_number = 1):
@@ -180,7 +205,7 @@ def start(preview_callback = None):
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")
-    process_video(args['source_img'], args["frame_paths"], preview_callback)
+    start_processing(preview_callback)
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
