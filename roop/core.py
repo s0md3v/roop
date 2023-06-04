@@ -198,7 +198,7 @@ def start(preview_callback = None):
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")
-    if roop.globals.gpu_vendor is None and roop.globals.cpu_cores > 0:
+    if roop.globals.gpu_vendor is None and roop.globals.cpu_cores > 1:
         global POOL
         POOL = mp.Pool(roop.globals.cpu_cores)
         process_video_multi_cores(args.source_img, args.frame_paths)

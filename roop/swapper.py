@@ -86,9 +86,10 @@ def process_img(source_img, target_path, output_file):
 
 
 def process_video(source_img, frame_paths):
+    do_multi = roop.globals.gpu_vendor is not None and roop.globals.gpu_threads > 1
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
     with tqdm(total=len(frame_paths), desc="Processing", unit="frame", dynamic_ncols=True, bar_format=progress_bar_format) as progress:
-        if roop.globals.gpu_vendor is not None and roop.globals.gpu_threads > 0:
+        if do_multi:
             multi_process_frame(source_img, frame_paths, progress)
         else:
             process_frames(source_img, frame_paths, progress)
