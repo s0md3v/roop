@@ -38,7 +38,6 @@ parser.add_argument('--gpu-threads', help='number of threads to be use for GPU m
 parser.add_argument('--gpu-vendor', help='choice your gpu vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
 
 args = {}
-
 roop.globals.gpu_threads = 1
 
 for name, value in vars(parser.parse_args()).items():
