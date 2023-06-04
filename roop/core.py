@@ -30,9 +30,9 @@ parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps',
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
 parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true', default=False)
 parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
-parser.add_argument('--max-cores', help='number of cores to use at max', dest='max_cores', type=int, default=max(psutil.cpu_count() - 2, 2))
-parser.add_argument('--gpu-threads', help='number of threads to be use for GPU mode', dest='gpu_threads', type=int, default=4)
-parser.add_argument('--gpu-vendor', help='choice your gpu vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
+parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() - 2, 2))
+parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=4)
+parser.add_argument('--gpu-vendor', help='choice your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
 
 args = {}
 
@@ -42,8 +42,8 @@ for name, value in vars(parser.parse_args()).items():
 if 'all_faces' in args:
     roop.globals.all_faces = True
 
-if args['max_cores']:
-    roop.globals.max_cores = args['max_cores']
+if args['cpu_cores']:
+    roop.globals.cpu_cores = args['cpu_cores']
 
 if args['gpu_threads']:
     roop.globals.gpu_threads = args['gpu_threads']
@@ -81,13 +81,13 @@ def pre_check():
     if roop.globals.gpu_vendor == 'apple':
         if 'CoreMLExecutionProvider' not in roop.globals.providers:
             quit("You are using --gpu=apple flag but CoreML isn't available or properly installed on your system.")
-    elif roop.globals.gpu_vendor == 'amd':
+    if roop.globals.gpu_vendor == 'amd':
         if 'ROCMExecutionProvider' not in roop.globals.providers:
             quit("You are using --gpu=amd flag but ROCM isn't available or properly installed on your system.")
-    elif roop.globals.gpu_vendor == 'nvidia':
+    if roop.globals.gpu_vendor == 'nvidia':
         CUDA_VERSION = torch.version.cuda
         CUDNN_VERSION = torch.backends.cudnn.version()
-        if not torch.cuda.is_available() or not CUDA_VERSION:
+        if not torch.cuda.is_available():
             quit("You are using --gpu=nvidia flag but CUDA isn't available or properly installed on your system.")
         if CUDA_VERSION > '11.8':
             quit(f"CUDA version {CUDA_VERSION} is not supported - please downgrade to 11.8")
@@ -97,8 +97,6 @@ def pre_check():
             quit(f"CUDNN version {CUDNN_VERSION} is not supported - please upgrade to 8.9.1")
         if CUDNN_VERSION > 8910:
             quit(f"CUDNN version {CUDNN_VERSION} is not supported - please downgrade to 8.9.1")
-    else:
-        roop.globals.providers = ['CPUExecutionProvider']
 
 
 def get_video_frame(video_path, frame_number = 1):
@@ -138,7 +136,7 @@ def status(string):
 
 
 def process_video_multi_cores(source_img, frame_paths):
-    n = len(frame_paths) // roop.globals.max_cores
+    n = len(frame_paths) // roop.globals.cpu_cores
     if n > 2:
         processes = []
         for i in range(0, len(frame_paths), n):
@@ -193,9 +191,9 @@ def start(preview_callback = None):
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")
-    if sys.platform != 'darwin' and not args['gpu_vendor']:
+    if sys.platform != 'darwin' and roop.globals.gpu_vendor is None:
         global pool
-        pool = mp.Pool(roop.globals.max_cores)
+        pool = mp.Pool(roop.globals.cpu_cores)
         process_video_multi_cores(args['source_img'], args['frame_paths'])
     else:
         process_video(args['source_img'], args["frame_paths"], preview_callback)

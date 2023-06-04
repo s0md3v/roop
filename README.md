@@ -45,12 +45,12 @@ options:
   --all-faces           swap all faces in frame
   --max-memory MAX_MEMORY
                         maximum amount of RAM in GB to be used
-  --cpu-threads CPU_THREADS
-                        number of threads to be use for CPU mode
+  --cpu-cores CPU_CORES
+                        number of CPU cores to use
   --gpu-threads GPU_THREADS
-                        number of threads to be use for GPU moded
-  --gpu-vendor {amd,intel,nvidia}
-                        choice your gpu vendor
+                        number of threads to be use for the GPU
+  --gpu-vendor {apple,amd,intel,nvidia}
+                        choice your GPU vendor
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
