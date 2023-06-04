@@ -17,13 +17,7 @@ def get_face_swapper():
     with THREAD_LOCK:
         if FACE_SWAPPER is None:
             model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../inswapper_128.onnx')
-            if roop.globals.gpu_vendor is not None:
-                FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=roop.globals.providers)
-            else:
-                session_options = onnxruntime.SessionOptions()
-                session_options.intra_op_num_threads = roop.globals.cpu_threads
-                session_options.execution_mode = onnxruntime.ExecutionMode.ORT_PARALLEL
-                FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=roop.globals.providers, session_options=session_options)
+            FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=roop.globals.providers)
     return FACE_SWAPPER
 
 
@@ -97,7 +91,6 @@ def process_img(source_img, target_path, output_file):
 def process_video(source_img, frame_paths, preview_callback):
     source_face = get_face_single(cv2.imread(source_img))
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
-
     with tqdm(total=len(frame_paths), desc="Processing", unit="frame", dynamic_ncols=True, bar_format=progress_bar_format) as progress:
         if roop.globals.gpu_vendor is not None:
             multi_process_frame(source_face,frame_paths,progress)
