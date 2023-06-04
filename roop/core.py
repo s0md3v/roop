@@ -35,7 +35,7 @@ parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_fac
 parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
 parser.add_argument('--cpu-threads', help='number of threads to be use for CPU mode', dest='cpu_threads', type=int)
 parser.add_argument('--gpu-threads', help='number of threads to be use for GPU mode', dest='gpu_threads', type=int)
-parser.add_argument('--gpu-vendor', help='choice your gpu vendor', dest='gpu_vendor', choices=['amd', 'intel', 'nvidia'])
+parser.add_argument('--gpu-vendor', help='choice your gpu vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
 
 args = {}
 for name, value in vars(parser.parse_args()).items():
@@ -78,6 +78,9 @@ def pre_check():
     model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../inswapper_128.onnx')
     if not os.path.isfile(model_path):
         quit('File "inswapper_128.onnx" does not exist!')
+    if roop.globals.gpu_vendor == 'apple':
+        if 'CoreMLExecutionProvider' not in roop.globals.providers:
+            quit("You are using --gpu=apple flag but CoreML isn't available or properly installed on your system.")
     if roop.globals.gpu_vendor == 'amd':
         if 'ROCMExecutionProvider' not in roop.globals.providers:
             quit("You are using --gpu=amd flag but ROCM isn't available or properly installed on your system.")
