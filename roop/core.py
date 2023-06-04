@@ -2,6 +2,9 @@
 
 import os
 import sys
+# single thread doubles performance of gpu-mode - needs to be set before torch import
+if any(arg.startswith('--gpu-vendor=') for arg in sys.argv):
+    os.environ['OMP_NUM_THREADS'] = '1'
 import platform
 import signal
 import shutil
@@ -19,7 +22,6 @@ from roop.swapper import process_video, process_img, process_faces, process_fram
 from roop.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from roop.analyser import get_face_single
 import roop.ui as ui
-
 
 signal.signal(signal.SIGINT, lambda signal_number, frame: quit())
 parser = argparse.ArgumentParser()
@@ -56,6 +58,8 @@ else:
 sep = "/"
 if os.name == "nt":
     sep = "\\"
+
+POOL = None
 
 
 def limit_resources():
@@ -140,12 +144,12 @@ def process_video_multi_cores(source_img, frame_paths):
     if n > 2:
         processes = []
         for i in range(0, len(frame_paths), n):
-            p = pool.apply_async(process_frames, args=(source_img, frame_paths[i:i+n],))
+            p = POOL.apply_async(process_video, args=(source_img, frame_paths[i:i + n],))
             processes.append(p)
         for p in processes:
             p.get()
-        pool.close()
-        pool.join()
+        POOL.close()
+        POOL.join()
 
 
 def start(preview_callback = None):
@@ -192,8 +196,8 @@ def start(preview_callback = None):
     ))
     status("swapping in progress...")
     if sys.platform != 'darwin' and roop.globals.gpu_vendor is None:
-        global pool
-        pool = mp.Pool(roop.globals.cpu_cores)
+        global POOL
+        POOL = mp.Pool(roop.globals.cpu_cores)
         process_video_multi_cores(args['source_img'], args['frame_paths'])
     else:
         process_video(args['source_img'], args["frame_paths"], preview_callback)
