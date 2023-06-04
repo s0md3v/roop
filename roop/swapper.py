@@ -46,7 +46,8 @@ def process_frames(source_img, frame_paths, progress=None):
         try:
             result = process_faces(source_face, frame)
             cv2.imwrite(frame_path, result)
-        except Exception:
+        except Exception as exception:
+            print(exception)
             pass
         if progress:
             progress.update(1)
