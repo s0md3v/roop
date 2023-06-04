@@ -1,5 +1,4 @@
 import insightface
-#import onnxruntime
 import roop.globals
 
 FACE_ANALYSER = None
