@@ -10,6 +10,7 @@ import signal
 import shutil
 import glob
 import argparse
+import psutil
 import torch
 from pathlib import Path
 from opennsfw2 import predict_video_frames, predict_image
@@ -33,11 +34,12 @@ parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps',
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
 parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true', default=False)
 parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
-parser.add_argument('--cpu-threads', help='number of threads to be use for CPU mode', dest='cpu_threads', type=int)
-parser.add_argument('--gpu-threads', help='number of threads to be use for GPU mode', dest='gpu_threads', type=int)
+parser.add_argument('--cpu-threads', help='number of threads to be use for CPU mode', dest='cpu_threads', type=int, default=max(psutil.cpu_count() - 2, 2))
+parser.add_argument('--gpu-threads', help='number of threads to be use for GPU mode', dest='gpu_threads', type=int, default=4)
 parser.add_argument('--gpu-vendor', help='choice your gpu vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
 
 args = {}
+
 for name, value in vars(parser.parse_args()).items():
     args[name] = value
 
@@ -218,8 +220,7 @@ def save_file_handler(path: str):
 def create_test_preview(frame_number):
     return process_faces(
         get_face_single(cv2.imread(args['source_img'])), 
-        get_video_frame(args['target_path'], frame_number),
-        None
+        get_video_frame(args['target_path'], frame_number)
     )
 
 
