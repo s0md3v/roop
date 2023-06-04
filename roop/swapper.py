@@ -94,7 +94,7 @@ def process_img(source_img, target_path, output_file):
     print("\n\nImage saved as:", output_file, "\n\n")
 
 
-def process_video(source_img, frame_paths):
+def process_video(source_img, frame_paths, preview_callback):
     source_face = get_face_single(cv2.imread(source_img))
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
 
