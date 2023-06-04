@@ -2,9 +2,6 @@
 
 import os
 import sys
-# single thread doubles performance of gpu-mode - needs to be set before torch import
-if any(arg.startswith('--gpu-vendor=') for arg in sys.argv):
-    os.environ['OMP_NUM_THREADS'] = '1'
 import platform
 import signal
 import shutil
@@ -13,17 +10,16 @@ import argparse
 import psutil
 import torch
 from pathlib import Path
+import multiprocessing as mp
 from opennsfw2 import predict_video_frames, predict_image
 import cv2
 
 import roop.globals
-from roop.swapper import process_video, process_img, process_faces
+from roop.swapper import process_video, process_img, process_faces, process_frames
 from roop.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from roop.analyser import get_face_single
 import roop.ui as ui
 
-if 'ROCMExecutionProvider' in roop.globals.providers:
-    del torch
 
 signal.signal(signal.SIGINT, lambda signal_number, frame: quit())
 parser = argparse.ArgumentParser()
@@ -34,7 +30,7 @@ parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps',
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
 parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true', default=False)
 parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
-parser.add_argument('--cpu-threads', help='number of threads to be use for CPU mode', dest='cpu_threads', type=int, default=max(psutil.cpu_count() - 2, 2))
+parser.add_argument('--max-cores', help='number of cores to use at max', dest='max_cores', type=int, default=max(psutil.cpu_count() - 2, 2))
 parser.add_argument('--gpu-threads', help='number of threads to be use for GPU mode', dest='gpu_threads', type=int, default=4)
 parser.add_argument('--gpu-vendor', help='choice your gpu vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
 
@@ -46,14 +42,16 @@ for name, value in vars(parser.parse_args()).items():
 if 'all_faces' in args:
     roop.globals.all_faces = True
 
-if 'cpu_threads' in args and args['cpu_threads']:
-    roop.globals.cpu_threads = args['cpu_threads']
+if args['max_cores']:
+    roop.globals.max_cores = args['max_cores']
 
-if 'gpu_threads' in args and args['gpu_threads']:
+if args['gpu_threads']:
     roop.globals.gpu_threads = args['gpu_threads']
 
-if 'gpu_vendor' in args and args['gpu_vendor']:
+if args['gpu_vendor']:
     roop.globals.gpu_vendor = args['gpu_vendor']
+else:
+    roop.globals.providers = ['CPUExecutionProvider']
 
 sep = "/"
 if os.name == "nt":
@@ -139,6 +137,19 @@ def status(string):
         ui.update_status_label(value)
 
 
+def process_video_multi_cores(source_img, frame_paths):
+    n = len(frame_paths) // roop.globals.max_cores
+    if n > 2:
+        processes = []
+        for i in range(0, len(frame_paths), n):
+            p = pool.apply_async(process_frames, args=(source_img, frame_paths[i:i+n],))
+            processes.append(p)
+        for p in processes:
+            p.get()
+        pool.close()
+        pool.join()
+
+
 def start(preview_callback = None):
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
@@ -165,7 +176,7 @@ def start(preview_callback = None):
         quit()
     video_name_full = target_path.split("/")[-1]
     video_name = os.path.splitext(video_name_full)[0]
-    output_dir = os.path.dirname(target_path) + "/" + video_name
+    output_dir = os.path.dirname(target_path) + "/" + video_name if os.path.dirname(target_path) else video_name
     Path(output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
     fps, exact_fps = detect_fps(target_path)
@@ -182,7 +193,12 @@ def start(preview_callback = None):
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")
-    process_video(args['source_img'], args["frame_paths"], preview_callback)
+    if sys.platform != 'darwin' and not args['gpu_vendor']:
+        global pool
+        pool = mp.Pool(roop.globals.max_cores)
+        process_video_multi_cores(args['source_img'], args['frame_paths'])
+    else:
+        process_video(args['source_img'], args["frame_paths"], preview_callback)
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")

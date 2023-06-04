@@ -39,7 +39,8 @@ def process_faces(source_face, target_frame):
     return target_frame
 
 
-def process_frames(source_face, frame_paths, progress):
+def process_frames(source_img, frame_paths, progress=None):
+    source_face = get_face_single(cv2.imread(source_img))
     for frame_path in frame_paths:
         frame = cv2.imread(frame_path)
         try:
@@ -47,10 +48,11 @@ def process_frames(source_face, frame_paths, progress):
             cv2.imwrite(frame_path, result)
         except Exception:
             pass
-        progress.update(1)
+        if progress:
+            progress.update(1)
 
 
-def multi_process_frame(source_face,frame_paths,progress):
+def multi_process_frame(source_img, frame_paths, progress):
 
     # caculate the number of frames each threads processed
     num_threads = roop.globals.gpu_threads
@@ -68,7 +70,7 @@ def multi_process_frame(source_face,frame_paths,progress):
             end_index += 1
             remaining_frames -= 1
         thread_frame_paths = frame_paths[start_index:end_index]
-        thread = threading.Thread(target=process_frames, args=(source_face, thread_frame_paths, progress))
+        thread = threading.Thread(target=process_frames, args=(source_img, thread_frame_paths, progress))
         threads.append(thread)
         thread.start()
         start_index = end_index
@@ -88,10 +90,9 @@ def process_img(source_img, target_path, output_file):
 
 
 def process_video(source_img, frame_paths, preview_callback):
-    source_face = get_face_single(cv2.imread(source_img))
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
     with tqdm(total=len(frame_paths), desc="Processing", unit="frame", dynamic_ncols=True, bar_format=progress_bar_format) as progress:
-        if roop.globals.gpu_vendor is not None:
-            multi_process_frame(source_face,frame_paths,progress)
+        if roop.globals.gpu_vendor == "nvidia": # multi-threading breaks in AMD
+            multi_process_frame(source_img, frame_paths, progress)
         else:
             process_frames(source_img, frame_paths, progress)
