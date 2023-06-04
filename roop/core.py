@@ -81,10 +81,10 @@ def pre_check():
     if roop.globals.gpu_vendor == 'apple':
         if 'CoreMLExecutionProvider' not in roop.globals.providers:
             quit("You are using --gpu=apple flag but CoreML isn't available or properly installed on your system.")
-    if roop.globals.gpu_vendor == 'amd':
+    elif roop.globals.gpu_vendor == 'amd':
         if 'ROCMExecutionProvider' not in roop.globals.providers:
             quit("You are using --gpu=amd flag but ROCM isn't available or properly installed on your system.")
-    if roop.globals.gpu_vendor == 'nvidia':
+    elif roop.globals.gpu_vendor == 'nvidia':
         CUDA_VERSION = torch.version.cuda
         CUDNN_VERSION = torch.backends.cudnn.version()
         if not torch.cuda.is_available() or not CUDA_VERSION:
@@ -97,6 +97,8 @@ def pre_check():
             quit(f"CUDNN version {CUDNN_VERSION} is not supported - please upgrade to 8.9.1")
         if CUDNN_VERSION > 8910:
             quit(f"CUDNN version {CUDNN_VERSION} is not supported - please downgrade to 8.9.1")
+    else:
+        roop.globals.providers = ['CPUExecutionProvider']
 
 
 def get_video_frame(video_path, frame_number = 1):
