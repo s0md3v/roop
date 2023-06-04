@@ -53,15 +53,11 @@ def process_frames(source_img, frame_paths, progress=None):
 
 
 def multi_process_frame(source_img, frame_paths, progress):
-
-    # caculate the number of frames each threads processed
+    threads = []
     num_threads = roop.globals.gpu_threads
     num_frames_per_thread = len(frame_paths) // num_threads
     remaining_frames = len(frame_paths) % num_threads
-    
-    # initialize thread list
-    threads = []
-            
+
     # create thread and launch
     start_index = 0
     for _ in range(num_threads):
@@ -89,10 +85,10 @@ def process_img(source_img, target_path, output_file):
     print("\n\nImage saved as:", output_file, "\n\n")
 
 
-def process_video(source_img, frame_paths, preview_callback):
+def process_video(source_img, frame_paths):
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
     with tqdm(total=len(frame_paths), desc="Processing", unit="frame", dynamic_ncols=True, bar_format=progress_bar_format) as progress:
-        if roop.globals.gpu_vendor == "nvidia": # multi-threading breaks in AMD
+        if roop.globals.gpu_vendor is not None and roop.globals.gpu_threads > 0:
             multi_process_frame(source_img, frame_paths, progress)
         else:
             process_frames(source_img, frame_paths, progress)
