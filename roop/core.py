@@ -32,7 +32,7 @@ parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps',
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
 parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true', default=False)
 parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
-parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() - 2, 2))
+parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 2))
 parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=4)
 parser.add_argument('--gpu-vendor', help='choice your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
 
@@ -46,6 +46,9 @@ if 'all_faces' in args:
 
 if args['cpu_cores']:
     roop.globals.cpu_cores = args['cpu_cores']
+
+if sys.platform == 'darwin':
+    roop.globals.cpu_cores = 1
 
 if args['gpu_threads']:
     roop.globals.gpu_threads = args['gpu_threads']
@@ -195,12 +198,12 @@ def start(preview_callback = None):
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")
-    if sys.platform != 'darwin' and roop.globals.gpu_vendor is None:
+    if roop.globals.cpu_cores > 0 and roop.globals.gpu_vendor is None:
         global POOL
         POOL = mp.Pool(roop.globals.cpu_cores)
         process_video_multi_cores(args['source_img'], args['frame_paths'])
     else:
-        process_video(args['source_img'], args["frame_paths"], preview_callback)
+        process_video(args['source_img'], args["frame_paths"])
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
