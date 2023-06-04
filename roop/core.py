@@ -98,7 +98,9 @@ def pre_check():
         if CUDNN_VERSION > 8910:
             quit(f"CUDNN version {CUDNN_VERSION} is not supported - please downgrade to 8.9.1")
     else:
-        roop.globals.providers = ['CPUExecutionProvider']
+        for provider in ['CUDAExecutionProvider', 'TensorrtExecutionProvider']:
+            if provider in roop.globals.providers:
+                roop.globals.providers = roop.globals.providers.remove(provider)
 
 
 def get_video_frame(video_path, frame_number = 1):
