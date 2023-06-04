@@ -1,7 +1,6 @@
 
 import os
 from tqdm import tqdm
-import onnxruntime
 import cv2
 import insightface
 import threading
