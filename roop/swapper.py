@@ -59,7 +59,7 @@ def process_faces(source_face, target_frame):
     return target_frame
 
 
-def process_video(source_img, frame_paths):
+def process_video(source_img, frame_paths, preview_callback):
     source_face = get_face_single(cv2.imread(source_img))
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
 
@@ -91,7 +91,6 @@ def process_video(source_img, frame_paths):
         else:
             # thread by Henry
             process_frames(source_img, frame_paths, progress)
-
 
 
 def process_img(source_img, target_path, output_file):
