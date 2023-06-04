@@ -90,8 +90,9 @@ def update_preview(frame):
 def select_face(select_face_handler: Callable[[str], None]):
     if select_face_handler:
         path = filedialog.askopenfilename(title="Select a face")
-        preview_face(path)
-        return select_face_handler(path)
+        if path and path != "":
+            preview_face(path)
+            return select_face_handler(path)
     return None
 
 
