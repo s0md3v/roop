@@ -44,7 +44,7 @@ def process_faces(source_face, target_frame, progress):
     return target_frame
 
 
-def process_video(source_img, frame_paths):
+def process_video(source_img, frame_paths, preview_callback):
     source_face = get_face_single(cv2.imread(source_img))
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
 
@@ -56,6 +56,8 @@ def process_video(source_img, frame_paths):
             try:
                 result = process_faces(source_face, frame, progress)
                 cv2.imwrite(frame_path, result)
+                if preview_callback:
+                    preview_callback(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))                
             except Exception:
                 pass
             progress.update(1)

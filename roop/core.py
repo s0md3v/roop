@@ -12,19 +12,14 @@ import glob
 import argparse
 import torch
 from pathlib import Path
-import tkinter as tk
-from tkinter import filedialog
 from opennsfw2 import predict_video_frames, predict_image
-from tkinter.filedialog import asksaveasfilename
-import webbrowser
 import cv2
-import threading
-from PIL import Image, ImageTk
 
 import roop.globals
-from roop.swapper import process_video, process_img
+from roop.swapper import process_video, process_img, process_faces
 from roop.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from roop.analyser import get_face_single
+import roop.ui as ui
 
 if 'ROCMExecutionProvider' in roop.globals.providers:
     del torch
@@ -103,75 +98,43 @@ def pre_check():
         roop.globals.providers = ['CPUExecutionProvider']
 
 
-def preview_image(image_path):
-    img = Image.open(image_path)
-    img = img.resize((180, 180), Image.ANTIALIAS)
-    photo_img = ImageTk.PhotoImage(img)
-    left_frame = tk.Frame(window)
-    left_frame.place(x=60, y=100)
-    img_label = tk.Label(left_frame, image=photo_img)
-    img_label.image = photo_img
-    img_label.pack()
+def get_video_frame(video_path, frame_number = 1):
+    cap = cv2.VideoCapture(video_path)
+    amount_of_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, min(amount_of_frames, frame_number-1))
+    if not cap.isOpened():
+        print("Error opening video file")
+        return
+    ret, frame = cap.read()
+    if ret:
+        return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+    cap.release()
 
 
 def preview_video(video_path):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print("Error opening video file")
-        return
+        return 0
+    amount_of_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     ret, frame = cap.read()
     if ret:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        img = Image.fromarray(frame)
-        img = img.resize((180, 180), Image.ANTIALIAS)
-        photo_img = ImageTk.PhotoImage(img)
-        right_frame = tk.Frame(window)
-        right_frame.place(x=360, y=100)
-        img_label = tk.Label(right_frame, image=photo_img)
-        img_label.image = photo_img
-        img_label.pack()
+        frame = get_video_frame(video_path)
 
     cap.release()
-
-
-def select_face():
-    args['source_img'] = filedialog.askopenfilename(title="Select a face")
-    preview_image(args['source_img'])
-
-
-def select_target():
-    args['target_path'] = filedialog.askopenfilename(title="Select a target")
-    threading.Thread(target=preview_video, args=(args['target_path'],)).start()
-
-
-def toggle_fps_limit():
-    args['keep_fps'] = int(limit_fps.get() != True)
-
-
-def toggle_all_faces():
-    roop.globals.all_faces = True if all_faces.get() == 1 else False
-
-
-def toggle_keep_frames():
-    args['keep_frames'] = int(keep_frames.get())
-
-
-def save_file():
-    filename, ext = 'output.mp4', '.mp4'
-    if is_img(args['target_path']):
-        filename, ext = 'output.png', '.png'
-    args['output_file'] = asksaveasfilename(initialfile=filename, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+    return (amount_of_frames, frame)
 
 
 def status(string):
+    value = "Status: " + string
     if 'cli_mode' in args:
-        print("Status: " + string)
+        print(value)
     else:
-        status_label["text"] = "Status: " + string
-        window.update()
+        ui.update_status_label(value)
 
 
-def start():
+def start(preview_callback = None):
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
         return
@@ -214,7 +177,7 @@ def start():
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")
-    process_video(args['source_img'], args["frame_paths"])
+    process_video(args['source_img'], args["frame_paths"], preview_callback)
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
@@ -224,54 +187,64 @@ def start():
     status("swap successful!")
 
 
+def select_face_handler(path: str):
+    args['source_img'] = path
+
+
+def select_target_handler(path: str):
+    args['target_path'] = path
+    return preview_video(args['target_path'])
+
+
+def toggle_all_faces_handler(value: int):
+    roop.globals.all_faces = True if value == 1 else False
+
+
+def toggle_fps_limit_handler(value: int):
+    args['keep_fps'] = int(value != 1)
+
+
+def toggle_keep_frames_handler(value: int):
+    args['keep_frames'] = value
+
+
+def save_file_handler(path: str):
+    args['output_file'] = path
+
+
+def create_test_preview(frame_number):
+    return process_faces(
+        get_face_single(cv2.imread(args['source_img'])), 
+        get_video_frame(args['target_path'], frame_number),
+        None
+    )
+
+
 def run():
-    global all_faces, keep_frames, limit_fps, status_label, window
+    global all_faces, keep_frames, limit_fps
+
     pre_check()
     limit_resources()
     if args['source_img']:
         args['cli_mode'] = True
         start()
         quit()
-    window = tk.Tk()
-    window.geometry("600x700")
-    window.title("roop")
-    window.configure(bg="#2d3436")
-    window.resizable(width=False, height=False)
 
-    # Contact information
-    support_link = tk.Label(window, text="Donate to project <3", fg="#fd79a8", bg="#2d3436", cursor="hand2", font=("Arial", 8))
-    support_link.place(x=180,y=20,width=250,height=30)
-    support_link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/sponsors/s0md3v"))
-
-    # Select a face button
-    face_button = tk.Button(window, text="Select a face", command=select_face, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
-    face_button.place(x=60,y=320,width=180,height=80)
-
-    # Select a target button
-    target_button = tk.Button(window, text="Select a target", command=select_target, bg="#2d3436", fg="#74b9ff", highlightthickness=4, relief="flat", highlightbackground="#74b9ff", activebackground="#74b9ff", borderwidth=4)
-    target_button.place(x=360,y=320,width=180,height=80)
-
-    # All faces checkbox
-    all_faces = tk.IntVar()
-    all_faces_checkbox = tk.Checkbutton(window, anchor="w", relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Process all faces in frame", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=all_faces, command=toggle_all_faces)
-    all_faces_checkbox.place(x=60,y=500,width=240,height=31)
-
-    # FPS limit checkbox
-    limit_fps = tk.IntVar(None, not args['keep_fps'])
-    fps_checkbox = tk.Checkbutton(window, anchor="w", relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
-    fps_checkbox.place(x=60,y=475,width=240,height=31)
-
-    # Keep frames checkbox
-    keep_frames = tk.IntVar(None, args['keep_frames'])
-    frames_checkbox = tk.Checkbutton(window, anchor="w", relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
-    frames_checkbox.place(x=60,y=450,width=240,height=31)
-
-    # Start button
-    start_button = tk.Button(window, text="Start", bg="#f1c40f", relief="flat", borderwidth=0, highlightthickness=0, command=lambda: [save_file(), start()])
-    start_button.place(x=240,y=560,width=120,height=49)
-
-    # Status label
-    status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
-    status_label.place(x=10,y=640,width=580,height=30)
+    window = ui.init(
+        {
+            'all_faces': roop.globals.all_faces,
+            'keep_fps': args['keep_fps'],
+            'keep_frames': args['keep_frames']
+        },
+        select_face_handler,
+        select_target_handler,
+        toggle_all_faces_handler,
+        toggle_fps_limit_handler,
+        toggle_keep_frames_handler,
+        save_file_handler,
+        start,
+        get_video_frame,
+        create_test_preview
+    )
 
     window.mainloop()
