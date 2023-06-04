@@ -223,8 +223,10 @@ def select_face_handler(path: str):
 
 
 def select_target_handler(path: str):
-    args.target_path = path
-    return preview_video(args.target_path)
+    if path and path != "":
+        args.target_path = path
+        return preview_video(args.target_path)
+    return 0
 
 
 def toggle_all_faces_handler(value: int):
