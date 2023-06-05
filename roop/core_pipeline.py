@@ -20,6 +20,7 @@ for name, value in vars(parser.parse_args()).items():
 
 def create_pipeline():
     environment = PipelineEnvironment(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    environment.log_level = 'debug'
 
     pipeline = Pipeline(
         BasicExtractor(environment),

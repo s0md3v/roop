@@ -10,7 +10,14 @@ class BasicPostprocess(Postprocess):
 
     def process(self, input: str, output: str) -> None:
         out_audio = output + '_audio.mp4'
-        run_ffmpeg(f'-i "{output}" -i "{input}" -c:v copy -map 0:v:0 -c:a copy -map 1:a:0 -y "{out_audio}"')
+        input_audio = f'{input}.aac'
+        # Extract audio
+        run_ffmpeg(f'-i "{input}" -vn -acodec copy "{input_audio}.aac"')
+        # Merge output video and audio
+        if os.path.isfile(input_audio):
+            run_ffmpeg(f'-i "{output}" -i "{input}.aac" -c copy "{out_audio}"')
+            os.remove(input_audio)
+
         if not os.path.isfile(out_audio):
             shutil.move(out_audio, output)
 
