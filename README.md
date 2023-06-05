@@ -4,8 +4,14 @@ That's it, that's the software. You can watch some demos [here](https://drive.go
 
 ![demo-gif](demo.gif)
 
+## Disclaimer
+Better deepfake software than this already exist, this is just a hobby project I created to learn about AI. Users must get consent from the concerned people before using their face and must not hide the fact that it is a deepfake when posting content online. I am not responsible for malicious behaviour of end-users.
+
+To prevent misuse, it has a built-in check which prevents the program from working on inappropriate media.
+
 ## How do I install it?
-> Note: The instructions may or may not work for you. Use google or look through issues people have created here to solve your problems.
+
+**Issues according installation will be closed without ceremony from now on, we cannot handle the amount of requests.**
 
 There are two types of installations: basic and gpu-powered.
 
@@ -34,13 +40,17 @@ options:
                         replace this face
   -o OUTPUT_FILE, --output OUTPUT_FILE
                         save output to this file
-  --gpu                 use gpu
   --keep-fps            maintain original fps
   --keep-frames         keep frames directory
+  --all-faces           swap all faces in frame
   --max-memory MAX_MEMORY
                         maximum amount of RAM in GB to be used
-  --max-cores CORES_COUNT
-                        number of cores to be use for CPU mode
+  --cpu-cores CPU_CORES
+                        number of CPU cores to use
+  --gpu-threads GPU_THREADS
+                        number of threads to be use for the GPU
+  --gpu-vendor {apple,amd,intel,nvidia}
+                        choice your GPU vendor
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
@@ -50,10 +60,8 @@ Looking for a CLI mode? Using the -f/--face argument will make the program in cl
 - [ ] Replace a selective face throughout the video
 - [ ] Support for replacing multiple faces
 
-## Disclaimer
-Better deepfake software than this already exist, this is just a hobby project I created to learn about AI. Users are expected to use this program for learning programming and using the software in good faith. Users must get consent from the concerned people before using their face and must not hide the fact that it is a deepfake when posting content online. I am not responsible for malicious behaviour of end-users.
-
 ## Credits
+- [henryruhs](https://github.com/henryruhs): for being an irreplacable contributor to the project
 - [ffmpeg](https://ffmpeg.org/): for making video related operations easy
 - [deepinsight](https://github.com/deepinsight): for their [insightface](https://github.com/deepinsight/insightface) project which provided a well-made library and models.
 - and all developers behind libraries used in this project.
