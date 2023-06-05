@@ -20,7 +20,7 @@ import cv2
 
 import roop.globals
 from roop.swapper import process_video, process_img, process_faces, process_frames
-from roop.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
+from roop.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames
 from roop.analyser import get_face_single
 import roop.ui as ui
 
@@ -166,9 +166,6 @@ def start(preview_callback = None):
     elif not args.target_path or not os.path.isfile(args.target_path):
         print("\n[WARNING] Please select a video/image to swap face in.")
         return
-    if not args.output_path:
-        target_path = args.target_path
-        args.output_path = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
     target_path = args.target_path
     test_face = get_face_single(cv2.imread(args.source_target))
     if not test_face:
@@ -183,14 +180,14 @@ def start(preview_callback = None):
     seconds, probabilities = predict_video_frames(video_path=args.target_path, frame_interval=100)
     if any(probability > 0.85 for probability in probabilities):
         quit()
-    video_name_full = target_path.split("/")[-1]
+    video_name_full = target_path.split(os.sep)[-1]
     video_name = os.path.splitext(video_name_full)[0]
-    output_dir = os.path.dirname(target_path) + "/" + video_name if os.path.dirname(target_path) else video_name
+    output_dir = os.path.dirname(target_path) + os.sep + video_name if os.path.dirname(target_path) else video_name
     Path(output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
     fps, exact_fps = detect_fps(target_path)
     if not args.keep_fps and fps > 30:
-        this_path = output_dir + "/" + video_name + ".mp4"
+        this_path = output_dir + os.sep + video_name + ".mp4"
         set_fps(target_path, this_path, 30)
         target_path, exact_fps = this_path, 30
     else:
@@ -215,7 +212,7 @@ def start(preview_callback = None):
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
     add_audio(output_dir, target_path, video_name_full, args.keep_frames, args.output_path)
-    save_path = args.output_path if args.output_path else output_dir + "/" + video_name + ".mp4"
+    save_path = args.output_path if args.output_path else output_dir + os.sep + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
 
