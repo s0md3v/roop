@@ -140,9 +140,8 @@ def preview_video(video_path):
 
 def status(string):
     value = "Status: " + string
-    if roop.globals.headless:
-        print(value)
-    else:
+    print(value)
+    if not roop.globals.headless:
         ui.update_status_label(value)
 
 
