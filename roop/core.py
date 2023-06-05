@@ -209,6 +209,8 @@ def start(preview_callback = None):
         process_video_multi_cores(args.source_img, args.frame_paths)
     else:
         process_video(args.source_img, args.frame_paths)
+    if args.gpu_vendor == 'nvidia':
+        torch.cuda.empty_cache() # prevent CUDA OOM when using ffmpeg cuda accel
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")

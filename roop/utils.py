@@ -31,8 +31,7 @@ def detect_fps(input_path):
 
 
 def run_ffmpeg(args):
-    log_level = f'-loglevel {roop.globals.log_level}'
-    run_command(f'ffmpeg {log_level} {args}')
+    run_command(f'ffmpeg -hide_banner -hwaccel auto -loglevel {roop.globals.log_level} {args}')
 
 
 def set_fps(input_path, output_path, fps):
@@ -41,15 +40,13 @@ def set_fps(input_path, output_path, fps):
 
 
 def create_video(video_name, fps, output_dir):
-    hwaccel_option = '-hwaccel cuda' if roop.globals.gpu_vendor == 'nvidia' else ''
     output_dir = path(output_dir)
-    run_ffmpeg(f'{hwaccel_option} -framerate "{fps}" -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
+    run_ffmpeg(f'-framerate "{fps}" -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
 
 
 def extract_frames(input_path, output_dir):
-    hwaccel_option = '-hwaccel cuda' if roop.globals.gpu_vendor == 'nvidia' else ''
     input_path, output_dir = path(input_path), path(output_dir)
-    run_ffmpeg(f' {hwaccel_option} -i "{input_path}" "{output_dir}{sep}%04d.png"')
+    run_ffmpeg(f'-i "{input_path}" "{output_dir}{sep}%04d.png"')
 
 
 def add_audio(output_dir, target_path, video, keep_frames, output_file):
