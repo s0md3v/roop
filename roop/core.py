@@ -24,46 +24,45 @@ from roop.utils import is_img, detect_fps, set_fps, create_video, add_audio, ext
 from roop.analyser import get_face_single
 import roop.ui as ui
 
-signal.signal(signal.SIGINT, lambda signal_number, frame: quit())
-parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--face', help='use this face', dest='source_img')
-parser.add_argument('-t', '--target', help='replace this face', dest='target_path')
-parser.add_argument('-o', '--output', help='save output to this file', dest='output_file')
-parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
-parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
-parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true', default=False)
-parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
-parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 1))
-parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
-parser.add_argument('--gpu-vendor', help='choice your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
 
-args = parser.parse_known_args()[0]
+def handle_parse():
+    global args
+    signal.signal(signal.SIGINT, lambda signal_number, frame: quit())
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--face', help='use this face', dest='source_target')
+    parser.add_argument('-t', '--target', help='replace this face', dest='target_path')
+    parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
+    parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
+    parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
+    parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true', default=False)
+    parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
+    parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 1))
+    parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
+    parser.add_argument('--gpu-vendor', help='choice your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
 
-if 'all_faces' in args:
-    roop.globals.all_faces = True
+    args = parser.parse_known_args()[0]
 
-if args.cpu_cores:
-    roop.globals.cpu_cores = int(args.cpu_cores)
+    roop.globals.headless = args.source_target or args.target_path or args.output_path
+    roop.globals.all_faces = args.all_faces
 
-# cpu thread fix for mac
-if sys.platform == 'darwin':
-    roop.globals.cpu_cores = 1
+    if args.cpu_cores:
+        roop.globals.cpu_cores = int(args.cpu_cores)
 
-if args.gpu_threads:
-    roop.globals.gpu_threads = int(args.gpu_threads)
+    # cpu thread fix for mac
+    if sys.platform == 'darwin':
+        roop.globals.cpu_cores = 1
 
-# gpu thread fix for amd
-if args.gpu_vendor == 'amd':
-    roop.globals.gpu_threads = 1
+    if args.gpu_threads:
+        roop.globals.gpu_threads = int(args.gpu_threads)
 
-if args.gpu_vendor:
-    roop.globals.gpu_vendor = args.gpu_vendor
-else:
-    roop.globals.providers = ['CPUExecutionProvider']
+    # gpu thread fix for amd
+    if args.gpu_vendor == 'amd':
+        roop.globals.gpu_threads = 1
 
-sep = "/"
-if os.name == "nt":
-    sep = "\\"
+    if args.gpu_vendor:
+        roop.globals.gpu_vendor = args.gpu_vendor
+    else:
+        roop.globals.providers = ['CPUExecutionProvider']
 
 
 def limit_resources():
@@ -141,18 +140,18 @@ def preview_video(video_path):
 
 def status(string):
     value = "Status: " + string
-    if 'cli_mode' in args:
+    if roop.globals.headless:
         print(value)
     else:
         ui.update_status_label(value)
 
 
-def process_video_multi_cores(source_img, frame_paths):
+def process_video_multi_cores(source_target, frame_paths):
     n = len(frame_paths) // roop.globals.cpu_cores
     if n > 2:
         processes = []
         for i in range(0, len(frame_paths), n):
-            p = POOL.apply_async(process_video, args=(source_img, frame_paths[i:i + n],))
+            p = POOL.apply_async(process_video, args=(source_target, frame_paths[i:i + n],))
             processes.append(p)
         for p in processes:
             p.get()
@@ -161,24 +160,24 @@ def process_video_multi_cores(source_img, frame_paths):
 
 
 def start(preview_callback = None):
-    if not args.source_img or not os.path.isfile(args.source_img):
+    if not args.source_target or not os.path.isfile(args.source_target):
         print("\n[WARNING] Please select an image containing a face.")
         return
     elif not args.target_path or not os.path.isfile(args.target_path):
         print("\n[WARNING] Please select a video/image to swap face in.")
         return
-    if not args.output_file:
+    if not args.output_path:
         target_path = args.target_path
-        args.output_file = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
+        args.output_path = rreplace(target_path, "/", "/swapped-", 1) if "/" in target_path else "swapped-" + target_path
     target_path = args.target_path
-    test_face = get_face_single(cv2.imread(args.source_img))
+    test_face = get_face_single(cv2.imread(args.source_target))
     if not test_face:
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return
     if is_img(target_path):
         if predict_image(target_path) > 0.85:
             quit()
-        process_img(args.source_img, target_path, args.output_file)
+        process_img(args.source_target, target_path, args.output_path)
         status("swap successful!")
         return
     seconds, probabilities = predict_video_frames(video_path=args.target_path, frame_interval=100)
@@ -200,29 +199,29 @@ def start(preview_callback = None):
     extract_frames(target_path, output_dir)
     args.frame_paths = tuple(sorted(
         glob.glob(output_dir + "/*.png"),
-        key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
+        key=lambda x: int(x.split(os.sep)[-1].replace(".png", ""))
     ))
     status("swapping in progress...")
     if roop.globals.gpu_vendor is None and roop.globals.cpu_cores > 1:
         global POOL
         POOL = mp.Pool(roop.globals.cpu_cores)
-        process_video_multi_cores(args.source_img, args.frame_paths)
+        process_video_multi_cores(args.source_target, args.frame_paths)
     else:
-        process_video(args.source_img, args.frame_paths)
+        process_video(args.source_target, args.frame_paths)
     # prevent out of memory while using ffmpeg with cuda
     if args.gpu_vendor == 'nvidia':
         torch.cuda.empty_cache()
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
-    add_audio(output_dir, target_path, video_name_full, args.keep_frames, args.output_file)
-    save_path = args.output_file if args.output_file else output_dir + "/" + video_name + ".mp4"
+    add_audio(output_dir, target_path, video_name_full, args.keep_frames, args.output_path)
+    save_path = args.output_path if args.output_path else output_dir + "/" + video_name + ".mp4"
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
 
 
 def select_face_handler(path: str):
-    args.source_img = path
+    args.source_target = path
 
 
 def select_target_handler(path: str):
@@ -243,26 +242,24 @@ def toggle_keep_frames_handler(value: int):
 
 
 def save_file_handler(path: str):
-    args.output_file = path
+    args.output_path = path
 
 
 def create_test_preview(frame_number):
     return process_faces(
-        get_face_single(cv2.imread(args.source_img)),
+        get_face_single(cv2.imread(args.source_target)),
         get_video_frame(args.target_path, frame_number)
     )
 
 
 def run():
     global all_faces, keep_frames, limit_fps
-
+    handle_parse()
     pre_check()
     limit_resources()
-    if args.source_img:
-        args.cli_mode = True
+    if roop.globals.headless:
         start()
         quit()
-
     window = ui.init(
         {
             'all_faces': roop.globals.all_faces,
@@ -279,5 +276,4 @@ def run():
         get_video_frame,
         create_test_preview
     )
-
     window.mainloop()
