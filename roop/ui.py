@@ -1,6 +1,6 @@
 import tkinter as tk
 from typing import Any, Callable, Tuple
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 import webbrowser
 from tkinter import filedialog
 from tkinter.filedialog import asksaveasfilename
@@ -69,19 +69,7 @@ def init_slider(frames_count, change_handler):
 
 def update_preview(frame):
     img = Image.fromarray(frame)
-    width, height = img.size
-    aspect_ratio = 1
-    if width > height:
-        aspect_ratio = max_preview_size / width
-    else:
-        aspect_ratio = max_preview_size / height
-    img = img.resize(
-        (
-            int(width * aspect_ratio), 
-            int(height * aspect_ratio)
-        ), 
-        Image.ANTIALIAS
-    )
+    img = ImageOps.contain(img, (max_preview_size, max_preview_size), Image.LANCZOS)
     photo_img = ImageTk.PhotoImage(img)
     preview_image_frame.configure(image=photo_img)
     preview_image_frame.image = photo_img
@@ -211,7 +199,7 @@ def open_preview_window(get_video_frame, target_path):
 
 def preview_face(path):
     img = Image.open(path)
-    img = img.resize((180, 180), Image.ANTIALIAS)
+    img = ImageOps.contain(img, (180, 180), Image.LANCZOS)
     photo_img = ImageTk.PhotoImage(img)
     face_label.configure(image=photo_img)
     face_label.image = photo_img
@@ -219,7 +207,7 @@ def preview_face(path):
 
 def preview_target(frame):
     img = Image.fromarray(frame)
-    img = img.resize((180, 180), Image.ANTIALIAS)
+    img = ImageOps.contain(img, (180, 180), Image.LANCZOS)
     photo_img = ImageTk.PhotoImage(img)
     target_label.configure(image=photo_img)
     target_label.image = photo_img
