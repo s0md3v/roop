@@ -31,7 +31,7 @@ class Facecheck:
         fake_face = cv2.imread(fake_face_path)
         fake_face_boxes, fake_face_keypoints = self.face_detector.autodetect(fake_face)
         if fake_face_boxes.shape[0] == 0:
-            print("Face not found in source_image") 
+            print("Face not found in fake_face_image") 
         fake_face_keypoint = fake_face_keypoints[0]
         fake_face_feature = self.feature_comparator.get(fake_face, fake_face_keypoint)
         for frame_path in framepaths:
@@ -41,7 +41,7 @@ class Facecheck:
                 keypoint = keypoints[0]
                 face_feature = self.feature_comparator.get(frame, keypoint)
                 similarity_level = self.feature_comparator.compute_sim(fake_face_feature, face_feature)
-                if similarity_level>=0.25:
+                if similarity_level>=0.2:
                     shutil.move(frame_path, processing_paths)
                 else:
                     pass
