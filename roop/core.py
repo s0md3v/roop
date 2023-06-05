@@ -3,7 +3,7 @@
 import os
 import sys
 # single thread doubles performance of gpu-mode - needs to be set before torch import
-if any(arg.startswith('--gpu-vendor=') for arg in sys.argv):
+if any(arg.startswith('--gpu-vendor') for arg in sys.argv):
     os.environ['OMP_NUM_THREADS'] = '1'
 import platform
 import signal
@@ -228,6 +228,9 @@ def start(preview_callback = None):
     for swappered in args.subdir_paths:
         shutil.move(swappered, output_dir, copy_function=shutil.copy2)
 
+    # prevent out of memory while using ffmpeg with cuda
+    if args.gpu_vendor == 'nvidia':
+        torch.cuda.empty_cache()
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")

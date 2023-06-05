@@ -1,3 +1,35 @@
+## WATCH OUT
+
+This branch is dedicated to testing a method for replacing specific faces in videos. It provides a functionality to swap faces in a video with a target face. Please note that this project is still a work in progress, and your feedback is highly appreciated.
+
+**have not run with the CPU mode by myself yet. You can have a try**
+
+## Usage
+
+To use the face swapping feature, follow the instructions below:
+
+1. Make sure you have a basic understanding of the project and its functionality.
+2. Clone or download this branch to your local machine.
+3. Install the required dependencies mentioned in the project documentation.
+4. Navigate to the project directory.
+
+## Face Swapping
+To replace a specific face in a video, use the `--fake-face <image_path> ` option. This option allows you to specify the image file that contains the face to be swapped.
+
+Example command:
+```
+python run.py --specific-face <image_path>
+```
+Replace `<image_path>` with the path to the image file containing the target face.
+
+## Feed Back
+As this project is still under development, your feedback and suggestions are valuable to help improve its functionality and usability. If you encounter any issues, have ideas for improvement, or need assistance, please feel free to open an issue or contact the project maintainers.
+
+## Disclaimer
+Please note that this branch is still in the testing phase, and it is recommended to have a basic understanding of the project and its concepts before using it. Use it at your own risk.
+
+
+---
 Take a video and replace the face in it with a face of your choice. You only need one image of the desired face. No dataset, no training.
 
 That's it, that's the software. You can watch some demos [here](https://drive.google.com/drive/folders/1KHv8n_rd3Lcr2v7jBq1yPSTWM554Gq8e?usp=sharing).
@@ -61,6 +93,7 @@ Looking for a CLI mode? Using the -f/--face argument will make the program in cl
 - [ ] Support for replacing multiple faces
 
 ## Credits
+- [henryruhs](https://github.com/henryruhs): for being an irreplacable contributor to the project
 - [ffmpeg](https://ffmpeg.org/): for making video related operations easy
 - [deepinsight](https://github.com/deepinsight): for their [insightface](https://github.com/deepinsight/insightface) project which provided a well-made library and models.
 - and all developers behind libraries used in this project.
