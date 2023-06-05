@@ -3,7 +3,7 @@
 import os
 import sys
 # single thread doubles performance of gpu-mode - needs to be set before torch import
-if any(arg.startswith('--gpu-vendor=') for arg in sys.argv):
+if any(arg.startswith('--gpu-vendor') for arg in sys.argv):
     os.environ['OMP_NUM_THREADS'] = '1'
 import platform
 import signal
