@@ -15,14 +15,15 @@ import torch
 import tensorflow
 from pathlib import Path
 import multiprocessing as mp
-from opennsfw2 import predict_video_frames, predict_image
+# from opennsfw2 import predict_video_frames, predict_image
 import cv2
 
 import roop.globals
-from roop.swapper import process_video, process_img, process_faces, process_frames
+from roop.swapper import process_video, process_img, process_faces, Facecheck
 from roop.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from roop.analyser import get_face_single
 import roop.ui as ui
+
 
 signal.signal(signal.SIGINT, lambda signal_number, frame: quit())
 parser = argparse.ArgumentParser()
@@ -36,6 +37,7 @@ parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used
 parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 1))
 parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
 parser.add_argument('--gpu-vendor', help='choice your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
+parser.add_argument('--fake-face', dest='fake_face')
 
 args = parser.parse_known_args()[0]
 
@@ -176,22 +178,25 @@ def start(preview_callback = None):
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return
     if is_img(target_path):
-        if predict_image(target_path) > 0.85:
-            quit()
+        #if predict_image(target_path) > 0.85:
+        #    quit()
         process_img(args.source_img, target_path, args.output_file)
         status("swap successful!")
         return
-    seconds, probabilities = predict_video_frames(video_path=args.target_path, frame_interval=100)
-    if any(probability > 0.85 for probability in probabilities):
-        quit()
+    #seconds, probabilities = predict_video_frames(video_path=args.target_path, frame_interval=100)
+    #if any(probability > 0.85 for probability in probabilities):
+    #    quit()
+    face_checker = Facecheck()
     video_name_full = target_path.split("/")[-1]
     video_name = os.path.splitext(video_name_full)[0]
-    output_dir = os.path.dirname(target_path) + "/" + video_name if os.path.dirname(target_path) else video_name
+    output_dir = os.path.join(os.path.dirname(target_path), video_name) if os.path.dirname(target_path) else video_name
+    subdir = os.path.join(output_dir, 'subdir')
     Path(output_dir).mkdir(exist_ok=True)
+    Path(subdir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
     fps, exact_fps = detect_fps(target_path)
     if not args.keep_fps and fps > 30:
-        this_path = output_dir + "/" + video_name + ".mp4"
+        this_path = os.path.join(output_dir, video_name + ".mp4")
         set_fps(target_path, this_path, 30)
         target_path, exact_fps = this_path, 30
     else:
@@ -202,18 +207,33 @@ def start(preview_callback = None):
         glob.glob(output_dir + "/*.png"),
         key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
     ))
+    status("preparing the faces")
+    # checking frame_paths output should be processed img.
+    if args.fake_face is not None:
+        face_checker.get(args.fake_face, args.frame_paths, subdir)
+    else:
+        for frame in args.frame_paths:
+            shutil.move(frame, subdir, copy_function=shutil.copy2)
+    args.subdir_paths = tuple(sorted(
+        glob.glob(subdir + "/*.png"),
+        key=lambda x: int(x.split(sep)[-1].replace(".png", ""))
+    ))
     status("swapping in progress...")
     if roop.globals.gpu_vendor is None and roop.globals.cpu_cores > 1:
         global POOL
         POOL = mp.Pool(roop.globals.cpu_cores)
-        process_video_multi_cores(args.source_img, args.frame_paths)
+        process_video_multi_cores(args.source_img, args.subdir_paths)
     else:
-        process_video(args.source_img, args.frame_paths)
+        process_video(args.source_img, args.subdir_paths)
+    for swappered in args.subdir_paths:
+        shutil.move(swappered, output_dir, copy_function=shutil.copy2)
+
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
     status("adding audio...")
-    add_audio(output_dir, target_path, video_name_full, args.keep_frames, args.output_file)
-    save_path = args.output_file if args.output_file else output_dir + "/" + video_name + ".mp4"
+    output_file = args.output_file if args.output_file else video_name + ".mp4"
+    save_path = os.path.join(output_dir, output_file)
+    add_audio(output_dir, target_path, video_name_full, args.keep_frames, save_path)
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
 
@@ -221,6 +241,8 @@ def start(preview_callback = None):
 def select_face_handler(path: str):
     args.source_img = path
 
+#def select_fake_face_handler(path: str):
+#    args.fake_face = path
 
 def select_target_handler(path: str):
     args.target_path = path

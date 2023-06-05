@@ -285,6 +285,11 @@ def init(
     ])
     target_button.place(x=360,y=320,width=180,height=80)
 
+    # Select a fake face button
+    #target_button = create_background_button(window, "Select a fake face button", lambda: [
+    #    select_fake_face(select_fake_face_handler)
+    #])
+
     # All faces checkbox
     all_faces = tk.IntVar(None, initial_values['all_faces'])
     all_faces_checkbox = create_check(window, "Process all faces in frame", all_faces, toggle_all_faces(toggle_all_faces_handler, all_faces))
