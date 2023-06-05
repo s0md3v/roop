@@ -12,7 +12,7 @@ max_preview_size = 800
 
 
 def create_preview(parent):
-    global preview_image_frame, preview_frame_slider, test_button
+    global preview_image_frame, target_dropdown, selected_option, preview_frame_slider, test_button
 
     preview_window = tk.Toplevel(parent)
     # Override close button
@@ -24,14 +24,25 @@ def create_preview(parent):
 
     frame = tk.Frame(preview_window, background="#2d3436")
     frame.pack(fill='both', side='left', expand='True')
-    
-    # Preview image
-    preview_image_frame = tk.Label(frame)
-    preview_image_frame.pack(side='top')
 
     # Bottom frame
     buttons_frame = tk.Frame(frame, background="#2d3436")
     buttons_frame.pack(fill='both', side='bottom')
+
+    # Dropdown selector
+    options = ["Option 1", "Option 2", "Option 3"]
+    selected_option = tk.StringVar()
+    selected_option.set(options[0])
+    target_dropdown = tk.OptionMenu(
+        buttons_frame, 
+        selected_option, 
+        *options
+        )
+    target_dropdown.pack(side='top')
+    
+    # Preview image
+    preview_image_frame = tk.Label(frame)
+    preview_image_frame.pack(side='top')
 
     current_frame = tk.IntVar()
     preview_frame_slider = tk.Scale(
@@ -62,8 +73,8 @@ def set_preview_handler(test_handler):
     test_button.config(command = test_handler)
 
 
-def init_slider(frames_count, change_handler):
-    preview_frame_slider.configure(to=frames_count, command=lambda value: change_handler(preview_frame_slider.get()))
+def init_slider(select_target_handler, get_target_list, change_handler):
+    preview_frame_slider.configure(to=select_target_handler(list(get_target_list()), target_dropdown["menu"].index(selected_option.get()))[0], command=lambda value: change_handler(preview_frame_slider.get()))
     preview_frame_slider.set(0)
 
 
@@ -96,41 +107,53 @@ def select_face(select_face_handler: Callable[[str], None]):
 
 
 def update_slider_handler(get_video_frame, video_path):
-    return lambda frame_number: update_preview(get_video_frame(video_path, frame_number))
+    video_path = selected_option.get()
+    return lambda frame_number: update_preview(get_video_frame(selected_option.get(), frame_number))
+
+
+def update_dropdown_handler(get_video_frame):
+    video_path = selected_option.get()
+    return update_preview(get_video_frame(video_path, preview_frame_slider.get()))
 
 
 def test_preview(create_test_preview):
-    frame = create_test_preview(preview_frame_slider.get())
+    index = target_dropdown["menu"].index(selected_option.get())
+    frame = create_test_preview(preview_frame_slider.get(), index)
     update_preview(frame)
 
 
-def update_slider(get_video_frame, create_test_preview, video_path, frames_amount):
-    init_slider(frames_amount, update_slider_handler(get_video_frame, video_path))
+def update_slider(select_target_handler, get_target_list, get_video_frame, create_test_preview):
+    init_slider(select_target_handler, get_target_list, update_slider_handler(get_video_frame, preview_frame_slider.get()))
     set_preview_handler(lambda: preview_thread(lambda: test_preview(create_test_preview)))
 
 
-def analyze_target(select_target_handler: Callable[[str], Tuple[int, Any]], target_path: tk.StringVar, frames_amount: tk.IntVar):    
-    path = filedialog.askopenfilename(title="Select a target")
-    target_path.set(path)
-    amount, frame = select_target_handler(path)
+def update_dropdown(select_target_handler, get_target_list, get_video_frame, create_test_preview):
+    target_list = list(get_target_list())
+    target_dropdown["menu"].delete(0, "end")
+    for option in target_list:
+        target_dropdown["menu"].add_command(label=option, command=lambda value=option: (preview_frame_slider.set(0), selected_option.set(value), update_dropdown_handler(get_video_frame), init_slider(select_target_handler, get_target_list, update_slider_handler(get_video_frame, preview_frame_slider.get()))))
+    selected_option.set(target_list[0])
+    set_preview_handler(lambda: preview_thread(lambda: test_preview(create_test_preview)))
+
+
+def analyze_target(select_target_handler: Callable[[list], Tuple[int, Any]], target_path: tk.StringVar, frames_amount: tk.IntVar): 
+    target_paths = filedialog.askopenfilenames(title="Select a target")
+    index = target_dropdown["menu"].index(selected_option.get())
+    amount, frame = select_target_handler(target_paths, index)
+    target_path.set(target_paths[index])
     frames_amount.set(amount)
     preview_target(frame)
     update_preview(frame)
 
 
-def select_target(select_target_handler: Callable[[str], Tuple[int, Any]], target_path: tk.StringVar, frames_amount: tk.IntVar):
+def select_target(select_target_handler: Callable[[list], Tuple[int, Any]], target_path: tk.StringVar, frames_amount: tk.IntVar):
     if select_target_handler:
         analyze_target(select_target_handler, target_path, frames_amount)
 
 
 def save_file(save_file_handler: Callable[[str], None], target_path: str):
-    filename, ext = 'output.mp4', '.mp4'
-
-    if is_img(target_path):
-        filename, ext = 'output.png', '.png'
-
     if save_file_handler:
-        return save_file_handler(asksaveasfilename(initialfile=filename, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")]))
+        return save_file_handler(asksaveasfilename(initialfile='output', filetypes=[("All Files","*.*"),("Videos","*.mp4")]))
     return None
 
 
@@ -240,7 +263,8 @@ def init(
     save_file_handler: Callable[[str], None],
     start: Callable[[], None],
     get_video_frame: Callable[[str, int], None],
-    create_test_preview: Callable[[int], Any],
+    get_target_list: Callable[[], list],
+    create_test_preview: Callable[[int, int], Any],
 ):
     global window, preview, preview_visible, face_label, target_label, status_label
 
@@ -281,7 +305,8 @@ def init(
     # Select a target button
     target_button = create_background_button(window, "Select a target", lambda: [
         select_target(select_target_handler, target_path, frames_amount),
-        update_slider(get_video_frame, create_test_preview, target_path.get(), frames_amount.get())
+        update_dropdown(select_target_handler, get_target_list, get_video_frame, create_test_preview),
+        update_slider(select_target_handler, get_target_list, get_video_frame, create_test_preview)
     ])
     target_button.place(x=360,y=320,width=180,height=80)
 

@@ -35,9 +35,9 @@ def extract_frames(input_path, output_dir):
     run_ffmpeg(f'-i "{input_path}" "{output_dir}{os.sep}%04d.png"')
 
 
-def add_audio(output_dir, target_path, video, keep_frames, output_file):
+def add_audio(output_dir, video, keep_frames, output_file, index):
     video_name = os.path.splitext(video)[0]
-    save_to = output_file if output_file else output_dir + "/swapped-" + video_name + ".mp4"
+    save_to = output_file + f"_{index+1}" + ".mp4" if output_file else output_dir + f"/swapped-" + video_name + f"_{index+1}" + ".mp4"
     run_ffmpeg(f'-i "{output_dir}{os.sep}output.mp4" -i "{output_dir}{os.sep}{video}" -c:v copy -map 0:v:0 -map 1:a:0 -y "{save_to}"')
     if not os.path.isfile(save_to):
         shutil.move(output_dir + "/output.mp4", save_to)

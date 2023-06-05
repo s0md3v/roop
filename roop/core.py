@@ -124,6 +124,10 @@ def get_video_frame(video_path, frame_number = 1):
     cap.release()
 
 
+def get_target_list():
+    return args.target_path
+
+
 def preview_video(video_path):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -163,67 +167,67 @@ def start(preview_callback = None):
     if not args.source_target or not os.path.isfile(args.source_target):
         print("\n[WARNING] Please select an image containing a face.")
         return
-    elif not args.target_path or not os.path.isfile(args.target_path):
+    elif not args.target_path or not os.path.isfile(args.target_path[0]):
         print("\n[WARNING] Please select a video/image to swap face in.")
         return
-    target_path = args.target_path
     test_face = get_face_single(cv2.imread(args.source_target))
     if not test_face:
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return
-    if is_img(target_path):
-        if predict_image(target_path) > 0.85:
+    for file_number, target_path in enumerate(args.target_path):
+        if is_img(target_path):
+            if predict_image(target_path) > 0.85:
+                quit()
+            process_img(args.source_target, target_path, os.path.splitext(args.output_path)[0] + f"_{file_number+1}.png")
+            status("swap successful!")
+            continue
+        seconds, probabilities = predict_video_frames(video_path=args.target_path, frame_interval=100)
+        if any(probability > 0.85 for probability in probabilities):
             quit()
-        process_img(args.source_target, target_path, args.output_path)
+        video_name_full = target_path.split("/")[-1]
+        video_name = os.path.splitext(video_name_full)[0]
+        output_dir = os.path.dirname(target_path) + "/" + video_name if os.path.dirname(target_path) else video_name
+        Path(output_dir).mkdir(exist_ok=True)
+        status("detecting video's FPS...")
+        fps, exact_fps = detect_fps(target_path)
+        if not args.keep_fps and fps > 30:
+            this_path = output_dir + "/" + video_name + ".mp4"
+            set_fps(target_path, this_path, 30)
+            target_path, exact_fps = this_path, 30
+        else:
+            shutil.copy(target_path, output_dir)
+        status("extracting frames...")
+        extract_frames(target_path, output_dir)
+        args.frame_paths = tuple(sorted(
+            glob.glob(output_dir + "/*.png"),
+            key=lambda x: int(x.split(os.sep)[-1].replace(".png", ""))
+        ))
+        status("swapping in progress...")
+        if roop.globals.gpu_vendor is None and roop.globals.cpu_cores > 1:
+            global POOL
+            POOL = mp.Pool(roop.globals.cpu_cores)
+            process_video_multi_cores(args.source_target, args.frame_paths)
+        else:
+            process_video(args.source_target, args.frame_paths)
+        # prevent out of memory while using ffmpeg with cuda
+        if args.gpu_vendor == 'nvidia':
+            torch.cuda.empty_cache()
+        status("creating video...")
+        create_video(video_name, exact_fps, output_dir)
+        status("adding audio...")
+        add_audio(output_dir, video_name_full, args.keep_frames, args.output_path, file_number)
+        save_path = args.output_path + f"_{file_number+1}" + ".mp4" if args.output_path else output_dir + os.sep + video_name + ".mp4"
+        print("\n\nVideo saved as:", save_path, "\n\n")
         status("swap successful!")
-        return
-    seconds, probabilities = predict_video_frames(video_path=args.target_path, frame_interval=100)
-    if any(probability > 0.85 for probability in probabilities):
-        quit()
-    video_name_full = target_path.split(os.sep)[-1]
-    video_name = os.path.splitext(video_name_full)[0]
-    output_dir = os.path.dirname(target_path) + os.sep + video_name if os.path.dirname(target_path) else video_name
-    Path(output_dir).mkdir(exist_ok=True)
-    status("detecting video's FPS...")
-    fps, exact_fps = detect_fps(target_path)
-    if not args.keep_fps and fps > 30:
-        this_path = output_dir + os.sep + video_name + ".mp4"
-        set_fps(target_path, this_path, 30)
-        target_path, exact_fps = this_path, 30
-    else:
-        shutil.copy(target_path, output_dir)
-    status("extracting frames...")
-    extract_frames(target_path, output_dir)
-    args.frame_paths = tuple(sorted(
-        glob.glob(output_dir + "/*.png"),
-        key=lambda x: int(x.split(os.sep)[-1].replace(".png", ""))
-    ))
-    status("swapping in progress...")
-    if roop.globals.gpu_vendor is None and roop.globals.cpu_cores > 1:
-        global POOL
-        POOL = mp.Pool(roop.globals.cpu_cores)
-        process_video_multi_cores(args.source_target, args.frame_paths)
-    else:
-        process_video(args.source_target, args.frame_paths)
-    # prevent out of memory while using ffmpeg with cuda
-    if args.gpu_vendor == 'nvidia':
-        torch.cuda.empty_cache()
-    status("creating video...")
-    create_video(video_name, exact_fps, output_dir)
-    status("adding audio...")
-    add_audio(output_dir, target_path, video_name_full, args.keep_frames, args.output_path)
-    save_path = args.output_path if args.output_path else output_dir + os.sep + video_name + ".mp4"
-    print("\n\nVideo saved as:", save_path, "\n\n")
-    status("swap successful!")
 
 
 def select_face_handler(path: str):
     args.source_target = path
 
 
-def select_target_handler(path: str):
+def select_target_handler(path: list, index):
     args.target_path = path
-    return preview_video(args.target_path)
+    return preview_video(args.target_path[index])
 
 
 def toggle_all_faces_handler(value: int):
@@ -242,10 +246,10 @@ def save_file_handler(path: str):
     args.output_path = path
 
 
-def create_test_preview(frame_number):
+def create_test_preview(frame_number, index):
     return process_faces(
         get_face_single(cv2.imread(args.source_target)),
-        get_video_frame(args.target_path, frame_number)
+        get_video_frame(args.target_path[index], frame_number)
     )
 
 
@@ -271,6 +275,7 @@ def run():
         save_file_handler,
         start,
         get_video_frame,
+        get_target_list,
         create_test_preview
     )
     window.mainloop()
