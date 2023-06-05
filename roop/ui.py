@@ -94,6 +94,10 @@ def select_face(select_face_handler: Callable[[str], None]):
         return select_face_handler(path)
     return None
 
+def select_swapped_face(select_swapped_face_handler: Callable[[str], None]):
+    if select_swapped_face_handler:
+        path = filedialog.askopenfilename(title="Select a face to swap")
+        preview_face
 
 def update_slider_handler(get_video_frame, video_path):
     return lambda frame_number: update_preview(get_video_frame(video_path, frame_number))

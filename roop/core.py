@@ -37,7 +37,7 @@ parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used
 parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 1))
 parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
 parser.add_argument('--gpu-vendor', help='choice your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
-parser.add_argument('--fake-face', dest='fake_face')
+parser.add_argument('--specific-face', help='specific this face',dest='swapped_face')
 
 args = parser.parse_known_args()[0]
 
@@ -209,8 +209,8 @@ def start(preview_callback = None):
     ))
     status("preparing the faces")
     # checking frame_paths output should be processed img.
-    if args.fake_face is not None:
-        face_checker.get(args.fake_face, args.frame_paths, subdir)
+    if args.swapped_face is not None:
+        face_checker.get(args.swapped_face, args.frame_paths, subdir)
     else:
         for frame in args.frame_paths:
             shutil.move(frame, subdir, copy_function=shutil.copy2)
