@@ -47,8 +47,3 @@ def add_audio(output_dir, target_path, video, keep_frames, output_file):
 
 def is_img(path):
     return path.lower().endswith(("png", "jpg", "jpeg", "bmp"))
-
-
-def rreplace(s, old, new, occurrence):
-    li = s.rsplit(old, occurrence)
-    return new.join(li)
