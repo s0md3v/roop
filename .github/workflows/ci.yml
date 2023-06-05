@@ -14,7 +14,7 @@ jobs:
      python-version: 3.9
   - run: pip install flake8
   - run: flake8 run.py core
- test-ubuntu:
+ test:
   runs-on: ubuntu-latest
   steps:
   - name: Checkout
@@ -28,19 +28,3 @@ jobs:
   - run: pip install -r requirements.txt gdown
   - run: gdown 13QpWFWJ37EB-nHrEOY64CEtQWY-tz7DZ
   - run: python run.py -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
- test-windows:
-  runs-on: windows-latest
-  steps:
-  - name: Checkout
-    uses: actions/checkout@v2
-  - name: Set up ffmpeg
-    uses: FedericoCarboni/setup-ffmpeg@v2
-  - name: Set up Python 3.9
-    uses: actions/setup-python@v2
-    with:
-     python-version: 3.9
-  - run: pip install -r requirements.txt gdown
-  - run: gdown 13QpWFWJ37EB-nHrEOY64CEtQWY-tz7DZ
-  - run: python run.py -f=.github\examples\face.jpg -t=.github\examples\target.mp4 -o=.github\examples\output.mp4
-
-
