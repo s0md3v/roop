@@ -1,5 +1,6 @@
 import os
 import shutil
+import roop.globals
 
 sep = "/"
 if os.name == "nt":
@@ -29,26 +30,33 @@ def detect_fps(input_path):
     return 30, 30
 
 
+def run_ffmpeg(args):
+    log_level = f'-loglevel {roop.globals.log_level}'
+    run_command(f'ffmpeg {log_level} {args}')
+
+
 def set_fps(input_path, output_path, fps):
     input_path, output_path = path(input_path), path(output_path)
-    os.system(f'ffmpeg -i "{input_path}" -filter:v fps=fps={fps} "{output_path}" -loglevel error')
+    run_ffmpeg(f'-i "{input_path}" -filter:v fps=fps={fps} "{output_path}"')
 
 
 def create_video(video_name, fps, output_dir):
+    hwaccel_option = '-hwaccel cuda' if roop.globals.gpu_vendor == 'nvidia' else ''
     output_dir = path(output_dir)
-    os.system(f'ffmpeg -framerate "{fps}" -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4" -loglevel error')
+    run_ffmpeg(f'{hwaccel_option} -framerate "{fps}" -i "{output_dir}{sep}%04d.png" -c:v libx264 -crf 7 -pix_fmt yuv420p -y "{output_dir}{sep}output.mp4"')
 
 
 def extract_frames(input_path, output_dir):
+    hwaccel_option = '-hwaccel cuda' if roop.globals.gpu_vendor == 'nvidia' else ''
     input_path, output_dir = path(input_path), path(output_dir)
-    os.system(f'ffmpeg -i "{input_path}" "{output_dir}{sep}%04d.png" -loglevel error')
+    run_ffmpeg(f' {hwaccel_option} -i "{input_path}" "{output_dir}{sep}%04d.png"')
 
 
 def add_audio(output_dir, target_path, video, keep_frames, output_file):
     video_name = os.path.splitext(video)[0]
     save_to = output_file if output_file else output_dir + "/swapped-" + video_name + ".mp4"
     save_to_ff, output_dir_ff = path(save_to), path(output_dir)
-    os.system(f'ffmpeg -i "{output_dir_ff}{sep}output.mp4" -i "{output_dir_ff}{sep}{video}" -c:v copy -map 0:v:0 -map 1:a:0 -y "{save_to_ff}" -loglevel error')
+    run_ffmpeg(f'-i "{output_dir_ff}{sep}output.mp4" -i "{output_dir_ff}{sep}{video}" -c:v copy -map 0:v:0 -map 1:a:0 -y "{save_to_ff}"')
     if not os.path.isfile(save_to):
         shutil.move(output_dir + "/output.mp4", save_to)
     if not keep_frames:
