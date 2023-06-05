@@ -18,7 +18,7 @@ To replace a specific face in a video, use the `--fake-face <image_path> ` optio
 
 Example command:
 ```
-python run.py --fake-face <image_path>
+python run.py --specific-face <image_path>
 ```
 Replace `<image_path>` with the path to the image file containing the target face.
 
