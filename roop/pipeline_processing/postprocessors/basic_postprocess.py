@@ -12,7 +12,7 @@ class BasicPostprocess(Postprocess):
         out_audio = output + '_audio.mp4'
         input_audio = f'{input}.aac'
         # Extract audio
-        run_ffmpeg(f'-i "{input}" -vn -acodec copy "{input_audio}.aac"')
+        run_ffmpeg(f'-i "{input}" -vn -acodec copy "{input_audio}"')
         # Merge output video and audio
         if os.path.isfile(input_audio):
             run_ffmpeg(f'-i "{output}" -i "{input}.aac" -c copy "{out_audio}"')

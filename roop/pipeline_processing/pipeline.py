@@ -28,6 +28,8 @@ class Pipeline:
             cancellation_token: CancellationToken
         ):
         """Main execution method"""
+        if not (params.face or params.target or params.output):
+            raise ValueError(f'Input parameter required. Check "face", "target" or "output"')
         params.progress_handler("Init blocks")
 
         if self.extractor and self.collector:
