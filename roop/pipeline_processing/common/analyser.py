@@ -1,7 +1,8 @@
 import insightface
 import onnxruntime
 
-from roop.pipeline_processing.environment import PipelineEnvironment
+from ..environment import PipelineEnvironment
+
 
 class FaceAnalyser():
     """Face analyser"""
@@ -27,7 +28,6 @@ class FaceAnalyser():
             return sorted(face, key=lambda x: x.bbox[0])[0]
         except IndexError:
             return None
-
 
     def get_face_many(self, img_data):
         try:

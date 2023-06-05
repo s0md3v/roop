@@ -1,7 +1,8 @@
 import os
 import shutil
-from roop.pipeline_processing.pipeline import Postprocess
-from roop.pipeline_processing.common.utils import path, run_ffmpeg
+
+from ..postprocessors import Postprocess
+from ..common import run_ffmpeg
 
 
 class BasicPostprocess(Postprocess):

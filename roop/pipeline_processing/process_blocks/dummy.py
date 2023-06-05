@@ -1,9 +1,9 @@
 from typing import Any
 
-from roop.pipeline_processing.pipeline import PipelineProcessBlock
+from ..process_blocks import ProcessBlock
 
 
-class Dummy(PipelineProcessBlock):
+class Dummy(ProcessBlock):
     """Dummy process block, returns input frame"""
 
     def init(self, face: str) -> Any:

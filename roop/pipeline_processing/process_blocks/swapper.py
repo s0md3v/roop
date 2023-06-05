@@ -5,12 +5,12 @@ import onnxruntime
 import cv2
 import insightface
 
-from roop.pipeline_processing.common.analyser import FaceAnalyser
-from roop.pipeline_processing.environment import PipelineEnvironment
-from roop.pipeline_processing.pipeline import PipelineProcessBlock
+from ..environment import PipelineEnvironment
+from ..process_blocks import ProcessBlock
+from ..common import FaceAnalyser
 
 
-class Swapper(PipelineProcessBlock):
+class Swapper(ProcessBlock):
     """Swapper process block"""
 
     def __init__(self, environment: PipelineEnvironment) -> None:

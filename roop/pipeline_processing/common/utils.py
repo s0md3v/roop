@@ -5,6 +5,7 @@ sep = "/"
 if os.name == "nt":
     sep = "\\"
 
+
 def path(string):
     if sep == "\\":
         return string.replace("/", "\\")

@@ -1,6 +1,7 @@
 import onnxruntime
 import psutil
 
+
 class PipelineEnvironment():
     """Pipeline process environment"""
 

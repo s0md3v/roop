@@ -1,7 +1,7 @@
 from typing import Any, Tuple
 
 import cv2
-from roop.pipeline_processing.pipeline import FramesCollector
+from ..collectors import FramesCollector
 
 
 class BasicCollector(FramesCollector):

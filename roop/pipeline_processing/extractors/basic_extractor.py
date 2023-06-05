@@ -1,7 +1,8 @@
 from typing import Any
 import cv2
 
-from roop.pipeline_processing.pipeline import FramesExtractor
+from ..extractors import FramesExtractor
+
 
 class BasicExtractor(FramesExtractor):
     """Basic video extractor"""
