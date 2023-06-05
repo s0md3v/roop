@@ -19,13 +19,13 @@ jobs:
   strategy:
     matrix:
       ubuntu:
-        os: ubuntu-latest
-        run-headless: python run.py -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
-        run-validate: ffmpeg -i .github/examples/snapshot.mp4 -i .github/examples/output.mp4 -filter_complex psnr -f null -
+       os: ubuntu-latest
+       run-headless: python run.py -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
+       run-validate: ffmpeg -i .github/examples/snapshot.mp4 -i .github/examples/output.mp4 -filter_complex psnr -f null -
       windows:
-        os: windows-latest
-        run-headless: python run.py -f .github\examples\face.jpg -t .github\examples\target.mp4 -o .github\examples\output.mp4
-        run-validate: ffmpeg -i .github\examples\snapshot.mp4 -i .github/examples\output.mp4 -filter_complex psnr -f null -
+       os: windows-latest
+       run-headless: python run.py -f .github\examples\face.jpg -t .github\examples\target.mp4 -o .github\examples\output.mp4
+       run-validate: ffmpeg -i .github\examples\snapshot.mp4 -i .github/examples\output.mp4 -filter_complex psnr -f null -
   steps:
   - name: Checkout
     uses: actions/checkout@v2
