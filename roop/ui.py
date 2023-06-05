@@ -199,7 +199,7 @@ def open_preview_window(get_video_frame, target_path):
 
 def preview_face(path):
     img = Image.open(path)
-    img = ImageOps.contain(img, (180, 180), Image.LANCZOS)
+    img = ImageOps.fit(img, (180, 180), Image.LANCZOS)
     photo_img = ImageTk.PhotoImage(img)
     face_label.configure(image=photo_img)
     face_label.image = photo_img
@@ -207,7 +207,7 @@ def preview_face(path):
 
 def preview_target(frame):
     img = Image.fromarray(frame)
-    img = ImageOps.contain(img, (180, 180), Image.LANCZOS)
+    img = ImageOps.fit(img, (180, 180), Image.LANCZOS)
     photo_img = ImageTk.PhotoImage(img)
     target_label.configure(image=photo_img)
     target_label.image = photo_img
