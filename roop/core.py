@@ -32,7 +32,7 @@ parser.add_argument('-t', '--target', help='replace this face', dest='target_pat
 parser.add_argument('-o', '--output', help='save output to this file', dest='output_file')
 parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
 parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
-parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true', default=False)
+parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true')
 parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
 parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 1))
 parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
@@ -244,8 +244,8 @@ def start(preview_callback = None):
 def select_face_handler(path: str):
     args.source_img = path
 
-#def select_fake_face_handler(path: str):
-#    args.fake_face = path
+def select_swapped_face_handler(path: str):
+    args.swapped_face = path
 
 def select_target_handler(path: str):
     args.target_path = path
@@ -292,6 +292,7 @@ def run():
             'keep_frames': args.keep_frames
         },
         select_face_handler,
+        select_swapped_face_handler,
         select_target_handler,
         toggle_all_faces_handler,
         toggle_fps_limit_handler,

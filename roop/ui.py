@@ -97,7 +97,7 @@ def select_face(select_face_handler: Callable[[str], None]):
 def select_swapped_face(select_swapped_face_handler: Callable[[str], None]):
     if select_swapped_face_handler:
         path = filedialog.askopenfilename(title="Select a face to swap")
-        preview_face(path)
+        preview_swapped_face(path)
         return select_swapped_face_handler(path)
     return None
 
@@ -231,6 +231,14 @@ def preview_target(frame):
     target_label.image = photo_img
 
 
+def preview_swapped_face(path):
+    img = Image.open(path)
+    img = img.resize((180, 180), Image.ANTIALIAS)
+    photo_img = ImageTk.PhotoImage(img)
+    swapped_face_lable.configure(image=photo_img)
+    swapped_face_lable.image = photo_img
+
+
 def update_status_label(value):
     status_label["text"] = value
     window.update()
@@ -249,10 +257,10 @@ def init(
     get_video_frame: Callable[[str, int], None],
     create_test_preview: Callable[[int], Any],
 ):
-    global window, preview, preview_visible, face_label, target_label, status_label
+    global window, preview, preview_visible, face_label, target_label, status_label, swapped_face_lable
 
     window = tk.Tk()
-    window.geometry("600x700")
+    window.geometry("900x700")
     window.title("roop")
     window.configure(bg="#2d3436")
     window.resizable(width=False, height=False)
@@ -266,7 +274,7 @@ def init(
 
     # Contact information
     support_link = tk.Label(window, text="Donate to project <3", fg="#fd79a8", bg="#2d3436", cursor="hand2", font=("Arial", 8))
-    support_link.place(x=180,y=20,width=250,height=30)
+    support_link.place(x=330,y=20,width=250,height=30)
     support_link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/sponsors/s0md3v"))
 
     left_frame = tk.Frame(window)
@@ -274,10 +282,15 @@ def init(
     face_label = tk.Label(left_frame)
     face_label.pack(fill='both', side='top', expand=True)
 
-    right_frame = tk.Frame(window)
-    right_frame.place(x=360, y=100, width=180, height=180)
-    target_label = tk.Label(right_frame)
+    middle_frame = tk.Frame(window)
+    middle_frame.place(x=360, y=100, width=180, height=180)
+    target_label = tk.Label(middle_frame)
     target_label.pack(fill='both', side='top', expand=True)
+
+    right_frame = tk.Frame(window)
+    right_frame.place(x=660, y=100, width=180, height=180)
+    swapped_face_lable = tk.Label(right_frame)
+    swapped_face_lable.pack(fill='both', side='top', expand=True)
 
     # Select a face button
     face_button = create_background_button(window, "Select a face", lambda: [
@@ -292,13 +305,14 @@ def init(
     ])
     target_button.place(x=360,y=320,width=180,height=80)
 
-    # Select a fake face button
-    #target_button = create_background_button(window, "Select a fake face button", lambda: [
-    #    select_fake_face(select_fake_face_handler)
-    #])
+    # Specific face to swap button
+    Specific_button = create_background_button(window, "Specific the face", lambda: [
+        select_swapped_face(select_swapped_face_handler)
+    ])
+    Specific_button.place(x=660,y=320,width=180,height=80)
 
     # All faces checkbox
-    all_faces = tk.IntVar(None, initial_values['all_faces'])
+    all_faces = tk.IntVar(None, not initial_values['all_faces'])
     all_faces_checkbox = create_check(window, "Process all faces in frame", all_faces, toggle_all_faces(toggle_all_faces_handler, all_faces))
     all_faces_checkbox.place(x=60,y=500,width=240,height=31)
 
@@ -314,14 +328,14 @@ def init(
 
     # Start button
     start_button = create_button(window, "Start", lambda: [save_file(save_file_handler, target_path.get()), preview_thread(lambda: start(update_preview))])
-    start_button.place(x=170,y=560,width=120,height=49)
+    start_button.place(x=320,y=560,width=120,height=49)
 
     # Preview button
     preview_button = create_button(window, "Preview", lambda: open_preview_window(get_video_frame, target_path.get()))
-    preview_button.place(x=310,y=560,width=120,height=49)
+    preview_button.place(x=460,y=560,width=120,height=49)
 
     # Status label
     status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
-    status_label.place(x=10,y=640,width=580,height=30)
+    status_label.place(x=160,y=640,width=580,height=30)
 
     return window
