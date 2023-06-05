@@ -209,7 +209,7 @@ def start(preview_callback = None):
         process_video_multi_cores(args.source_img, args.frame_paths)
     else:
         process_video(args.source_img, args.frame_paths)
-    if torch.cuda.is_available() and args.gpu_vendor in ['amd', 'nvidia']:
+    if args.gpu_vendor = 'nvidia':
         torch.cuda.empty_cache() 
     status("creating video...")
     create_video(video_name, exact_fps, output_dir)
