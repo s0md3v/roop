@@ -97,7 +97,9 @@ def select_face(select_face_handler: Callable[[str], None]):
 def select_swapped_face(select_swapped_face_handler: Callable[[str], None]):
     if select_swapped_face_handler:
         path = filedialog.askopenfilename(title="Select a face to swap")
-        preview_face
+        preview_face(path)
+        return select_swapped_face_handler(path)
+    return None
 
 def update_slider_handler(get_video_frame, video_path):
     return lambda frame_number: update_preview(get_video_frame(video_path, frame_number))
@@ -237,6 +239,7 @@ def update_status_label(value):
 def init(
     initial_values: dict,
     select_face_handler: Callable[[str], None],
+    select_swapped_face_handler: Callable[[str], None],
     select_target_handler: Callable[[str], Tuple[int, Any]],
     toggle_all_faces_handler: Callable[[int], None],
     toggle_fps_limit_handler: Callable[[int], None],

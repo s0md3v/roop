@@ -187,7 +187,7 @@ def start(preview_callback = None):
     #if any(probability > 0.85 for probability in probabilities):
     #    quit()
     face_checker = Facecheck()
-    video_name_full = target_path.split("/")[-1]
+    video_name_full = os.path.basename(target_path)
     video_name = os.path.splitext(video_name_full)[0]
     output_dir = os.path.join(os.path.dirname(target_path), video_name) if os.path.dirname(target_path) else video_name
     subdir = os.path.join(output_dir, 'subdir')
@@ -236,7 +236,7 @@ def start(preview_callback = None):
     status("adding audio...")
     output_file = args.output_file if args.output_file else video_name + ".mp4"
     save_path = os.path.join(output_dir, output_file)
-    add_audio(output_dir, target_path, video_name_full, args.keep_frames, save_path)
+    add_audio(output_dir, target_path, video_name_full, args.keep_frames, args.output_file)
     print("\n\nVideo saved as:", save_path, "\n\n")
     status("swap successful!")
 
