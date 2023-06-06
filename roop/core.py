@@ -184,14 +184,14 @@ def start(preview_callback = None):
     seconds, probabilities = predict_video_frames(video_path=args.target_path, frame_interval=100)
     if any(probability > 0.85 for probability in probabilities):
         quit()
-    video_name_full = target_path.split("/")[-1]
+    video_name_full = target_path.split(os.sep)[-1]
     video_name = os.path.splitext(video_name_full)[0]
-    output_dir = os.path.dirname(target_path) + "/" + video_name if os.path.dirname(target_path) else video_name
+    output_dir = os.path.join(os.path.dirname(target_path), video_name) if os.path.dirname(target_path) else video_name
     Path(output_dir).mkdir(exist_ok=True)
     status("detecting video's FPS...")
     fps, exact_fps = detect_fps(target_path)
     if not args.keep_fps and fps > 30:
-        this_path = output_dir + "/" + video_name + ".mp4"
+        this_path = os.path.join(output_dir, video_name, '.mp4')
         set_fps(target_path, this_path, 30)
         target_path, exact_fps = this_path, 30
     else:
