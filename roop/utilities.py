@@ -39,8 +39,8 @@ def create_video(target_path: str, fps: int) -> None:
     run_ffmpeg(['-i', temp_directory_path + os.sep + '%04d.png', '-framerate', str(fps), '-c:v', 'libx264', '-crf', '7', '-pix_fmt', 'yuv420p', '-y', temp_file_path])
 
 
-def restore_audio(target_path: str) -> None:
-    run_ffmpeg(['-i', target_path, '-i', get_temp_file_path(target_path), '-c:v', 'copy', '-map', '0:v:0', 'map', '1:a:0', '-y', get_temp_file_path(target_path)])
+def restore_audio(target_path: str, output_path: str) -> None:
+    run_ffmpeg(['-i', get_temp_file_path(target_path), '-i', target_path, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-y', output_path])
 
 
 def get_temp_frames_paths(target_path: str) -> List:
@@ -62,7 +62,7 @@ def create_temp(target_path: str) -> None:
 
 def clean_temp(target_path: str, output_path: str) -> None:
     temp_file_path = get_temp_file_path(target_path)
-    if os.path.isfile(temp_file_path):
+    if not roop.globals.keep_audio and os.path.isfile(temp_file_path):
         shutil.move(temp_file_path, output_path)
     if not roop.globals.keep_frames:
         shutil.rmtree(get_temp_directory_path(target_path))

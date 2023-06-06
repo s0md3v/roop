@@ -215,7 +215,7 @@ def start(preview_callback = None) -> None:
             status('Restoring audio...')
         else:
             status('Restoring audio might cause issues as fps are not kept...')
-        restore_audio(args.target_path)
+        restore_audio(args.target_path, args.output_path)
     clean_temp(args.target_path, args.output_path)
     if is_video(args.target_path):
         status('Swapping to video succeed!')
@@ -256,7 +256,7 @@ def create_test_preview(frame_number):
 
 
 def destroy() -> None:
-    clean_temp(args.target_path)
+    clean_temp(args.target_path, args.output_path)
     quit()
 
 
