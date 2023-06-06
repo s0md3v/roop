@@ -5,7 +5,7 @@ import cv2
 import insightface
 import threading
 import roop.globals
-from roop.analyser import get_face_single, get_face_many
+from roop.analyser import get_one_face, get_many_faces
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
@@ -27,20 +27,20 @@ def swap_face_in_frame(source_face, target_face, frame):
 
 
 def process_faces(source_face, target_frame):
-    if roop.globals.all_faces:
-        many_faces = get_face_many(target_frame)
+    if roop.globals.many_faces:
+        many_faces = get_many_faces(target_frame)
         if many_faces:
             for face in many_faces:
                 target_frame = swap_face_in_frame(source_face, face, target_frame)
     else:
-        face = get_face_single(target_frame)
+        face = get_one_face(target_frame)
         if face:
             target_frame = swap_face_in_frame(source_face, face, target_frame)
     return target_frame
 
 
 def process_frames(source_img, frame_paths, progress=None):
-    source_face = get_face_single(cv2.imread(source_img))
+    source_face = get_one_face(cv2.imread(source_img))
     for frame_path in frame_paths:
         frame = cv2.imread(frame_path)
         try:
@@ -77,9 +77,9 @@ def multi_process_frame(source_img, frame_paths, progress):
 
 def process_img(source_img, target_path, output_file):
     frame = cv2.imread(target_path)
-    face = get_face_single(frame)
-    source_face = get_face_single(cv2.imread(source_img))
-    result = get_face_swapper().get(frame, face, source_face, paste_back=True)
+    target_frame = get_one_face(frame)
+    source_face = get_one_face(cv2.imread(source_img))
+    result = get_face_swapper().get(frame, target_frame, source_face, paste_back=True)
     cv2.imwrite(output_file, result)
 
 
