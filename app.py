@@ -12,12 +12,11 @@ import stat
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = '/home/ivo/roop2/roop/uploads'
 
-# Creando una cola para las solicitudes
+
 task_queue = queue.Queue()
-# Creando un diccionario para guardar el estado de las tareas
 task_status = {}
 
-# Esta funcion corre en un hilo separado para procesar las solicitudes en la cola
+# Esta funcion corre en un hilo separado para procesar las solicitudes en la queue
 def worker():
     while True:
         task = task_queue.get()
@@ -29,7 +28,7 @@ def worker():
         task_status[user_id] = output_path
         task_queue.task_done()
 
-# Iniciando el worker en un hilo separado
+# worker en un hilo separado
 threading.Thread(target=worker, daemon=True).start()
 
 @app.route('/')
@@ -45,7 +44,7 @@ def run_script(face_path, target_path, output_path):
         '--gpu'
     ]
     subprocess.run(cmd)
-    # Cambiar los permisos del archivo de salida para que todos los usuarios puedan leerlo
+    # Cambiar los permisos
     os.chmod(output_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
 
 @app.route('/upload', methods=['POST'])
@@ -59,7 +58,7 @@ def upload_file():
     if face_file.filename == '' or target_file.filename == '':
         return 'No selected file'
 
-    # Asignación de un ID de usuario único
+    # Asignación de un userID único
     user_id = str(uuid.uuid4())
 
     face_filename = user_id + '_' + secure_filename(face_file.filename)
