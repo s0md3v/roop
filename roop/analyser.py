@@ -13,7 +13,7 @@ def get_face_analyser() -> Any:
     return FACE_ANALYSER
 
 
-def get_face_single(image_data) -> Any:
+def get_one_face(image_data) -> Any:
     face = get_face_analyser().get(image_data)
     try:
         return min(face, key=lambda x: x.bbox[0])
@@ -21,7 +21,7 @@ def get_face_single(image_data) -> Any:
         return None
 
 
-def get_face_many(image_data) -> Any:
+def get_many_faces(image_data) -> Any:
     try:
         return get_face_analyser().get(image_data)
     except IndexError:

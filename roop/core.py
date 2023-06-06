@@ -24,7 +24,7 @@ import roop.globals
 import roop.ui as ui
 from roop.swapper import process_video, process_img
 from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frames_paths, restore_audio, create_temp, move_temp, clean_temp
-from roop.analyser import get_face_single
+from roop.analyser import get_one_face
 
 if 'ROCMExecutionProvider' in roop.globals.providers:
     del torch
@@ -41,11 +41,11 @@ def parse_args() -> None:
     parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
     parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
     parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
-    parser.add_argument('--all-faces', help='swap all faces in frame', dest='all_faces', action='store_true', default=False)
+    parser.add_argument('--many-faces', help='swap every face in the frame', dest='many_faces', action='store_true', default=False)
     parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
     parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 1))
     parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
-    parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
+    parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
 
     args = parser.parse_known_args()[0]
 
@@ -56,7 +56,7 @@ def parse_args() -> None:
     roop.globals.keep_fps = args.keep_fps
     roop.globals.keep_audio = args.keep_audio
     roop.globals.keep_frames = args.keep_frames
-    roop.globals.all_faces = args.all_faces
+    roop.globals.many_faces = args.many_faces
 
     if args.cpu_cores:
         roop.globals.cpu_cores = int(args.cpu_cores)
@@ -154,7 +154,7 @@ def start() -> None:
     elif not roop.globals.target_path or not os.path.isfile(roop.globals.target_path):
         update_status('Please select a video/image target!')
         return
-    test_face = get_face_single(cv2.imread(roop.globals.source_path))
+    test_face = get_one_face(cv2.imread(roop.globals.source_path))
     if not test_face:
         update_status('No face detected in source image. Please try with another one!')
         return
@@ -217,5 +217,5 @@ def run() -> None:
     if roop.globals.headless:
         start()
     else:
-        window = ui.init(start)
+        window = ui.init(start, destroy)
         window.mainloop()

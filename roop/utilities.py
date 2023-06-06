@@ -70,13 +70,13 @@ def clean_temp(target_path: str) -> None:
 
 
 def has_image_extention(image_path: str) -> bool:
-    return image_path.lower().endswith(('png', 'jpg', 'jpeg', 'bmp'))
+    return image_path.lower().endswith(('png', 'jpg', 'jpeg'))
 
 
-def is_image(path: str) -> bool:
-    if os.path.isfile(path):
+def is_image(image_path: str) -> bool:
+    if image_path and os.path.isfile(image_path):
         try:
-            image = Image.open(path)
+            image = Image.open(image_path)
             image.verify()
             return True
         except Exception:
@@ -84,10 +84,11 @@ def is_image(path: str) -> bool:
     return False
 
 
-def is_video(path: str) -> bool:
+def is_video(video_path: str) -> bool:
     try:
-        run_ffmpeg(['-v', 'error', '-i', path, '-f', 'null', '-'])
-        return True
+        if video_path and os.path.isfile(video_path):
+            run_ffmpeg(['-v', 'error', '-i', video_path, '-f', 'null', '-'])
+            return True
     except subprocess.CalledProcessError:
         pass
     return False
