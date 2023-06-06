@@ -5,10 +5,11 @@ import cv2
 import shutil
 import insightface
 import threading
+import onnxruntime
 import roop.globals
+from roop.globals import providers
 from roop.analyser import get_face_single, get_face_many
-from roop.scrfd import SCRFD
-from roop.arcface_onnx import ArcFaceONNX
+from roop.app import SCRFD_Child, ArcFaceONNX_Child
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
@@ -19,28 +20,30 @@ class Facecheck:
         model_dir = os.path.expanduser('~/.insightface/models/buffalo_l')
         detect_model_path =  os.path.join(model_dir, 'det_10g.onnx')
         feature_model_path = os.path.join(model_dir, 'w600k_r50.onnx')
+        detect_session = onnxruntime.InferenceSession(detect_model_path, providers=providers)
+        feature_session = onnxruntime.InferenceSession(feature_model_path, providers=providers)
 
-        self.face_detector = SCRFD(detect_model_path)
+        self.face_detector = SCRFD_Child(detect_model_path, detect_session)
         self.face_detector.prepare(0)
 
-        self.feature_comparator = ArcFaceONNX(feature_model_path)
+        self.feature_comparator = ArcFaceONNX_Child(feature_model_path, feature_session)
         self.feature_comparator.prepare(0)
     
 
-    def get(self, fake_face_path, framepaths, processing_paths):
-        fake_face = cv2.imread(fake_face_path)
-        fake_face_boxes, fake_face_keypoints = self.face_detector.autodetect(fake_face)
-        if fake_face_boxes.shape[0] == 0:
-            print("Face not found in fake_face_image") 
-        fake_face_keypoint = fake_face_keypoints[0]
-        fake_face_feature = self.feature_comparator.get(fake_face, fake_face_keypoint)
+    def get(self, swapped_face_path, framepaths, processing_paths):
+        swapped_face = cv2.imread(swapped_face_path)
+        swapped_face_boxes, swapped_face_keypoints = self.face_detector.autodetect(swapped_face)
+        if swapped_face_boxes.shape[0] == 0:
+            print("Face not found in swapped_face_image") 
+        swapped_face_keypoint = swapped_face_keypoints[0]
+        swapped_face_feature = self.feature_comparator.get(swapped_face, swapped_face_keypoint)
         for frame_path in framepaths:
             frame = cv2.imread(frame_path)
             try:
                 boxes, keypoints = self.face_detector.autodetect(frame)
                 keypoint = keypoints[0]
                 face_feature = self.feature_comparator.get(frame, keypoint)
-                similarity_level = self.feature_comparator.compute_sim(fake_face_feature, face_feature)
+                similarity_level = self.feature_comparator.compute_sim(swapped_face_feature, face_feature)
                 if similarity_level>=0.2:
                     shutil.move(frame_path, processing_paths)
                 else:
@@ -59,31 +62,31 @@ def get_face_swapper():
     return FACE_SWAPPER
 
 
-def swap_face_in_frame(fake_face, target_face, frame):
+def swap_face_in_frame(source_face, target_face, frame):
     if target_face:
-        return get_face_swapper().get(frame, target_face, fake_face, paste_back=True)
+        return get_face_swapper().get(frame, target_face, source_face, paste_back=True)
     return frame
 
 
-def process_faces(fake_face, target_frame):
+def process_faces(source_face, target_frame):
     if roop.globals.all_faces:
         many_faces = get_face_many(target_frame)
         if many_faces:
             for face in many_faces:
-                target_frame = swap_face_in_frame(fake_face, face, target_frame)
+                target_frame = swap_face_in_frame(source_face, face, target_frame)
     else:
         face = get_face_single(target_frame)
         if face:
-            target_frame = swap_face_in_frame(fake_face, face, target_frame)
+            target_frame = swap_face_in_frame(source_face, face, target_frame)
     return target_frame
 
 
 def process_frames(source_img, frame_paths, progress=None):
-    fake_face = get_face_single(cv2.imread(source_img))
+    source_face = get_face_single(cv2.imread(source_img))
     for frame_path in frame_paths:
         frame = cv2.imread(frame_path)
         try:
-            result = process_faces(fake_face, frame)
+            result = process_faces(source_face, frame)
             cv2.imwrite(frame_path, result)
         except Exception as exception:
             print(exception)
@@ -119,8 +122,8 @@ def multi_process_frame(source_img, frame_paths, progress):
 def process_img(source_img, target_path, output_file):
     frame = cv2.imread(target_path)
     face = get_face_single(frame)
-    fake_face = get_face_single(cv2.imread(source_img))
-    result = get_face_swapper().get(frame, face, fake_face, paste_back=True)
+    source_face = get_face_single(cv2.imread(source_img))
+    result = get_face_swapper().get(frame, face, source_face, paste_back=True)
     cv2.imwrite(output_file, result)
     print("\n\nImage saved as:", output_file, "\n\n")
 
