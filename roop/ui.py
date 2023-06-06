@@ -6,7 +6,7 @@ from tkinter import filedialog
 from tkinter.filedialog import asksaveasfilename
 import threading
 
-from roop.utils import is_img
+from roop.utilities import is_image
 
 max_preview_size = 800
 
@@ -114,7 +114,7 @@ def select_target(select_target_handler: Callable[[str], Tuple[int, Any]], targe
 def save_file(save_file_handler: Callable[[str], None], target_path: str):
     filename, ext = 'output.mp4', '.mp4'
 
-    if is_img(target_path):
+    if is_image(target_path):
         filename, ext = 'output.png', '.png'
 
     if save_file_handler:
