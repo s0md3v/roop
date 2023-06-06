@@ -58,9 +58,8 @@ def multi_process_frame(source_img, frame_paths, progress):
     num_threads = roop.globals.gpu_threads
     num_frames_per_thread = len(frame_paths) // num_threads
     remaining_frames = len(frame_paths) % num_threads
-
-    # create thread and launch
     start_index = 0
+    # create threads by frames
     for _ in range(num_threads):
         end_index = start_index + num_frames_per_thread
         if remaining_frames > 0:
@@ -71,8 +70,7 @@ def multi_process_frame(source_img, frame_paths, progress):
         threads.append(thread)
         thread.start()
         start_index = end_index
-
-    # threading
+    # join threads
     for thread in threads:
         thread.join()
 
@@ -83,13 +81,13 @@ def process_img(source_img, target_path, output_file):
     source_face = get_face_single(cv2.imread(source_img))
     result = get_face_swapper().get(frame, face, source_face, paste_back=True)
     cv2.imwrite(output_file, result)
-    print("\n\nImage saved as:", output_file, "\n\n")
 
 
 def process_video(source_img, frame_paths):
     do_multi = roop.globals.gpu_vendor is not None and roop.globals.gpu_threads > 1
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
-    with tqdm(total=len(frame_paths), desc="Processing", unit="frame", dynamic_ncols=True, bar_format=progress_bar_format) as progress:
+    total = len(frame_paths)
+    with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
         if do_multi:
             multi_process_frame(source_img, frame_paths, progress)
         else:
