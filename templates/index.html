@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Face Cloning App</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/min/dropzone.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/min/dropzone.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0e4d7; /* color de fondo más oscuro para más contraste */
+    }
+    .dropzone {
+      border: 2px dashed #6c757d;
+      border-radius: 10px;
+      background-color: #fff; /* los dropzones tienen un fondo blanco */
+      padding: 20px;
+      text-align: center;
+      transition: background 0.3s;
+    }
+    .dropzone:hover {
+      background: #f8f9fa;
+    }
+    .dropzone input {
+      display: none;
+    }
+    .loading-icon {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container py-5">
+  <h2 class="text-center mb-4">Face Cloning App</h2>
+  
+  <form id="upload-form" method="POST" enctype="multipart/form-data" class="row">
+    <div class="col-sm-6">
+      <div class="dropzone">
+        <input type="file" name="face" id="face-file">
+        <p>Drop your face file here or <label for="face-file" class="text-primary cursor-pointer">select file</label>.</p>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="dropzone">
+        <input type="file" name="target" id="target-file">
+        <p>Drop your target file here or <label for="target-file" class="text-primary cursor-pointer">select file</label>.</p>
+      </div>
+    </div>
+    <div class="col-12 text-center mt-4">
+      <button type="submit" class="btn btn-primary">Clone <i class="fas fa-spinner fa-spin loading-icon"></i></button>
+    </div>
+  </form>
+
+  <p id="status" class="text-center mt-4"></p>
+</div>
+
+<script>
+
+$("#upload-form").on("submit", function(event) {
+  event.preventDefault();
+
+  $(".loading-icon").show();
+
+  var formData = new FormData(this);
+
+  $.ajax({
+    url: '/upload',
+    type: 'POST',
+    data: formData,
+    success: function(data) {
+      var userId = data.user_id;
+      checkStatus(userId);
+    },
+    cache: false,
+    contentType: false,
+    processData: false
+  });
+});
+
+function checkStatus(userId) {
+  $.ajax({
+    url: '/status/' + userId,
+    type: 'GET',
+    success: function(data) {
+      if (data === "processing") {
+        $("#status").text("Processing... Please wait.");
+        setTimeout(function() { checkStatus(userId); }, 5000);  // Verifica el estado cada 5 segundos
+      } else {
+        $(".loading-icon").hide();
+        $("#status").html("Processing complete. <a href='" + data + "'>Download your file.</a>");
+      }
+    }
+  });
+}
+
+// Drag & drop functionality
+["dragover", "dragleave", "drop"].forEach(function(eventName) {
+  document.body.addEventListener(eventName, function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }, false);
+});
+
+["dragover", "dragleave"].forEach(function(eventName) {
+  document.querySelectorAll(".dropzone").forEach(function(dz) {
+    dz.addEventListener(eventName, function(e) {
+      e.target.classList.toggle("dragover");
+    }, false);
+  });
+});
+
+document.querySelectorAll(".dropzone").forEach(function(dz) {
+  dz.addEventListener("drop", function(e) {
+    let fileInput = e.target.querySelector("input[type='file']");
+    fileInput.files = e.dataTransfer.files;
+    e.target.querySelector("p").textContent = fileInput.files[0].name + " selected.";
+  }, false);
+});
+
+
+
+</script>
+
+</body>
+</html>
