@@ -7,7 +7,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 if any(arg.startswith('--gpu-vendor') for arg in sys.argv):
     os.environ['OMP_NUM_THREADS'] = '1'
 import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
 from typing import List
 import platform
 import signal
@@ -26,6 +25,7 @@ from roop.utilities import has_image_extention, is_image, is_video, detect_fps, 
 from roop.analyser import get_face_single
 import roop.ui as ui
 
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def handle_parse():
     global args
@@ -41,7 +41,7 @@ def handle_parse():
     parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
     parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 1))
     parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
-    parser.add_argument('--gpu-vendor', help='choice your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
+    parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
 
     args = parser.parse_known_args()[0]
 
@@ -259,7 +259,7 @@ def create_test_preview(frame_number):
 
 
 def destroy() -> None:
-    clean_temp(args.target_path, args.output_path)
+    clean_temp(args.target_path)
     quit()
 
 
