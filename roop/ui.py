@@ -1,11 +1,16 @@
 import tkinter as tk
 from typing import Any, Callable, Tuple
+
+import cv2
 from PIL import Image, ImageTk, ImageOps
 import webbrowser
 from tkinter import filedialog
 from tkinter.filedialog import asksaveasfilename
 import threading
 
+import roop.globals
+from roop.analyser import get_face_single
+from roop.swapper import process_faces
 from roop.utilities import is_image
 
 max_preview_size = 800
@@ -213,23 +218,12 @@ def preview_target(frame):
     target_label.image = photo_img
 
 
-def update_status_label(value):
+def update_status(value):
     status_label["text"] = value
     window.update()
 
 
-def init(
-    initial_values: dict,
-    select_face_handler: Callable[[str], None],
-    select_target_handler: Callable[[str], Tuple[int, Any]],
-    toggle_all_faces_handler: Callable[[int], None],
-    toggle_fps_limit_handler: Callable[[int], None],
-    toggle_keep_frames_handler: Callable[[int], None],
-    save_file_handler: Callable[[str], None],
-    start: Callable[[], None],
-    get_video_frame: Callable[[str, int], None],
-    create_test_preview: Callable[[int], Any],
-):
+def init(start: Callable[[], None]):
     global window, preview, preview_visible, face_label, target_label, status_label
 
     window = tk.Tk()
@@ -274,22 +268,23 @@ def init(
     target_button.place(x=360,y=320,width=180,height=80)
 
     # All faces checkbox
-    all_faces = tk.IntVar(None, initial_values['all_faces'])
+    all_faces = tk.IntVar(None, roop.globals.all_faces)
     all_faces_checkbox = create_check(window, "Process all faces in frame", all_faces, toggle_all_faces(toggle_all_faces_handler, all_faces))
     all_faces_checkbox.place(x=60,y=500,width=240,height=31)
 
     # FPS limit checkbox
-    limit_fps = tk.IntVar(None, not initial_values['keep_fps'])
+    limit_fps = tk.IntVar(None, not roop.globals.keep_fps)
     fps_checkbox = create_check(window, "Limit FPS to 30", limit_fps, toggle_fps_limit(toggle_fps_limit_handler, limit_fps))
     fps_checkbox.place(x=60,y=475,width=240,height=31)
 
     # Keep frames checkbox
-    keep_frames = tk.IntVar(None, initial_values['keep_frames'])
+    keep_frames = tk.IntVar(None, roop.globals.keep_frames)
     frames_checkbox = create_check(window, "Keep frames dir", keep_frames, toggle_keep_frames(toggle_keep_frames_handler, keep_frames))
     frames_checkbox.place(x=60,y=450,width=240,height=31)
 
     # Start button
-    start_button = create_button(window, "Start", lambda: [save_file(save_file_handler, target_path.get()), preview_thread(lambda: start(update_preview))])
+    #start_button = create_button(window, "Start", lambda: [save_file(save_file_handler, target_path.get()), preview_thread(lambda: start(update_preview))])
+    start_button = create_button(window, "Start", lambda: [save_file(save_file_handler, target_path.get()), start])
     start_button.place(x=170,y=560,width=120,height=49)
 
     # Preview button
@@ -301,3 +296,63 @@ def init(
     status_label.place(x=10,y=640,width=580,height=30)
 
     return window
+
+
+def get_video_frame(video_path, frame_number = 1):
+    cap = cv2.VideoCapture(video_path)
+    amount_of_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+    cap.set(cv2.CAP_PROP_POS_FRAMES, min(amount_of_frames, frame_number-1))
+    if not cap.isOpened():
+        update_status('Error opening video file')
+        return
+    ret, frame = cap.read()
+    if ret:
+        return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    cap.release()
+
+
+def preview_video(video_path):
+    cap = cv2.VideoCapture(video_path)
+    if not cap.isOpened():
+        update_status('Error opening video file')
+        return 0
+    amount_of_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+    ret, frame = cap.read()
+    if ret:
+        frame = get_video_frame(video_path)
+
+    cap.release()
+    return (amount_of_frames, frame)
+
+
+def select_face_handler(path: str):
+    roop.globals.source_path = path
+
+
+def select_target_handler(target_path: str) -> None:
+    roop.globals.target_path = target_path
+    return preview_video(roop.globals.target_path)
+
+
+def toggle_all_faces_handler(value: int):
+    roop.globals.all_faces = True if value == 1 else False
+
+
+def toggle_fps_limit_handler(value: int):
+    roop.globals.keep_fps = int(value != 1)
+
+
+def toggle_keep_frames_handler(value: int):
+    roop.globals.keep_frames = value
+
+
+def save_file_handler(path: str):
+    roop.globals.output_path = path
+
+
+def create_test_preview(frame_number):
+    return process_faces(
+        get_face_single(cv2.imread(roop.globals.source_path)),
+        get_video_frame(roop.globals.target_path, frame_number)
+    )
+
