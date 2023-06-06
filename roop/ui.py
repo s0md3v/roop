@@ -1,12 +1,12 @@
+import os
 import tkinter as tk
 from tkinter import filedialog
 from typing import Callable, Any
 
 import cv2
 from PIL import Image, ImageTk, ImageOps
-
 import roop.globals
-from roop.utilities import is_image
+from roop.utilities import is_image, is_video
 
 PRIMARY_COLOR = '#2d3436'
 SECONDARY_COLOR = '#74b9ff'
@@ -120,10 +120,10 @@ def update_status(text: str) -> None:
 
 
 def select_source_path():
-    path = filedialog.askopenfilename(title='Select a face')
-    if is_image(path):
-        roop.globals.source_path = path
-        image = render_frame_image(roop.globals.source_path)
+    source_path = filedialog.askopenfilename(title='Select an face image')
+    if is_image(source_path):
+        roop.globals.source_path = source_path
+        image = render_image_preview(roop.globals.source_path)
         source_label.configure(image=image)
         source_label.image = image
     else:
@@ -133,12 +133,17 @@ def select_source_path():
 
 
 def select_target_path():
-    path = filedialog.askopenfilename(title='Select a target')
-    if is_image(path):
-        roop.globals.target_path = path
-        image = render_frame_image(roop.globals.target_path)
+    target_path = filedialog.askopenfilename(title='Select an image or video target')
+    if is_image(target_path):
+        roop.globals.target_path = target_path
+        image = render_image_preview(roop.globals.target_path)
         target_label.configure(image=image)
         target_label.image = image
+    elif is_video(target_path):
+        roop.globals.target_path = target_path
+        video_frame = render_video_preview(target_path)
+        target_label.configure(image=video_frame)
+        target_label.image = video_frame
     else:
         roop.globals.target_path = None
         target_label.configure(image=None)
@@ -146,12 +151,27 @@ def select_target_path():
 
 
 def select_output_path(start):
-    roop.globals.output_path = filedialog.askdirectory(title='Select a target')
-    start()
+    output_path = filedialog.askopenfilename(title='Save to output file')
+    if os.path.isfile(output_path):
+        roop.globals.output_path = output_path
+        start()
 
 
-def render_frame_image(image_path: str) -> ImageTk.PhotoImage:
+def render_image_preview(image_path: str) -> ImageTk.PhotoImage:
     image = Image.open(image_path)
     image = ImageOps.fit(image, (200, 200), Image.LANCZOS)
     return ImageTk.PhotoImage(image)
+
+
+def render_video_preview(target_path: str) -> ImageTk.PhotoImage:
+    capture = cv2.VideoCapture(target_path)
+    total_frames = capture.get(cv2.CAP_PROP_FRAME_COUNT)
+    capture.set(cv2.CAP_PROP_POS_FRAMES, total_frames / 2)
+    has_frame, frame = capture.read()
+    if has_frame:
+        image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        image = ImageOps.fit(image, (200, 200), Image.LANCZOS)
+        return ImageTk.PhotoImage(image)
+    capture.release()
+    cv2.destroyAllWindows()
 

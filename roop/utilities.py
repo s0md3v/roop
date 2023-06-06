@@ -5,6 +5,8 @@ import subprocess
 from pathlib import Path
 from typing import List, Any
 
+import cv2
+
 import roop.globals
 from PIL import Image
 
@@ -74,7 +76,7 @@ def has_image_extention(image_path: str) -> bool:
 
 
 def is_image(image_path: str) -> bool:
-    if image_path and os.path.isfile(image_path):
+    if os.path.isfile(image_path):
         try:
             image = Image.open(image_path)
             image.verify()
@@ -85,10 +87,13 @@ def is_image(image_path: str) -> bool:
 
 
 def is_video(video_path: str) -> bool:
-    try:
-        if video_path and os.path.isfile(video_path):
-            run_ffmpeg(['-v', 'error', '-i', video_path, '-f', 'null', '-'])
-            return True
-    except subprocess.CalledProcessError:
-        pass
+    if os.path.isfile(video_path):
+        try:
+            capture = cv2.VideoCapture(video_path)
+            if capture.isOpened():
+                is_video, _ = capture.read()
+                capture.release()
+                return is_video
+        except Exception:
+            pass
     return False

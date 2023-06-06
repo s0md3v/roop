@@ -35,8 +35,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 def parse_args() -> None:
     signal.signal(signal.SIGINT, lambda signal_number, frame: destroy())
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--face', help='use this face', dest='source_path')
-    parser.add_argument('-t', '--target', help='replace this face', dest='target_path')
+    parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
+    parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
     parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
     parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
     parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
@@ -149,10 +149,10 @@ def update_status(message: str):
 
 def start() -> None:
     if not roop.globals.source_path or not os.path.isfile(roop.globals.source_path):
-        update_status('Please select an image containing a face.')
+        update_status('Select an image that contains a face.')
         return
     elif not roop.globals.target_path or not os.path.isfile(roop.globals.target_path):
-        update_status('Please select a video/image target!')
+        update_status('Select an image or video target!')
         return
     test_face = get_one_face(cv2.imread(roop.globals.source_path))
     if not test_face:
