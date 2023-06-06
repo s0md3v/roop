@@ -3,7 +3,6 @@
 import platform
 import signal
 import sys
-import time
 import shutil
 import glob
 import argparse
@@ -24,6 +23,33 @@ import core.globals
 from core.swapper import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from core.analyser import get_face
+
+#import os
+
+# Obtén el valor actual de LD_LIBRARY_PATH
+ld_library_path = os.environ.get('LD_LIBRARY_PATH', '')
+
+# Agrega las rutas necesarias, si es que no están presentes
+#paths_to_add = ['/usr/lib/x86_64-linux-gnu', '/usr/local/lib/python3.9/dist-packages/torch/lib']
+#for path in paths_to_add:
+ #   if path not in ld_library_path.split(':'):
+#        ld_library_path = f'{path}:{ld_library_path}'
+
+# Establecer la nueva LD_LIBRARY_PATH en las variables de entorno
+#os.environ['LD_LIBRARY_PATH'] = ld_library_path.rstrip(':')
+
+# Obtén la ruta actual del script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Obtén el valor actual de LD_LIBRARY_PATH
+ld_library_path = os.environ.get('LD_LIBRARY_PATH', '')
+
+# Agrega la ruta de la carpeta lib del software a LD_LIBRARY_PATH
+lib_path = os.path.join(script_dir, 'lib')
+ld_library_path = f'{lib_path}:{ld_library_path}'
+
+# Establecer la nueva LD_LIBRARY_PATH en las variables de entorno
+os.environ['LD_LIBRARY_PATH'] = ld_library_path
 
 if 'ROCMExecutionProvider' in core.globals.providers:
     del torch
@@ -63,15 +89,16 @@ def limit_resources():
 
 
 def pre_check():
-    if sys.version_info < (3, 8):
-        quit('Python version is not supported - please upgrade to 3.8 or higher')
+    if sys.version_info < (3, 9):
+        quit('Python version is not supported - please upgrade to 3.9 or higher')
     if not shutil.which('ffmpeg'):
         quit('ffmpeg is not installed!')
     model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inswapper_128.onnx')
     if not os.path.isfile(model_path):
         quit('File "inswapper_128.onnx" does not exist!')
     if '--gpu' in sys.argv:
-        if 'ROCMExecutionProvider' not in core.globals.providers:
+        NVIDIA_PROVIDERS = ['CUDAExecutionProvider', 'TensorrtExecutionProvider']
+        if len(list(set(core.globals.providers) - set(NVIDIA_PROVIDERS))) == 1:
             CUDA_VERSION = torch.version.cuda
             CUDNN_VERSION = torch.backends.cudnn.version()
             if not torch.cuda.is_available() or not CUDA_VERSION:
@@ -89,12 +116,8 @@ def pre_check():
 
 
 def start_processing():
-    start_time = time.time()
     if args['gpu']:
         process_video(args['source_img'], args["frame_paths"])
-        end_time = time.time()
-        print(flush=True)
-        print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
         return
     frame_paths = args["frame_paths"]
     n = len(frame_paths)//(args['cores_count'])
@@ -106,9 +129,6 @@ def start_processing():
         p.get()
     pool.close()
     pool.join()
-    end_time = time.time()
-    print(flush=True)
-    print(f"Processing time: {end_time - start_time:.2f} seconds", flush=True)
 
 
 def preview_image(image_path):
@@ -153,11 +173,11 @@ def select_target():
 
 
 def toggle_fps_limit():
-    args['keep_fps'] = limit_fps.get() != True
+    args['keep_fps'] = int(limit_fps.get() != True)
 
 
 def toggle_keep_frames():
-    args['keep_frames'] = keep_frames.get() != True
+    args['keep_frames'] = int(keep_frames.get())
 
 
 def save_file():
@@ -176,7 +196,6 @@ def status(string):
 
 
 def start():
-    print("DON'T WORRY. IT'S NOT STUCK/CRASHED.\n" * 5)
     if not args['source_img'] or not os.path.isfile(args['source_img']):
         print("\n[WARNING] Please select an image containing a face.")
         return
@@ -194,13 +213,13 @@ def start():
         print("\n[WARNING] No face detected in source image. Please try with another one.\n")
         return
     if is_img(target_path):
-        if predict_image(target_path) > 0.7:
+        if predict_image(target_path) > 1:
             quit()
         process_img(args['source_img'], target_path, args['output_file'])
         status("swap successful!")
         return
-    seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=50)
-    if any(probability > 0.7 for probability in probabilities):
+    seconds, probabilities = predict_video_frames(video_path=args['target_path'], frame_interval=100)
+    if any(probability > 1 for probability in probabilities):
         quit()
     video_name_full = target_path.split("/")[-1]
     video_name = os.path.splitext(video_name_full)[0]
@@ -261,13 +280,12 @@ if __name__ == "__main__":
     target_button.place(x=360,y=320,width=180,height=80)
 
     # FPS limit checkbox
-    limit_fps = tk.IntVar()
+    limit_fps = tk.IntVar(None, not args['keep_fps'])
     fps_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Limit FPS to 30", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=limit_fps, command=toggle_fps_limit)
     fps_checkbox.place(x=30,y=500,width=240,height=31)
-    fps_checkbox.select()
 
     # Keep frames checkbox
-    keep_frames = tk.IntVar()
+    keep_frames = tk.IntVar(None, args['keep_frames'])
     frames_checkbox = tk.Checkbutton(window, relief="groove", activebackground="#2d3436", activeforeground="#74b9ff", selectcolor="black", text="Keep frames dir", fg="#dfe6e9", borderwidth=0, highlightthickness=0, bg="#2d3436", variable=keep_frames, command=toggle_keep_frames)
     frames_checkbox.place(x=37,y=450,width=240,height=31)
 
@@ -280,3 +298,4 @@ if __name__ == "__main__":
     status_label.place(x=10,y=640,width=580,height=30)
     
     window.mainloop()
+
