@@ -24,31 +24,12 @@ from core.swapper import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from core.analyser import get_face
 
-#import os
 
-# Obtén el valor actual de LD_LIBRARY_PATH
 ld_library_path = os.environ.get('LD_LIBRARY_PATH', '')
-
-# Agrega las rutas necesarias, si es que no están presentes
-#paths_to_add = ['/usr/lib/x86_64-linux-gnu', '/usr/local/lib/python3.9/dist-packages/torch/lib']
-#for path in paths_to_add:
- #   if path not in ld_library_path.split(':'):
-#        ld_library_path = f'{path}:{ld_library_path}'
-
-# Establecer la nueva LD_LIBRARY_PATH en las variables de entorno
-#os.environ['LD_LIBRARY_PATH'] = ld_library_path.rstrip(':')
-
-# Obtén la ruta actual del script
 script_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Obtén el valor actual de LD_LIBRARY_PATH
 ld_library_path = os.environ.get('LD_LIBRARY_PATH', '')
-
-# Agrega la ruta de la carpeta lib del software a LD_LIBRARY_PATH
 lib_path = os.path.join(script_dir, 'lib')
 ld_library_path = f'{lib_path}:{ld_library_path}'
-
-# Establecer la nueva LD_LIBRARY_PATH en las variables de entorno
 os.environ['LD_LIBRARY_PATH'] = ld_library_path
 
 if 'ROCMExecutionProvider' in core.globals.providers:
