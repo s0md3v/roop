@@ -2,11 +2,13 @@
 
 import os
 import sys
-from typing import List
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # single thread doubles performance of gpu-mode - needs to be set before torch import
 if any(arg.startswith('--gpu-vendor') for arg in sys.argv):
     os.environ['OMP_NUM_THREADS'] = '1'
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+from typing import List
 import platform
 import signal
 import shutil
@@ -20,8 +22,7 @@ import cv2
 
 import roop.globals
 from roop.swapper import process_video, process_img, process_faces
-from roop.utilities import has_image_extention, is_image, detect_fps, create_video, extract_frames, \
-    get_temp_frames_paths, restore_audio, create_temp, clean_temp, is_video
+from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frames_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.analyser import get_face_single
 import roop.ui as ui
 
@@ -216,7 +217,9 @@ def start(preview_callback = None) -> None:
         else:
             status('Restoring audio might cause issues as fps are not kept...')
         restore_audio(args.target_path, args.output_path)
-    clean_temp(args.target_path, args.output_path)
+    else:
+        move_temp(args.target_path, args.output_path)
+    clean_temp(args.target_path)
     if is_video(args.target_path):
         status('Swapping to video succeed!')
     else:
@@ -265,8 +268,9 @@ def run() -> None:
     handle_parse()
     pre_check()
     limit_resources()
-    start()
-    if not roop.globals.headless:
+    if roop.globals.headless:
+        start()
+    else:
         window = ui.init(
             {
                 'all_faces': args.all_faces,
