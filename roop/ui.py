@@ -1,10 +1,10 @@
-import os
 import tkinter as tk
 from tkinter import filedialog
 from typing import Callable, Any, Tuple
 
 import cv2
 from PIL import Image, ImageTk, ImageOps
+
 import roop.globals
 from roop.analyser import get_one_face
 from roop.capturer import get_video_frame
@@ -17,8 +17,8 @@ TERTIARY_COLOR = '#f1c40f'
 ACCENT_COLOR = '#2ecc71'
 WINDOW_HEIGHT = 700
 WINDOW_WIDTH = 600
-PREVIEW_HEIGHT = 700
-PREVIEW_WIDTH = 1200
+PREVIEW_MAX_HEIGHT = 700
+PREVIEW_MAX_WIDTH = 1200
 
 
 def init(start: Callable, destroy: Callable) -> tk.Tk:
@@ -61,11 +61,11 @@ def create_root(start: Callable, destroy: Callable) -> tk.Tk:
     keep_frames_checkbox.place(relx=0.1, rely=0.65)
 
     keep_audio_value = tk.BooleanVar(value=roop.globals.keep_audio)
-    keep_audio_checkbox = create_checkbox(root, 'Keep original audio', keep_frames_value, lambda: setattr(roop.globals, 'keep_audio', keep_audio_value.get()))
+    keep_audio_checkbox = create_checkbox(root, 'Keep original audio', keep_audio_value, lambda: setattr(roop.globals, 'keep_audio', keep_audio_value.get()))
     keep_audio_checkbox.place(relx=0.6, rely=0.6)
 
     many_faces_value = tk.BooleanVar(value=roop.globals.many_faces)
-    many_faces_checkbox = create_checkbox(root, 'Replace all faces', many_faces_value, lambda: setattr(roop.globals, 'many_faces', keep_audio_value.get()))
+    many_faces_checkbox = create_checkbox(root, 'Replace all faces', many_faces_value, lambda: setattr(roop.globals, 'many_faces', many_faces_value.get()))
     many_faces_checkbox.place(relx=0.6, rely=0.65)
 
     start_button = create_secondary_button(root, 'Start', lambda: select_output_path(start))
@@ -91,8 +91,8 @@ def create_preview(parent) -> tk.Toplevel:
     preview.title('Preview')
     preview.configure(bg=PRIMARY_COLOR)
     preview.option_add('*Font', ('Arial', 11))
-    preview.minsize(PREVIEW_WIDTH, PREVIEW_HEIGHT)
     preview.protocol('WM_DELETE_WINDOW', lambda: toggle_preview())
+    preview.resizable(width=False, height=False)
 
     preview_label = tk.Label(preview, bg=PRIMARY_COLOR)
     preview_label.pack(fill='both', expand=True)
@@ -184,7 +184,10 @@ def select_target_path():
 
 
 def select_output_path(start):
-    output_path = filedialog.asksaveasfilename(title='Save to output file', initialfile='output.mp4')
+    if is_image(roop.globals.target_path):
+        output_path = filedialog.asksaveasfilename(title='Save image output', initialfile='output.png')
+    elif is_video(roop.globals.target_path):
+        output_path = filedialog.asksaveasfilename(title='Save video output', initialfile='output.mp4')
     if output_path:
         roop.globals.output_path = output_path
         start()
@@ -225,8 +228,8 @@ def update_preview(frame_number: int) -> None:
             get_one_face(cv2.imread(roop.globals.source_path)),
             get_video_frame(roop.globals.target_path, frame_number)
         )
-        img = Image.fromarray(video_frame)
-        img = ImageOps.contain(img, (PREVIEW_WIDTH, PREVIEW_HEIGHT), Image.LANCZOS)
-        img = ImageTk.PhotoImage(img)
-        preview_label.configure(image=img)
-        preview_label.image = img
+        image = Image.fromarray(video_frame)
+        image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
+        image = ImageTk.PhotoImage(image)
+        preview_label.configure(image=image)
+        preview_label.image = image
