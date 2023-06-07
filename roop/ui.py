@@ -35,6 +35,7 @@ def create_root(start: Callable, destroy: Callable) -> tk.Tk:
     root.title('roop')
     root.configure(bg=PRIMARY_COLOR)
     root.option_add('*Font', ('Arial', 11))
+    root.protocol('WM_DELETE_WINDOW', lambda: destroy())
 
     source_label = tk.Label(root, bg=PRIMARY_COLOR)
     source_label.place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.25)
@@ -73,7 +74,7 @@ def create_root(start: Callable, destroy: Callable) -> tk.Tk:
     preview_button = create_secondary_button(root, 'Preview', lambda: toggle_preview())
     preview_button.place(relx=0.65, rely=0.75, relwidth=0.2, relheight=0.05)
 
-    status_label = tk.Label(root, justify='center', text='Status: UI under heavy development, more features will soon be (re)added', fg=ACCENT_COLOR, bg=PRIMARY_COLOR)
+    status_label = tk.Label(root, justify='center', text='Status: None', fg=ACCENT_COLOR, bg=PRIMARY_COLOR)
     status_label.place(relx=0.1, rely=0.9)
 
     return root
@@ -88,6 +89,7 @@ def create_preview(parent) -> tk.Toplevel:
     preview.configure(bg=PRIMARY_COLOR)
     preview.option_add('*Font', ('Arial', 11))
     preview.minsize(PREVIEW_WIDTH, PREVIEW_HEIGHT)
+    preview.protocol('WM_DELETE_WINDOW', lambda: toggle_preview())
 
     preview_label = tk.Label(preview, bg=PRIMARY_COLOR)
     preview_label.pack(fill='both', expand=True)
@@ -180,8 +182,8 @@ def select_target_path():
 
 
 def select_output_path(start):
-    output_path = filedialog.askopenfilename(title='Save to output file')
-    if os.path.isfile(output_path):
+    output_path = filedialog.asksaveasfilename(title='Save to output file', initialfile='output.mp4')
+    if output_path and os.path.isfile(output_path):
         roop.globals.output_path = output_path
         start()
 
@@ -207,7 +209,7 @@ def render_video_preview(video_path: str, dimensions: Tuple[int, int] = None, fr
     cv2.destroyAllWindows()
 
 
-def toggle_preview():
+def toggle_preview() -> None:
     if PREVIEW.state() == 'normal':
         PREVIEW.withdraw()
     else:
