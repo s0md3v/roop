@@ -16,7 +16,6 @@ import psutil
 import torch
 import tensorflow
 import multiprocessing
-from opennsfw2 import predict_video_frames, predict_image
 import cv2
 
 import roop.globals
@@ -182,8 +181,6 @@ def start(preview_callback = None) -> None:
         return
     # process image to image
     if has_image_extention(args.target_path):
-        if predict_image(args.target_path) > 0.85:
-            destroy()
         process_img(args.source_path, args.target_path, args.output_path)
         if is_image(args.target_path):
             status('Swapping to image succeed!')
@@ -191,9 +188,6 @@ def start(preview_callback = None) -> None:
             status('Swapping to image failed!')
         return
     # process image to videos
-    seconds, probabilities = predict_video_frames(video_path=args.target_path, frame_interval=100)
-    if any(probability > 0.85 for probability in probabilities):
-        destroy()
     status('Creating temp resources...')
     create_temp(args.target_path)
     status('Extracting frames...')
