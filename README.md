@@ -34,23 +34,28 @@ Additional command line arguments are given below:
 ```
 options:
   -h, --help            show this help message and exit
-  -f SOURCE_IMG, --face SOURCE_IMG
-                        use this face
+  -f SOURCE_PATH, --face SOURCE_PATH
+                        use a face image
   -t TARGET_PATH, --target TARGET_PATH
-                        replace this face
-  -o OUTPUT_FILE, --output OUTPUT_FILE
+                        replace image or video with face
+  -o OUTPUT_PATH, --output OUTPUT_PATH
                         save output to this file
   --keep-fps            maintain original fps
+  --keep-audio          maintain original audio
   --keep-frames         keep frames directory
-  --all-faces           swap all faces in frame
+  --many-faces          swap every face in the frame
+  --video-encoder VIDEO_ENCODER
+                        adjust output video encoder
+  --video-quality VIDEO_QUALITY
+                        adjust output video quality
   --max-memory MAX_MEMORY
                         maximum amount of RAM in GB to be used
   --cpu-cores CPU_CORES
                         number of CPU cores to use
   --gpu-threads GPU_THREADS
                         number of threads to be use for the GPU
-  --gpu-vendor {apple,amd,intel,nvidia}
-                        choice your GPU vendor
+  --gpu-vendor {apple,amd,nvidia}
+                        select your GPU vendor
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
