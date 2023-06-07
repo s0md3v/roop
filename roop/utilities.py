@@ -35,7 +35,7 @@ def extract_frames(target_path: str) -> None:
 
 
 def create_video(target_path: str, fps: int) -> None:
-    run_ffmpeg(['-i', get_temp_directory_path(target_path) + os.sep + '%04d.png', '-framerate', str(fps), '-c:v', 'libx264', '-crf', roop.globals.video_quality, '-pix_fmt', 'yuv420p', '-y', get_temp_file_path(target_path)])
+    run_ffmpeg(['-i', get_temp_directory_path(target_path) + os.sep + '%04d.png', '-framerate', str(fps), '-c:v', 'libx264', '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-y', get_temp_file_path(target_path)])
 
 
 def restore_audio(target_path: str, output_path: str) -> None:
@@ -67,8 +67,9 @@ def move_temp(target_path: str, output_path: str) -> None:
 
 
 def clean_temp(target_path: str) -> None:
-    if not roop.globals.keep_frames:
-        shutil.rmtree(get_temp_directory_path(target_path))
+    temp_directory_path = get_temp_directory_path(target_path)
+    if not roop.globals.keep_frames and  os.path.isdir(temp_directory_path):
+        shutil.rmtree(temp_directory_path)
 
 
 def has_image_extention(image_path: str) -> bool:

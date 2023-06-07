@@ -6,6 +6,9 @@ from typing import Callable, Any, Tuple
 import cv2
 from PIL import Image, ImageTk, ImageOps
 import roop.globals
+from roop.analyser import get_one_face
+from roop.capturer import get_video_frame
+from roop.swapper import process_faces
 from roop.utilities import is_image, is_video
 
 PRIMARY_COLOR = '#2d3436'
@@ -81,7 +84,7 @@ def create_root(start: Callable, destroy: Callable) -> tk.Tk:
 
 
 def create_preview(parent) -> tk.Toplevel:
-    global preview_label
+    global preview_label, preview_scale
 
     preview = tk.Toplevel(parent)
     preview.withdraw()
@@ -94,9 +97,8 @@ def create_preview(parent) -> tk.Toplevel:
     preview_label = tk.Label(preview, bg=PRIMARY_COLOR)
     preview_label.pack(fill='both', expand=True)
 
-    frame_value = tk.IntVar()
-    frame_slider = tk.Scale(preview, orient='horizontal', variable=frame_value)
-    frame_slider.pack(fill='x')
+    preview_scale = tk.Scale(preview, orient='horizontal', command=lambda frame_value: update_preview(int(frame_value)))
+    preview_scale.pack(fill='x')
 
     return preview
 
@@ -183,7 +185,7 @@ def select_target_path():
 
 def select_output_path(start):
     output_path = filedialog.asksaveasfilename(title='Save to output file', initialfile='output.mp4')
-    if output_path and os.path.isfile(output_path):
+    if output_path:
         roop.globals.output_path = output_path
         start()
 
@@ -195,15 +197,15 @@ def render_image_preview(image_path: str, dimensions: Tuple[int, int] = None) ->
     return ImageTk.PhotoImage(image)
 
 
-def render_video_preview(video_path: str, dimensions: Tuple[int, int] = None, frame: int = 1) -> ImageTk.PhotoImage:
+def render_video_preview(video_path: str, dimensions: Tuple[int, int] = None, frame_number: int = 1) -> ImageTk.PhotoImage:
     capture = cv2.VideoCapture(video_path)
-    if frame:
-        capture.set(cv2.CAP_PROP_POS_FRAMES, frame)
+    if frame_number:
+        capture.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
     has_frame, frame = capture.read()
     if has_frame:
+        image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         if dimensions:
-            image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        image = ImageOps.fit(image, dimensions, Image.LANCZOS)
+            image = ImageOps.fit(image, dimensions, Image.LANCZOS)
         return ImageTk.PhotoImage(image)
     capture.release()
     cv2.destroyAllWindows()
@@ -213,4 +215,18 @@ def toggle_preview() -> None:
     if PREVIEW.state() == 'normal':
         PREVIEW.withdraw()
     else:
+        update_preview(1)
         PREVIEW.deiconify()
+
+
+def update_preview(frame_number: int) -> None:
+    if roop.globals.source_path and roop.globals.target_path and frame_number:
+        video_frame = process_faces(
+            get_one_face(cv2.imread(roop.globals.source_path)),
+            get_video_frame(roop.globals.target_path, frame_number)
+        )
+        img = Image.fromarray(video_frame)
+        img = ImageOps.contain(img, (PREVIEW_WIDTH, PREVIEW_HEIGHT), Image.LANCZOS)
+        img = ImageTk.PhotoImage(img)
+        preview_label.configure(image=img)
+        preview_label.image = img
