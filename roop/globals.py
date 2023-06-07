@@ -13,8 +13,16 @@ gpu_threads = None
 gpu_vendor = None
 max_memory = None
 headless = None
+ffmpeg_encoder = None
 log_level = 'error'
 providers = onnxruntime.get_available_providers()
 
 if 'TensorrtExecutionProvider' in providers:
     providers.remove('TensorrtExecutionProvider')
+
+list_encoders = {
+    'nvidia': 'h264_nvenc',
+    'amd': 'h264_amf',
+    'apple': 'h264_videotoolbox',
+    'intel': 'h264_qsv'
+}
