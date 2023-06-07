@@ -28,9 +28,12 @@ def get_face_many(img_data):
 
 
 def get_face_filter(img_data):
-    all_faces = get_face_analyser().get(img_data)
+    faces = get_face_analyser().get(img_data)
     try:
-        gender_faces = list(filter(lambda x: x.sex == roop.globals.gender, all_faces))
-        return gender_faces
+        if roop.globals.gender:
+            faces = list(filter(lambda x: x.sex == roop.globals.gender, faces))
+        if roop.globals.age:
+            faces = list(filter(lambda x: abs(x.age - roop.globals.age) <= roop.globals.measurement_error, faces))
+        return faces
     except IndexError:
         return None

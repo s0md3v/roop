@@ -33,7 +33,7 @@ def process_faces(source_face, target_frame):
             for face in many_faces:
                 target_frame = swap_face_in_frame(source_face, face, target_frame)
     else:
-        if roop.globals.gender:
+        if roop.globals.gender or roop.globals.age:
             many_faces = get_face_filter(target_frame)
             for face in many_faces:
                 target_frame = swap_face_in_frame(source_face, face, target_frame)

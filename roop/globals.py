@@ -7,7 +7,7 @@ gpu_threads = None
 gpu_vendor = None
 gender = None
 age = None
-measurement_error = None
+measurement_error = 5
 providers = onnxruntime.get_available_providers()
 
 if 'TensorrtExecutionProvider' in providers:
