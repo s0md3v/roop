@@ -47,6 +47,7 @@ def parse_args() -> None:
     parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 1))
     parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
     parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
+    parser.add_argument('--ffmpeg-encoder', help='select ffmpeg encoder', dest='ffmpeg_encoder')
 
     args = parser.parse_known_args()[0]
 
@@ -59,6 +60,7 @@ def parse_args() -> None:
     roop.globals.keep_frames = args.keep_frames
     roop.globals.many_faces = args.many_faces
     roop.globals.video_quality = args.video_quality
+    roop.globals.ffmpeg_encoder = args.ffmpeg_encoder
 
     if args.cpu_cores:
         roop.globals.cpu_cores = int(args.cpu_cores)
