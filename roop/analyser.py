@@ -1,10 +1,11 @@
+from typing import Any
 import insightface
 import roop.globals
 
 FACE_ANALYSER = None
 
 
-def get_face_analyser():
+def get_face_analyser() -> Any:
     global FACE_ANALYSER
     if FACE_ANALYSER is None:
         FACE_ANALYSER = insightface.app.FaceAnalysis(name='buffalo_l', providers=roop.globals.providers)
@@ -12,16 +13,16 @@ def get_face_analyser():
     return FACE_ANALYSER
 
 
-def get_face_single(img_data):
-    face = get_face_analyser().get(img_data)
+def get_one_face(image_data) -> Any:
+    face = get_face_analyser().get(image_data)
     try:
-        return sorted(face, key=lambda x: x.bbox[0])[0]
-    except IndexError:
+        return min(face, key=lambda x: x.bbox[0])
+    except ValueError:
         return None
 
 
-def get_face_many(img_data):
+def get_many_faces(image_data) -> Any:
     try:
-        return get_face_analyser().get(img_data)
+        return get_face_analyser().get(image_data)
     except IndexError:
         return None
