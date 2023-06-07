@@ -44,8 +44,6 @@ options:
   --keep-audio          maintain original audio
   --keep-frames         keep frames directory
   --many-faces          swap every face in the frame
-  --video-encoder VIDEO_ENCODER
-                        adjust output video encoder
   --video-quality VIDEO_QUALITY
                         adjust output video quality
   --max-memory MAX_MEMORY
