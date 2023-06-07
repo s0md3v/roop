@@ -5,7 +5,7 @@ import cv2
 import insightface
 import threading
 import roop.globals
-from roop.analyser import get_face_single, get_face_many
+from roop.analyser import get_face_single, get_face_many, get_face_filter
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
@@ -33,9 +33,14 @@ def process_faces(source_face, target_frame):
             for face in many_faces:
                 target_frame = swap_face_in_frame(source_face, face, target_frame)
     else:
-        face = get_face_single(target_frame)
-        if face:
-            target_frame = swap_face_in_frame(source_face, face, target_frame)
+        if roop.globals.gender:
+            many_faces = get_face_filter(target_frame)
+            for face in many_faces:
+                target_frame = swap_face_in_frame(source_face, face, target_frame)
+        else:
+            face = get_face_single(target_frame)
+            if face:
+                target_frame = swap_face_in_frame(source_face, face, target_frame)
     return target_frame
 
 

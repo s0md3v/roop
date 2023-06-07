@@ -2,10 +2,11 @@ import tkinter as tk
 from typing import Any, Callable, Tuple
 from PIL import Image, ImageTk
 import webbrowser
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 from tkinter.filedialog import asksaveasfilename
 import threading
 
+import roop.globals
 from roop.utils import is_img
 
 max_preview_size = 800
@@ -137,6 +138,11 @@ def save_file(save_file_handler: Callable[[str], None], target_path: str):
 def toggle_all_faces(toggle_all_faces_handler: Callable[[int], None], variable: tk.IntVar):
     if toggle_all_faces_handler:
         return lambda: toggle_all_faces_handler(variable.get())
+    return None
+
+
+def select_gender(gender):
+    roop.globals.gender = gender.get()
     return None
 
 
@@ -299,6 +305,18 @@ def init(
     keep_frames = tk.IntVar(None, initial_values['keep_frames'])
     frames_checkbox = create_check(window, "Keep frames dir", keep_frames, toggle_keep_frames(toggle_keep_frames_handler, keep_frames))
     frames_checkbox.place(x=60,y=450,width=240,height=31)
+
+    # Select gender
+    gender_label = tk.Label(window, text="Gender identity:", fg="#ffffff", bg="#2d3436",
+                            font=("Arial", 8))
+    gender_label.place(x=270, y=450, width=250, height=30)
+    genders = ['F', 'M', 'All']
+    gender = tk.StringVar()
+    gender.trace('w', lambda name, index, mode, gender=gender: select_gender(gender))
+    gender_combobox = ttk.Combobox(values=genders, textvariable=gender, state="readonly")
+    gender_combobox.current(genders.index(roop.globals.gender))
+    gender_combobox.place(x=480, y=450, width=40, height=21)
+
 
     # Start button
     start_button = create_button(window, "Start", lambda: [save_file(save_file_handler, target_path.get()), preview_thread(lambda: start(update_preview))])

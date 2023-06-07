@@ -36,11 +36,16 @@ parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used
 parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 1))
 parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
 parser.add_argument('--gpu-vendor', help='choice your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'intel', 'nvidia'])
+parser.add_argument('--gender', help='choice gender of face', dest='gender', choices=['F', 'M'])
 
 args = parser.parse_known_args()[0]
 
 if 'all_faces' in args:
     roop.globals.all_faces = True
+
+if 'gender' in args:
+    roop.globals.gender = args.gender
+
 
 if args.cpu_cores:
     roop.globals.cpu_cores = int(args.cpu_cores)

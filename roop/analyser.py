@@ -25,3 +25,12 @@ def get_face_many(img_data):
         return get_face_analyser().get(img_data)
     except IndexError:
         return None
+
+
+def get_face_filter(img_data):
+    all_faces = get_face_analyser().get(img_data)
+    try:
+        gender_faces = list(filter(lambda x: x.sex == roop.globals.gender, all_faces))
+        return gender_faces
+    except IndexError:
+        return None
