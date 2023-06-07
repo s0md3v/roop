@@ -7,6 +7,7 @@ keep_fps = None
 keep_audio = None
 keep_frames = None
 many_faces = None
+video_encoder = None
 video_quality = None
 cpu_cores = None
 gpu_threads = None
