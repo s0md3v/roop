@@ -51,6 +51,7 @@ options:
                         number of threads to be use for the GPU
   --gpu-vendor {apple,amd,intel,nvidia}
                         choice your GPU vendor
+  --ffmpeg-encoder      ffmpeg encoder (see ffmpeg -encoders output). If the parameter is omitted, codec will match to --gpu-vendor.
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
