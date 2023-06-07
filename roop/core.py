@@ -255,11 +255,14 @@ def save_file_handler(path: str):
     args.output_file = path
 
 
-def create_test_preview(frame_number):
-    return process_faces(
-        get_face_single(cv2.imread(args.source_img)),
-        get_video_frame(args.target_path, frame_number)
-    )
+def create_test_preview(frame_number, detect: bool = False):
+    if detect:
+        return get_video_frame(args.target_path, frame_number)
+    else:
+        return process_faces(
+            get_face_single(cv2.imread(args.source_img)),
+            get_video_frame(args.target_path, frame_number)
+        )
 
 
 def run():

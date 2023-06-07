@@ -8,12 +8,13 @@ import threading
 
 import roop.globals
 from roop.utils import is_img
+from roop.analyser import get_face_analyser
 
 max_preview_size = 800
 
 
 def create_preview(parent):
-    global preview_image_frame, preview_frame_slider, test_button
+    global preview_image_frame, preview_frame_slider, test_button, detect_button
 
     preview_window = tk.Toplevel(parent)
     # Override close button
@@ -46,6 +47,9 @@ def create_preview(parent):
 
     test_button = tk.Button(buttons_frame, text="Test", bg="#f1c40f", relief="flat", width=15, borderwidth=0, highlightthickness=0)
     test_button.pack(side='right', fill='y')
+    detect_button = tk.Button(buttons_frame, text="Detect", bg="#f1c40f", relief="flat", width=15, borderwidth=0,
+                              highlightthickness=0)
+    detect_button.pack(side='right', fill='y')
     return preview_window
 
 
@@ -60,7 +64,11 @@ def hide_preview():
 
 
 def set_preview_handler(test_handler):
-    test_button.config(command = test_handler)
+    test_button.config(command=test_handler)
+
+
+def detect_preview_handler(detect_handler):
+    detect_button.config(command=detect_handler)
 
 
 def init_slider(frames_count, change_handler):
@@ -68,8 +76,13 @@ def init_slider(frames_count, change_handler):
     preview_frame_slider.set(0)
 
 
-def update_preview(frame):
-    img = Image.fromarray(frame)
+def update_preview(frame, detect: bool = False):
+    if detect:
+        faces = get_face_analyser().get(frame)
+        img_with_faces = get_face_analyser().draw_on(frame, faces)
+        img = Image.fromarray(img_with_faces)
+    else:
+        img = Image.fromarray(frame)
     width, height = img.size
     aspect_ratio = 1
     if width > height:
@@ -100,14 +113,15 @@ def update_slider_handler(get_video_frame, video_path):
     return lambda frame_number: update_preview(get_video_frame(video_path, frame_number))
 
 
-def test_preview(create_test_preview):
-    frame = create_test_preview(preview_frame_slider.get())
-    update_preview(frame)
+def test_preview(create_test_preview, detect: bool = False):
+    frame = create_test_preview(preview_frame_slider.get(), detect)
+    update_preview(frame, detect)
 
 
 def update_slider(get_video_frame, create_test_preview, video_path, frames_amount):
     init_slider(frames_amount, update_slider_handler(get_video_frame, video_path))
     set_preview_handler(lambda: preview_thread(lambda: test_preview(create_test_preview)))
+    detect_preview_handler(lambda: preview_thread(lambda: test_preview(create_test_preview, detect=True)))
 
 
 def analyze_target(select_target_handler: Callable[[str], Tuple[int, Any]], target_path: tk.StringVar, frames_amount: tk.IntVar):    
@@ -156,7 +170,7 @@ def edit_age(age):
 
 def edit_measurement_error(measurement_error):
     if measurement_error.get() == 0:
-        roop.globals.measurement_error = None
+        roop.globals.measurement_error = 0
     else:
         roop.globals.measurement_error = measurement_error.get()
     return None
