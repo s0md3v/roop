@@ -146,6 +146,22 @@ def select_gender(gender):
     return None
 
 
+def edit_age(age):
+    if age.get() == 0:
+        roop.globals.age = None
+    else:
+        roop.globals.age = age.get()
+    return None
+
+
+def edit_measurement_error(measurement_error):
+    if measurement_error.get() == 0:
+        roop.globals.measurement_error = None
+    else:
+        roop.globals.measurement_error = measurement_error.get()
+    return None
+
+
 def toggle_fps_limit(toggle_all_faces_handler: Callable[[int], None], variable: tk.IntVar):
     if toggle_all_faces_handler:
         return lambda: toggle_all_faces_handler(variable.get())
@@ -315,8 +331,25 @@ def init(
     gender.trace('w', lambda name, index, mode, gender=gender: select_gender(gender))
     gender_combobox = ttk.Combobox(values=genders, textvariable=gender, state="readonly")
     gender_combobox.current(genders.index(roop.globals.gender))
-    gender_combobox.place(x=480, y=450, width=40, height=21)
+    gender_combobox.place(x=450, y=450, width=40, height=21)
 
+    # Select age
+    age_label = tk.Label(window, text="Age of the face:", fg="#ffffff", bg="#2d3436",
+                            font=("Arial", 8))
+    age_label.place(x=255, y=470, width=250, height=30)
+    age = tk.IntVar(value=roop.globals.age)
+    age.trace('w', lambda name, index, mode, age=age: edit_age(age))
+    age_field = ttk.Entry(textvariable=age)
+    age_field.place(x=430, y=475, width=25, height=21)
+
+    # Select measurement error
+    measurement_error_label = tk.Label(window, text="±", fg="#ffffff", bg="#2d3436",
+                         font=("Arial", 8))
+    measurement_error_label.place(x=457, y=473, width=5, height=20)
+    measurement_error = tk.IntVar(value=roop.globals.measurement_error if roop.globals.measurement_error else 5)
+    measurement_error.trace('w', lambda name, index, mode, measurement_error=measurement_error: edit_measurement_error(measurement_error))
+    measurement_error_field = ttk.Entry(textvariable=measurement_error)
+    measurement_error_field.place(x=465, y=475, width=25, height=21)
 
     # Start button
     start_button = create_button(window, "Start", lambda: [save_file(save_file_handler, target_path.get()), preview_thread(lambda: start(update_preview))])
