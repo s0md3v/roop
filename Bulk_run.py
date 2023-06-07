@@ -1,6 +1,6 @@
-# Modify - One Click Bulk Deefakes by @Aditya-A-Sharma
+# Roop-Parivartanam - One Click Bulk Deepfakes by @Aditya-A-Sharma
 # This is a UI with a few added functionalities for s0md3v's roop project
-# GitHub Link : https://github.com/Aditya-A-Sharma/Modify-One-Click-Bulk-Deepfakes
+# GitHub Link : https://github.com/Aditya-A-Sharma/Roop-Parivartanam
 # GitHum Link for roop : https://github.com/s0md3v/roop
 
 
