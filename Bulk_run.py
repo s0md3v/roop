@@ -32,7 +32,7 @@ face_file = tk.StringVar(value=config.get('Paths', 'face_file', fallback=''))
 target_directory = tk.StringVar(value=config.get('Paths', 'target_directory', fallback=''))
 GPU_mode_variable = True
 GPU_mode_checkbox_var = tk.BooleanVar()
-advanced_mode_variable = False
+advanced_mode_variable = True
 advanced_mode_checkbox_var = tk.BooleanVar()
 
 # Function to browse and set the activation script path
@@ -210,9 +210,9 @@ def create_ui_elements():
     # Labels
     note_label = tk.Label(window, text="Select a directory and all files within it will be processed.\nFiles will be saved in the same directory.\nNaming format will be TargetFileName_FaceFileName.mp4.\nFiles already matching a face file name will be skipped.\nUse Responsibly, do not do what you wouldn't want others to do to you.", justify='left', padx=10)
     face_file_label = tk.Label(window, text="Face File:", justify='right')
-    target_directory_label = tk.Label(window, text="    Target Directory:", justify='right')
+    target_directory_label = tk.Label(window, text="        Video Directory:", justify='right')
     GPU_mode_label = tk.Label(window, text="    Disable GPU Mode if cuda errors occur:", justify='right')
-    advanced_mode_label = tk.Label(window, text="       Advanced Mode:", justify='left')
+    advanced_mode_label = tk.Label(window, text="                 Simple Mode:", justify='right')
 
     # Entry
     face_file_entry = tk.Entry(window, textvariable=face_file, width=50)
@@ -249,8 +249,8 @@ def create_ui_elements():
     
     if advanced_mode_variable:
         # Labels
-        activation_script_label = tk.Label(window, text="    Activation Script:", justify='right')
-        python_file_label = tk.Label(window, text="Python File:", justify='right')
+        activation_script_label = tk.Label(window, text="Virtual Environment:", justify='right')
+        python_file_label = tk.Label(window, text="Roop Run.py", justify='right')
         # Entry
         activation_script_entry = tk.Entry(window, textvariable=activate_env_path, width=50,)
         python_file_entry = tk.Entry(window, textvariable=file_path, width=50)
