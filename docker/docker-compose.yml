@@ -1,0 +1,20 @@
+version: '3.9'
+
+services:
+  roop:
+    image: roop:latest
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    restart: no
+    env_file:
+      - .env
+    command: nvidia-smi
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [compute, utility, video]

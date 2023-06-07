@@ -1,6 +1,5 @@
 .idea
 __pycache__
-*.onnx
 .env
 .envrc
 .tool-versions
