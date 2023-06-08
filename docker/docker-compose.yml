@@ -1,0 +1,21 @@
+services:
+  roop: &base
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./roop/output:/home/node/roop/output
+      - ./roop/temp:/home/node/roop/temp
+    user: 1000:1000
+  roop-cuda:
+    <<: *base
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.cuda
+    deploy:
+     resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu,video]
