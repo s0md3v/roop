@@ -22,14 +22,15 @@ import cv2
 
 import roop.globals
 import roop.ui as ui
-from roop.swapper import process_video, process_img
+from roop.face_swapper import process_video, process_img
 from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frames_paths, restore_audio, create_temp, move_temp, clean_temp
-from roop.analyser import get_one_face
+from roop.face_analyser import get_one_face
+from roop.face_enhancer import enhance_images_in_folder
 
 if 'ROCMExecutionProvider' in roop.globals.providers:
     del torch
 
-warnings.simplefilter(action='ignore', category=FutureWarning)
+# warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def parse_args() -> None:
@@ -48,6 +49,7 @@ def parse_args() -> None:
     parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 1))
     parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
     parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
+    parser.add_argument('--face-enhance', help='enhance face with codeformer', dest='face_enhance', action='store_true', default=False)
 
     args = parser.parse_known_args()[0]
 
@@ -61,6 +63,7 @@ def parse_args() -> None:
     roop.globals.many_faces = args.many_faces
     roop.globals.video_encoder = args.video_encoder
     roop.globals.video_quality = args.video_quality
+    roop.globals.face_enhance = args.face_enhance
 
     if args.cpu_cores:
         roop.globals.cpu_cores = int(args.cpu_cores)
@@ -182,6 +185,8 @@ def start() -> None:
     extract_frames(roop.globals.target_path)
     frame_paths = get_temp_frames_paths(roop.globals.target_path)
     conditional_process_video(roop.globals.source_path, frame_paths)
+    if roop.globals.face_enhance:
+        enhance_images_in_folder(os.path.dirname(roop.globals.target_path) + os.sep + 'temp')
     # prevent memory leak using ffmpeg with cuda
     if roop.globals.gpu_vendor == 'nvidia':
         torch.cuda.empty_cache()

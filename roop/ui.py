@@ -6,9 +6,9 @@ import cv2
 from PIL import Image, ImageTk, ImageOps
 
 import roop.globals
-from roop.analyser import get_one_face
+from roop.face_analyser import get_one_face
 from roop.capturer import get_video_frame
-from roop.swapper import process_faces
+from roop.face_swapper import process_faces
 from roop.utilities import is_image, is_video
 
 PRIMARY_COLOR = '#2d3436'

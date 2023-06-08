@@ -14,6 +14,7 @@ gpu_threads = None
 gpu_vendor = None
 max_memory = None
 headless = None
+face_enhance = None
 log_level = 'error'
 providers = onnxruntime.get_available_providers()
 
