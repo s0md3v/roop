@@ -5,7 +5,7 @@ from pyparsing import Any
 from roop.pipeline_processing import PipelineEnvironment, Pipeline, PipelineExecutionParams, CancellationToken
 from roop.pipeline_processing.extractors import BasicExtractor
 from roop.pipeline_processing.collectors import BasicCollector
-from roop.pipeline_processing.process_blocks import Dummy, Swapper
+from roop.pipeline_processing.process_blocks import Swapper
 from roop.pipeline_processing.postprocessors import BasicPostprocess
 
 parser = argparse.ArgumentParser()

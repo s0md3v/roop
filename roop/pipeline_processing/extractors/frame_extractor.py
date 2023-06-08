@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Tuple
+from typing import Tuple
 
 from ..pipeline_block import PipelineBlock
 from ..common import Frame
