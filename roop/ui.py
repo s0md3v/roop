@@ -344,7 +344,7 @@ def init(
     gender = tk.StringVar()
     gender.trace('w', lambda name, index, mode, gender=gender: select_gender(gender))
     gender_combobox = ttk.Combobox(values=genders, textvariable=gender, state="readonly")
-    gender_combobox.current(genders.index(roop.globals.gender))
+    gender_combobox.current(genders.index(roop.globals.gender if roop.globals.gender else 'All'))
     gender_combobox.place(x=450, y=450, width=40, height=21)
 
     # Select age
