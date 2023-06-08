@@ -30,7 +30,7 @@ from roop.face_enhancer import enhance_images_in_folder
 if 'ROCMExecutionProvider' in roop.globals.providers:
     del torch
 
-# warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 def parse_args() -> None:
