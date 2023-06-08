@@ -1,0 +1,21 @@
+services:
+  roop-cpu: &base
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.cpu
+    volumes:
+      - ../.github/examples:/data
+      - ../.cache:/cache
+    user: 1000:1000
+  roop-nvidia:
+    <<: *base
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.nvidia
+    deploy:
+     resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]

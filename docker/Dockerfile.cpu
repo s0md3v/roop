@@ -1,0 +1,19 @@
+FROM python:3.11
+
+RUN apt-get update && apt-get install -y \
+	ffmpeg
+
+WORKDIR /app
+
+ADD requirements.txt .
+RUN pip install -r requirements.txt
+
+ADD inswapper_128.onnx .
+ADD run.py .
+ADD roop roop
+
+ENV HOME=/cache
+
+RUN mkdir /cache
+
+ENTRYPOINT ["python", "/app/run.py"]
