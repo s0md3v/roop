@@ -1,4 +1,4 @@
-from multiprocessing import Lock, cpu_count, Process
+from multiprocessing import Lock, cpu_count
 from threading import Thread
 from time import sleep
 from typing import List
