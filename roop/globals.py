@@ -16,6 +16,7 @@ max_memory = None
 headless = None
 selective_face = None
 selective_face_checkbox = None
+comparator_model = None
 log_level = 'error'
 providers = onnxruntime.get_available_providers()
 

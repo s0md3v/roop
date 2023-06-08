@@ -7,7 +7,7 @@ from PIL import Image, ImageTk, ImageOps
 import numpy as np
 
 import roop.globals
-from roop.analyser import get_one_face, get_many_faces
+from roop.analyser import get_one_face, get_many_faces, get_face_comparator
 from roop.capturer import get_video_frame
 from roop.swapper import process_faces
 from roop.utilities import is_image, is_video
@@ -251,7 +251,10 @@ def toggle_preview() -> None:
         PREVIEW.deiconify()
 
 
-def toggle_selective_preview(*args) -> None:
+def toggle_selective_preview(*args, **kwargs) -> None:
+    if kwargs.get('selected'):
+        SELECTIVE_FACE_PREVIEW.withdraw()
+        return
     if selective_face_value.get():
         SELECTIVE_FACE_PREVIEW.deiconify()
         update_preview(int(preview_scale.get()))
@@ -275,7 +278,7 @@ def update_selective_faces(faces, frame_number: int):
             {
                 "face": faces[i],
                 "img": img,
-                "button": tk.Button(SELECTIVE_FACE_PREVIEW, text=f'{i}', image=pil_img, command=lambda: select_face_handler(faces[i]))
+                "button": tk.Button(SELECTIVE_FACE_PREVIEW, text=f'{i}', image=pil_img, command=lambda: select_face_handler(img, faces[i]))
             }
         )
 
@@ -283,8 +286,10 @@ def update_selective_faces(faces, frame_number: int):
         crop_faces[i]["button"].image = pil_img
 
 
-def select_face_handler(face):
-    print(face)
+def select_face_handler(image_data, face):
+    feat1 = get_face_comparator().get(image_data, face)
+    toggle_selective_preview(selected=True)
+    roop.globals.selective_face = feat1
 
 
 def update_preview(frame_number: int) -> None:
