@@ -1,0 +1,5 @@
+.insightface
+.git
+*.jpg
+*.mp4
+*.onnx
