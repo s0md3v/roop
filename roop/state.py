@@ -31,7 +31,7 @@ def save_state() -> None:
 
 def load_state(state_path: str = None) -> bool:
     if state_path is None: state_path = '.state'
-    if not os.path.exists(): return False
+    if not os.path.exists(state_path): return False
     with open(state_path, 'rb') as file:
         roop.state.state_struct = pickle.load(file)
     return True
