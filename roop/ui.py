@@ -4,9 +4,10 @@ from typing import Callable, Any, Tuple
 
 import cv2
 from PIL import Image, ImageTk, ImageOps
+import numpy as np
 
 import roop.globals
-from roop.analyser import get_one_face
+from roop.analyser import get_one_face, get_many_faces
 from roop.capturer import get_video_frame
 from roop.swapper import process_faces
 from roop.utilities import is_image, is_video
@@ -22,10 +23,12 @@ PREVIEW_MAX_WIDTH = 1200
 
 
 def init(start: Callable, destroy: Callable) -> tk.Tk:
-    global ROOT, PREVIEW
+    global ROOT, PREVIEW, SELECTIVE_FACE_PREVIEW, crop_faces
 
     ROOT = create_root(start, destroy)
     PREVIEW = create_preview(ROOT)
+    SELECTIVE_FACE_PREVIEW = create_selective_faces(ROOT)
+    crop_faces = []
 
     return ROOT
 
@@ -84,7 +87,7 @@ def create_root(start: Callable, destroy: Callable) -> tk.Tk:
 
 
 def create_preview(parent) -> tk.Toplevel:
-    global preview_label, preview_scale
+    global preview_label, preview_scale, selective_face_value, selective_face_checkbox
 
     preview = tk.Toplevel(parent)
     preview.withdraw()
@@ -99,6 +102,28 @@ def create_preview(parent) -> tk.Toplevel:
 
     preview_scale = tk.Scale(preview, orient='horizontal', command=lambda frame_value: update_preview(int(frame_value)))
     preview_scale.pack(fill='x')
+
+    selective_face_value = tk.BooleanVar(value=roop.globals.selective_face_checkbox)
+    selective_face_value.trace('w', toggle_selective_preview)
+    selective_face_checkbox = create_checkbox(preview, 'Selective face', selective_face_value,
+                                              lambda: setattr(roop.globals, 'selective_face_checkbox',
+                                                              selective_face_value.get()))
+    selective_face_checkbox.pack(fill='x')
+
+    return preview
+
+
+def create_selective_faces(parent) -> tk.Toplevel:
+    preview = tk.Toplevel(parent)
+    preview.withdraw()
+    preview.title('Select face')
+    preview.configure(bg=PRIMARY_COLOR)
+    preview.option_add('*Font', ('Arial', 11))
+    preview.protocol('WM_DELETE_WINDOW', lambda: selective_face_value.set(False))
+    preview.resizable(width=False, height=False)
+
+    preview_label = tk.Label(preview, bg=PRIMARY_COLOR)
+    preview_label.pack(fill='both', expand=True)
 
     return preview
 
@@ -218,11 +243,54 @@ def toggle_preview() -> None:
     if PREVIEW.state() == 'normal':
         PREVIEW.withdraw()
     else:
+        if roop.globals.many_faces or not roop.globals.target_path:
+            selective_face_checkbox.config(state='disabled')
+        else:
+            selective_face_checkbox.config(state='normal')
         update_preview(1)
         PREVIEW.deiconify()
 
 
+def toggle_selective_preview(*args) -> None:
+    if selective_face_value.get():
+        SELECTIVE_FACE_PREVIEW.deiconify()
+        update_preview(int(preview_scale.get()))
+    else:
+        SELECTIVE_FACE_PREVIEW.withdraw()
+
+
+def update_selective_faces(faces, frame_number: int):
+    global crop_faces
+
+    while len(crop_faces) > 0:
+        b = crop_faces.pop()
+        b["button"].destroy()
+        b["button"].update()
+    for i in range(len(faces)):
+        bbox = faces[i].bbox.astype(np.int)
+        img = get_video_frame(roop.globals.target_path, frame_number)[bbox[1]:bbox[3], bbox[0]:bbox[2]]
+
+        pil_img = ImageTk.PhotoImage(image=Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)))
+        crop_faces.append(
+            {
+                "face": faces[i],
+                "img": img,
+                "button": tk.Button(SELECTIVE_FACE_PREVIEW, text=f'{i}', image=pil_img, command=lambda: select_face_handler(faces[i]))
+            }
+        )
+
+        crop_faces[i]["button"].pack()
+        crop_faces[i]["button"].image = pil_img
+
+
+def select_face_handler(face):
+    print(face)
+
+
 def update_preview(frame_number: int) -> None:
+
+    if selective_face_value.get():
+        update_selective_faces(get_many_faces(get_video_frame(roop.globals.target_path, frame_number)), frame_number)
     if roop.globals.source_path and roop.globals.target_path and frame_number:
         video_frame = process_faces(
             get_one_face(cv2.imread(roop.globals.source_path)),

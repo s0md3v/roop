@@ -15,6 +15,7 @@ gpu_vendor = None
 max_memory = None
 headless = None
 selective_face = None
+selective_face_checkbox = None
 log_level = 'error'
 providers = onnxruntime.get_available_providers()
 
