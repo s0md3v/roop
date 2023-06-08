@@ -106,6 +106,9 @@ def pre_check():
     model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../inswapper_128.onnx')
     if not os.path.isfile(model_path):
         quit('File "inswapper_128.onnx" does not exist!')
+    model_comparator_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../w600k_r50.onnx')
+    if not os.path.isfile(model_comparator_path):
+        quit('File "comparator.onnx" does not exist!')
     if roop.globals.gpu_vendor == 'apple':
         if 'CoreMLExecutionProvider' not in roop.globals.providers:
             quit('You are using --gpu=apple flag but CoreML is not available or properly installed on your system.')
