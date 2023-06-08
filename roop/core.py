@@ -25,6 +25,7 @@ import roop.ui as ui
 from roop.swapper import process_video, process_img
 from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frames_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.analyser import get_one_face
+import roop.state as state
 
 if 'ROCMExecutionProvider' in roop.globals.providers:
     del torch
@@ -34,6 +35,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def parse_args() -> None:
     signal.signal(signal.SIGINT, lambda signal_number, frame: destroy())
+    if state.load_state(): return
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
     parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
@@ -219,6 +221,7 @@ def run() -> None:
     pre_check()
     limit_resources()
     if roop.globals.headless:
+        state.save_state()
         start()
     else:
         window = ui.init(start, destroy)
