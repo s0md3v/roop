@@ -1,3 +1,5 @@
 .idea
 __pycache__
 *.onnx
+Dockerfile.generated
+.cache
