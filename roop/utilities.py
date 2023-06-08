@@ -3,12 +3,14 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import List, Any
-
+from typing import List
 import cv2
+from PIL import Image
 
 import roop.globals
-from PIL import Image
+
+TEMP_FILE = 'temp.mp4'
+TEMP_DIRECTORY = 'temp'
 
 
 def run_ffmpeg(args: List) -> None:
@@ -16,7 +18,7 @@ def run_ffmpeg(args: List) -> None:
     commands.extend(args)
     try:
         subprocess.check_output(commands, stderr=subprocess.STDOUT)
-    except Exception as exception:
+    except Exception:
         pass
 
 
@@ -31,33 +33,41 @@ def detect_fps(source_path: str) -> int:
 
 
 def extract_frames(target_path: str) -> None:
-    run_ffmpeg(['-i', target_path, get_temp_directory_path(target_path) + os.sep + '%04d.png'])
+    temp_directory_path = get_temp_directory_path(target_path)
+    run_ffmpeg(['-i', target_path, os.path.join(temp_directory_path, '%04d.png')])
 
 
 def create_video(target_path: str, fps: int) -> None:
-    run_ffmpeg(['-i', get_temp_directory_path(target_path) + os.sep + '%04d.png', '-framerate', str(fps), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-y', get_temp_file_path(target_path)])
+    temp_directory_path = get_temp_directory_path(target_path)
+    run_ffmpeg(['-i', os.path.join(temp_directory_path, '%04d.png'), '-framerate', str(fps), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-y', get_temp_file_path(target_path)])
 
 
 def restore_audio(target_path: str, output_path: str) -> None:
-    run_ffmpeg(['-i', get_temp_file_path(target_path), '-i', target_path, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-y', output_path])
+    temp_file_path = get_temp_file_path(target_path)
+    run_ffmpeg(['-i', temp_file_path, '-i', target_path, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-y', output_path])
     if not os.path.isfile(output_path):
         move_temp(target_path, output_path)
 
 
 def get_temp_frames_paths(target_path: str) -> List:
-    return glob.glob(get_temp_directory_path(target_path) + os.sep + '*.png')
+    temp_directory_path = get_temp_directory_path(target_path)
+    return glob.glob(os.path.join(temp_directory_path, '*.png'))
 
 
 def get_temp_directory_path(target_path: str) -> str:
-    return os.path.dirname(target_path) + os.sep + 'temp'
+    filename, _ = os.path.splitext(os.path.basename(target_path))
+    target_name = os.path.dirname(target_path)
+    return os.path.join(target_name, TEMP_DIRECTORY, filename)
 
 
 def get_temp_file_path(target_path: str) -> str:
-    return get_temp_directory_path(target_path) + os.sep + 'temp.mp4'
+    temp_directory_path = get_temp_directory_path(target_path)
+    return os.path.join(temp_directory_path, TEMP_FILE)
 
 
 def create_temp(target_path: str) -> None:
-    Path(get_temp_directory_path(target_path)).mkdir(exist_ok=True)
+    temp_directory_path = get_temp_directory_path(target_path)
+    Path(temp_directory_path).mkdir(parents=True, exist_ok=True)
 
 
 def move_temp(target_path: str, output_path: str) -> None:
@@ -68,8 +78,12 @@ def move_temp(target_path: str, output_path: str) -> None:
 
 def clean_temp(target_path: str) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
-    if not roop.globals.keep_frames and  os.path.isdir(temp_directory_path):
+    parent_directory_path = os.path.dirname(temp_directory_path)
+    parent_directory_name = os.path.basename(parent_directory_path)
+    if not roop.globals.keep_frames and os.path.isdir(temp_directory_path):
         shutil.rmtree(temp_directory_path)
+    if not os.listdir(parent_directory_path) and parent_directory_name == TEMP_DIRECTORY:
+        os.rmdir(parent_directory_path)
 
 
 def has_image_extention(image_path: str) -> bool:
