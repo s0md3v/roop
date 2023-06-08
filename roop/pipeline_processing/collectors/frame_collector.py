@@ -1,4 +1,5 @@
 import abc
+from multiprocessing import Lock
 from typing import Tuple
 
 from ..common import Frame
@@ -21,6 +22,6 @@ class FramesCollector(PipelineBlock):
         pass
 
     @abc.abstractmethod
-    def collect(self, frame: Frame) -> None:
+    def collect(self, frame: Frame, lock: Lock = None) -> None:
         """Collect frame"""
         pass  

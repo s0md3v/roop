@@ -1,3 +1,5 @@
+from multiprocessing import Lock, cpu_count, Process
+from threading import Thread
 from time import sleep
 from typing import List
 from tqdm import tqdm
@@ -23,6 +25,36 @@ class Pipeline:
         self.collector = collector
         self.postprocess = postprocess
 
+    def process_frame(self, 
+            params: PipelineExecutionParams, 
+            cancellation_token: CancellationToken,
+            lock: Lock,
+            progress: tqdm
+        ):
+        # Frame processing
+        ret, frame = self.extractor.next()
+        while ret:
+            # Cancelling process
+            if cancellation_token.cancelled:
+                break
+
+            # Await resume
+            if cancellation_token.paused:
+                sleep(1)
+                continue
+
+            for block in self.blocks:
+                frame = block.process(frame)
+            self.collector.collect(frame, lock)
+
+            if params.progress_handler:
+                params.progress_handler(self.extractor.current_frame)
+            if params.preview_handler:
+                params.preview_handler(frame)
+            
+            progress.update(1)
+            ret, frame = self.extractor.next()
+
     def execute(
             self,
             params: PipelineExecutionParams, 
@@ -46,29 +78,11 @@ class Pipeline:
             progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
 
             with tqdm(total=frames_count, desc="Processing", unit="frame", dynamic_ncols=True, bar_format=progress_bar_format) as progress:
-                # Frame processing
-                ret, frame = self.extractor.next()
-                while ret:
-                    # Cancelling process
-                    if cancellation_token.cancelled:
-                        break
-
-                    # Await resume
-                    if cancellation_token.paused:
-                        sleep(1)
-                        continue
-
-                    for block in self.blocks:
-                        frame = block.process(frame)
-                    self.collector.collect(frame)
-
-                    if params.progress_handler:
-                        params.progress_handler(self.extractor.current_frame)
-                    if params.preview_handler:
-                        params.preview_handler(frame)
-                    
-                    progress.update(1)
-                    ret, frame = self.extractor.next()
+                # Threads
+                lock = Lock()
+                threads = [Thread(target = self.process_frame, args = (params, cancellation_token, lock, progress, )) for i in range(cpu_count())]
+                [t.start() for t in threads]
+                [t.join() for t in threads]
             
             params.progress_handler("Process finished.")
             self.extractor.release()
