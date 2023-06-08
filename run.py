@@ -23,6 +23,10 @@ import core.globals
 from core.swapper import process_video, process_img
 from core.utils import is_img, detect_fps, set_fps, create_video, add_audio, extract_frames, rreplace
 from core.analyser import get_face_single
+import streamlit as st
+
+
+
 
 if 'ROCMExecutionProvider' in core.globals.providers:
     del torch
