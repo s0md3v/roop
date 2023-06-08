@@ -5,6 +5,7 @@ import onnxruntime
 import cv2
 import insightface
 
+from ..common import Frame
 from ..environment import PipelineEnvironment
 from ..process_blocks import ProcessBlock
 from ..common import FaceAnalyser
@@ -21,7 +22,7 @@ class Swapper(ProcessBlock):
         self.face = self.analyser.get_face_single(cv2.imread(face))
         self.swapper = None
 
-    def process(self, frame: Any) -> Any:
+    def process(self, frame: Frame) -> Any:
         if not self.swapper:
             session_options = onnxruntime.SessionOptions()
             if self.environment.gpu_vendor is not None:
@@ -34,14 +35,14 @@ class Swapper(ProcessBlock):
             self.swapper = insightface.model_zoo.get_model(model_path, providers=self.environment.providers, session_options=session_options)
 
         if self.environment.all_faces:
-            many_faces = self.analyser.get_face_many(frame)
+            many_faces = self.analyser.get_face_many(frame.data)
             if many_faces:
                 for face in many_faces:
-                    frame = self.swapper.get(frame, face, self.face, paste_back=True)
+                    frame.data = self.swapper.get(frame.data, face, self.face, paste_back=True)
         else:
-            face = self.analyser.get_face_single(frame)
+            face = self.analyser.get_face_single(frame.data)
             if face:
-                frame = self.swapper.get(frame, face, self.face, paste_back=True)
+                frame.data = self.swapper.get(frame.data, face, self.face, paste_back=True)
 
         return frame
     

@@ -1,6 +1,7 @@
 from typing import Any
 import cv2
 
+from ..common import Frame
 from ..extractors import FramesExtractor
 
 
@@ -36,18 +37,29 @@ class BasicExtractor(FramesExtractor):
         if not self.cap:
             self.cap = cv2.VideoCapture(self.input)
 
-        ret, frame = self.cap.read()
+        ret, data = self.cap.read()
         if not ret:
             self.current_frame = 0
             self.cap.release()
             return (False, None)
         
+        frame = Frame(data, self.current_frame)
         self.current_frame += 1       
         return (True, frame)
 
-    # TODO
     def frame(self, num: int) -> Any | None:
-        pass
+        if not self.input:
+            return None
+
+        if not self.cap:
+            self.cap = cv2.VideoCapture(self.input)
+
+        if num > self.frame_count - 1:
+            return None
+
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, num)
+        ret, data = self.cap.read()
+        return Frame(data, num)
 
     def release(self) -> None:
         if self.cap:

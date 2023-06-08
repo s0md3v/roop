@@ -1,6 +1,7 @@
 import abc
 from typing import Any
 
+from ..common import Frame
 from ..pipeline_block import PipelineBlock
 
 
@@ -21,6 +22,6 @@ class ProcessBlock(PipelineBlock):
         pass
 
     @abc.abstractmethod
-    def process(self, frame: Any) -> Any:
+    def process(self, frame: Frame) -> Frame:
         """Process frame"""
         pass

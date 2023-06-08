@@ -1,3 +1,4 @@
+from time import sleep
 from typing import List
 from tqdm import tqdm
 
@@ -48,6 +49,15 @@ class Pipeline:
                 # Frame processing
                 ret, frame = self.extractor.next()
                 while ret:
+                    # Cancelling process
+                    if cancellation_token.cancelled:
+                        break
+
+                    # Await resume
+                    if cancellation_token.paused:
+                        sleep(1)
+                        continue
+
                     for block in self.blocks:
                         frame = block.process(frame)
                     self.collector.collect(frame)
@@ -56,10 +66,6 @@ class Pipeline:
                         params.progress_handler(self.extractor.current_frame)
                     if params.preview_handler:
                         params.preview_handler(frame)
-                    
-                    # Cancelling process
-                    if cancellation_token.cancelled:
-                        break
                     
                     progress.update(1)
                     ret, frame = self.extractor.next()

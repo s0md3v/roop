@@ -1,6 +1,7 @@
 import abc
-from typing import Any, Tuple
+from typing import Tuple
 
+from ..common import Frame
 from ..pipeline_block import PipelineBlock
 
 
@@ -20,6 +21,6 @@ class FramesCollector(PipelineBlock):
         pass
 
     @abc.abstractmethod
-    def collect(self, frame: Any) -> None:
+    def collect(self, frame: Frame) -> None:
         """Collect frame"""
         pass  

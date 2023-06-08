@@ -2,6 +2,7 @@ import abc
 from typing import Any, Tuple
 
 from ..pipeline_block import PipelineBlock
+from ..common import Frame
 
 
 class FramesExtractor(PipelineBlock):
@@ -27,12 +28,12 @@ class FramesExtractor(PipelineBlock):
         pass
 
     @abc.abstractmethod
-    def next(self) -> Tuple[bool, Any]:
+    def next(self) -> Tuple[bool, Frame]:
         """Get next frame"""
         pass
     
     @abc.abstractmethod
-    def frame(self, num: int) -> Any | None:
-        """Get frame by name"""
+    def frame(self, num: int) -> Frame | None:
+        """Get frame by number"""
         pass
 
