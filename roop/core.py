@@ -22,11 +22,10 @@ import cv2
 
 import roop.globals
 import roop.ui as ui
-from roop.face_swapper import process_video, process_img
+from roop.swapper import process_video, process_image
 from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frames_paths, restore_audio, create_temp, move_temp, clean_temp
-from roop.face_analyser import get_one_face
-from roop.face_enhancer import enhance_images_in_folder
-
+from roop.analyser import get_one_face
+import roop.face_enhancer 
 if 'ROCMExecutionProvider' in roop.globals.providers:
     del torch
 
@@ -44,7 +43,7 @@ def parse_args() -> None:
     parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
     parser.add_argument('--many-faces', help='swap every face in the frame', dest='many_faces', action='store_true', default=False)
     parser.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264')
-    parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=10)
+    parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
     parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
     parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=max(psutil.cpu_count() / 2, 1))
     parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
@@ -147,6 +146,25 @@ def conditional_process_video(source_path: str, frame_paths: List[str]) -> None:
          process_video(roop.globals.source_path, frame_paths)
 
 
+# def conditional_process_enhance_video(source_path: str, frame_paths: List[str]) -> None:
+#     pool_amount = len(frame_paths) // roop.globals.cpu_cores
+#     if pool_amount > 2 and roop.globals.cpu_cores > 1 and roop.globals.gpu_vendor is None:
+#         update_status('Pool-Swapping in progress...')
+#         global POOL
+#         POOL = multiprocessing.Pool(roop.globals.cpu_cores, maxtasksperchild=1)
+#         pools = []
+#         for i in range(0, len(frame_paths), pool_amount):
+#             pool = POOL.apply_async(roop.face_enhancer.process_video, args=(frame_paths[i:i + pool_amount], roop.globals.gpu_threads))
+#             pools.append(pool)
+#         for pool in pools:
+#             pool.get()
+#         POOL.close()
+#         POOL.join()
+#     else:
+#          update_status('Swapping in progress...')
+#          roop.face_enhancer.process_video(frame_paths)
+
+
 def update_status(message: str):
     value = 'Status: ' + message
     print(value)
@@ -169,7 +187,7 @@ def start() -> None:
     if has_image_extention(roop.globals.target_path):
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
-        process_img(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+        process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
         if is_image(roop.globals.target_path):
             update_status('Swapping to image succeed!')
         else:
@@ -185,14 +203,14 @@ def start() -> None:
     extract_frames(roop.globals.target_path)
     frame_paths = get_temp_frames_paths(roop.globals.target_path)
     conditional_process_video(roop.globals.source_path, frame_paths)
-    if roop.globals.face_enhance:
-        enhance_images_in_folder(os.path.dirname(roop.globals.target_path) + os.sep + 'temp')
     # prevent memory leak using ffmpeg with cuda
     if roop.globals.gpu_vendor == 'nvidia':
         torch.cuda.empty_cache()
+    if roop.globals.face_enhance:
+        roop.face_enhancer.process_video(frame_paths)
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
-        fps = detect_fps(roop.globals.source_path)
+        fps = detect_fps(roop.globals.target_path)
         update_status(f'Creating video with {fps} fps...')
         create_video(roop.globals.target_path, fps)
     else:

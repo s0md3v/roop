@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from tkinter import filedialog
 from typing import Callable, Any, Tuple
@@ -6,9 +7,9 @@ import cv2
 from PIL import Image, ImageTk, ImageOps
 
 import roop.globals
-from roop.face_analyser import get_one_face
+from roop.analyser import get_one_face
 from roop.capturer import get_video_frame
-from roop.face_swapper import process_faces
+from roop.swapper import process_faces
 from roop.utilities import is_image, is_video
 
 PRIMARY_COLOR = '#2d3436'
@@ -19,6 +20,9 @@ WINDOW_HEIGHT = 700
 WINDOW_WIDTH = 600
 PREVIEW_MAX_HEIGHT = 700
 PREVIEW_MAX_WIDTH = 1200
+RECENT_DIRECTORY_SOURCE = None
+RECENT_DIRECTORY_TARGET = None
+RECENT_DIRECTORY_OUTPUT = None
 
 
 def init(start: Callable, destroy: Callable) -> tk.Tk:
@@ -153,9 +157,11 @@ def update_status(text: str) -> None:
 
 
 def select_source_path():
-    source_path = filedialog.askopenfilename(title='Select an face image')
+    global RECENT_DIRECTORY_SOURCE
+    source_path = filedialog.askopenfilename(title='Select an face image', initialdir=RECENT_DIRECTORY_SOURCE)
     if is_image(source_path):
         roop.globals.source_path = source_path
+        RECENT_DIRECTORY_SOURCE = os.path.dirname(roop.globals.source_path)
         image = render_image_preview(roop.globals.source_path, (200, 200))
         source_label.configure(image=image)
         source_label.image = image
@@ -166,14 +172,17 @@ def select_source_path():
 
 
 def select_target_path():
-    target_path = filedialog.askopenfilename(title='Select an image or video target')
+    global RECENT_DIRECTORY_TARGET
+    target_path = filedialog.askopenfilename(title='Select an image or video target', initialdir=RECENT_DIRECTORY_TARGET)
     if is_image(target_path):
         roop.globals.target_path = target_path
+        RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
         image = render_image_preview(roop.globals.target_path)
         target_label.configure(image=image)
         target_label.image = image
     elif is_video(target_path):
         roop.globals.target_path = target_path
+        RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
         video_frame = render_video_preview(target_path, (200, 200))
         target_label.configure(image=video_frame)
         target_label.image = video_frame
@@ -184,12 +193,14 @@ def select_target_path():
 
 
 def select_output_path(start):
+    global RECENT_DIRECTORY_OUTPUT
     if is_image(roop.globals.target_path):
-        output_path = filedialog.asksaveasfilename(title='Save image output', initialfile='output.png')
+        output_path = filedialog.asksaveasfilename(title='Save image output', initialfile='output.png', initialdir=RECENT_DIRECTORY_OUTPUT)
     elif is_video(roop.globals.target_path):
-        output_path = filedialog.asksaveasfilename(title='Save video output', initialfile='output.mp4')
+        output_path = filedialog.asksaveasfilename(title='Save video output', initialfile='output.mp4', initialdir=RECENT_DIRECTORY_OUTPUT)
     if output_path:
         roop.globals.output_path = output_path
+        RECENT_DIRECTORY_OUTPUT = os.path.dirname(roop.globals.output_path)
         start()
 
 
