@@ -5,6 +5,7 @@ import insightface
 import threading
 import roop.globals
 from roop.analyser import get_one_face, get_many_faces
+import roop.state as state
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
@@ -45,6 +46,7 @@ def process_frames(source_img, frame_paths, progress=None):
         try:
             result = process_faces(source_face, frame)
             cv2.imwrite(frame_path, result)
+            state.mark_frame_done(frame_path)
         except Exception as exception:
             print(exception)
             pass
