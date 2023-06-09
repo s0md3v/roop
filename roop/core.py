@@ -32,7 +32,7 @@ if 'ROCMExecutionProvider' in roop.globals.providers:
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-def parse_args() -> None:
+def parse_args(args_list: list = None) -> None:
     signal.signal(signal.SIGINT, lambda signal_number, frame: destroy())
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
@@ -49,7 +49,7 @@ def parse_args() -> None:
     parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=8)
     parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
 
-    args = parser.parse_known_args()[0]
+    args = parser.parse_known_args(args_list)[0]
 
     roop.globals.source_path = args.source_path
     roop.globals.target_path = args.target_path
@@ -214,8 +214,8 @@ def destroy() -> None:
     quit()
 
 
-def run() -> None:
-    parse_args()
+def run(args_list: list = None) -> None:
+    parse_args(args_list)
     pre_check()
     limit_resources()
     if roop.globals.headless:
