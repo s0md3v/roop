@@ -22,7 +22,7 @@ import cv2
 
 import roop.globals
 import roop.ui as ui
-from roop.swapper import process_video, process_img
+from roop.swapper import process_video, process_image
 from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frames_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.analyser import get_one_face
 
@@ -166,7 +166,7 @@ def start() -> None:
     if has_image_extention(roop.globals.target_path):
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
-        process_img(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+        process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
         if is_image(roop.globals.target_path):
             update_status('Swapping to image succeed!')
         else:
