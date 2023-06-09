@@ -1,4 +1,6 @@
 import onnxruntime
+import os
+from pathlib import Path
 
 source_path = None
 target_path = None
@@ -16,8 +18,10 @@ max_memory = None
 headless = None
 selective_face = None
 selective_face_checkbox = None
-comparator_model = None
 log_level = 'error'
+home = str(Path.home())
+models = os.path.join(home, '.insightface/models/buffalo_l/')
+comparator_model = os.path.join(models, 'w600k_r50.onnx')
 providers = onnxruntime.get_available_providers()
 
 if 'TensorrtExecutionProvider' in providers:

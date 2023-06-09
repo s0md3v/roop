@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, LEFT
 from typing import Callable, Any, Tuple
 
 import cv2
@@ -7,7 +7,7 @@ from PIL import Image, ImageTk, ImageOps
 import numpy as np
 
 import roop.globals
-from roop.analyser import get_one_face, get_many_faces, get_face_comparator
+from roop.analyser import get_one_face, get_many_faces, get_face_comparator, get_feat
 from roop.capturer import get_video_frame
 from roop.swapper import process_faces
 from roop.utilities import is_image, is_video
@@ -105,10 +105,10 @@ def create_preview(parent) -> tk.Toplevel:
 
     selective_face_value = tk.BooleanVar(value=roop.globals.selective_face_checkbox)
     selective_face_value.trace('w', toggle_selective_preview)
-    selective_face_checkbox = create_checkbox(preview, 'Selective face', selective_face_value,
+    selective_face_checkbox = create_checkbox_in_preview(preview, 'Selective face', selective_face_value,
                                               lambda: setattr(roop.globals, 'selective_face_checkbox',
                                                               selective_face_value.get()))
-    selective_face_checkbox.pack(fill='x')
+    selective_face_checkbox.pack(fill='x', side=LEFT)
 
     return preview
 
@@ -167,8 +167,25 @@ def create_checkbox(parent: Any, text: str, variable: tk.BooleanVar, command: Ca
         activeforeground=SECONDARY_COLOR,
         selectcolor=PRIMARY_COLOR,
         fg=SECONDARY_COLOR,
-        borderwidth=0,
+        borderwidth=4,
         highlightthickness=0
+    )
+
+
+def create_checkbox_in_preview(parent: Any, text: str, variable: tk.BooleanVar, command: Callable) -> tk.Checkbutton:
+    return tk.Checkbutton(
+        parent,
+        text=text,
+        variable=variable,
+        command=command,
+        bg=PRIMARY_COLOR,
+        fg=SECONDARY_COLOR,
+        relief='flat',
+        highlightthickness=4,
+        highlightbackground=SECONDARY_COLOR,
+        activebackground=SECONDARY_COLOR,
+        borderwidth=4,
+        selectcolor=PRIMARY_COLOR
     )
 
 
@@ -278,7 +295,7 @@ def update_selective_faces(faces, frame_number: int):
             {
                 "face": faces[i],
                 "img": img,
-                "button": tk.Button(SELECTIVE_FACE_PREVIEW, text=f'{i}', image=pil_img, command=lambda: select_face_handler(img, faces[i]))
+                "button": tk.Button(SELECTIVE_FACE_PREVIEW, text=f'{i}', image=pil_img, command=lambda i=i: select_face_handler(crop_faces[i]['img']))
             }
         )
 
@@ -286,10 +303,11 @@ def update_selective_faces(faces, frame_number: int):
         crop_faces[i]["button"].image = pil_img
 
 
-def select_face_handler(image_data, face):
-    feat1 = get_face_comparator().get(image_data, face)
+def select_face_handler(image_data):
     toggle_selective_preview(selected=True)
-    roop.globals.selective_face = feat1
+    roop.globals.selective_face = image_data
+
+    update_preview(int(preview_scale.get()) if int(preview_scale.get()) > 0 else 1)
 
 
 def update_preview(frame_number: int) -> None:
