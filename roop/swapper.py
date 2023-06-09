@@ -84,8 +84,7 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
 
 def process_video(source_path: str, temp_paths: List[str], mode: str) -> None:
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
-    total = len(temp_paths)
-    with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
+    with tqdm(total=len(temp_paths), desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
         if mode == 'cpu':
             progress.set_postfix({'mode': mode, 'cores': roop.globals.cpu_cores, 'memory': roop.globals.max_memory})
             process_frames(source_path, temp_paths, progress)
