@@ -46,6 +46,7 @@ def parse_args() -> None:
     parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
     parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int, default=suggest_max_memory())
     parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=suggest_cpu_cores())
+    parser.add_argument('--execution-provider', help='execution provider', dest='execution_provider', default='cpu', choices=['cpu', 'directml'])
     parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=suggest_gpu_threads())
     parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
 
@@ -65,6 +66,9 @@ def parse_args() -> None:
     roop.globals.cpu_cores = args.cpu_cores
     roop.globals.gpu_threads = args.gpu_threads
 
+    if args.execution_provider == 'directml':
+        roop.globals.providers = ['DmlExecutionProvider']
+        roop.globals.gpu_vendor = 'other'
     if args.gpu_vendor:
         roop.globals.gpu_vendor = args.gpu_vendor
     else:
@@ -78,6 +82,8 @@ def suggest_max_memory() -> int:
 
 
 def suggest_gpu_threads() -> int:
+    if 'DmlExecutionProvider' in roop.globals.providers:
+        return 1
     if 'ROCMExecutionProvider' in roop.globals.providers:
         return 2
     return 8
