@@ -21,32 +21,32 @@ def get_face_swapper() -> None:
     return FACE_SWAPPER
 
 
-def swap_face(source_face: Any, target_face: Any, target_frame: Any) -> Any:
+def swap_face(source_face: Any, target_face: Any, temp_frame: Any) -> Any:
     if target_face:
-        return get_face_swapper().get(target_frame, target_face, source_face, paste_back=True)
-    return target_frame
+        return get_face_swapper().get(temp_frame, target_face, source_face, paste_back=True)
+    return temp_frame
 
 
-def process_faces(source_face: Any, target_frame: Any) -> Any:
+def process_faces(source_face: Any, temp_frame: Any) -> Any:
     if roop.globals.many_faces:
-        many_faces = get_many_faces(target_frame)
+        many_faces = get_many_faces(temp_frame)
         if many_faces:
             for target_face in many_faces:
-                target_frame = swap_face(source_face, target_face, target_frame)
+                temp_frame = swap_face(source_face, target_face, temp_frame)
     else:
-        target_face = get_one_face(target_frame)
+        target_face = get_one_face(temp_frame)
         if target_face:
-            target_frame = swap_face(source_face, target_face, target_frame)
-    return target_frame
+            temp_frame = swap_face(source_face, target_face, temp_frame)
+    return temp_frame
 
 
-def process_frames(source_path: str, temp_paths: List[str], progress=None) -> None:
+def process_frames(source_path: str, temp_frame_paths: List[str], progress=None) -> None:
     source_face = get_one_face(cv2.imread(source_path))
-    for temp_path in temp_paths:
-        target_frame = cv2.imread(temp_path)
+    for temp_frame_path in temp_frame_paths:
+        temp_frame = cv2.imread(temp_frame_path)
         try:
-            result = process_faces(source_face, target_frame)
-            cv2.imwrite(temp_path, result)
+            result = process_faces(source_face, temp_frame)
+            cv2.imwrite(temp_frame_path, result)
         except Exception as exception:
             print(exception)
             pass
@@ -54,10 +54,10 @@ def process_frames(source_path: str, temp_paths: List[str], progress=None) -> No
             progress.update(1)
 
 
-def multi_process_frame(source_path: str, temp_paths: List[str], progress) -> None:
+def multi_process_frame(source_path: str, temp_frame_paths: List[str], progress) -> None:
     threads = []
-    frames_per_thread = len(temp_paths) // roop.globals.gpu_threads
-    remaining_frames = len(temp_paths) % roop.globals.gpu_threads
+    frames_per_thread = len(temp_frame_paths) // roop.globals.gpu_threads
+    remaining_frames = len(temp_frame_paths) % roop.globals.gpu_threads
     start_index = 0
     # create threads by frames
     for _ in range(roop.globals.gpu_threads):
@@ -65,7 +65,7 @@ def multi_process_frame(source_path: str, temp_paths: List[str], progress) -> No
         if remaining_frames > 0:
             end_index += 1
             remaining_frames -= 1
-        thread_paths = temp_paths[start_index:end_index]
+        thread_paths = temp_frame_paths[start_index:end_index]
         thread = threading.Thread(target=process_frames, args=(source_path, thread_paths, progress))
         threads.append(thread)
         thread.start()
@@ -82,12 +82,12 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
     cv2.imwrite(output_path, result)
 
 
-def process_video(source_path: str, temp_paths: List[str], mode: str) -> None:
+def process_video(source_path: str, temp_frame_paths: List[str], mode: str) -> None:
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
-    with tqdm(total=len(temp_paths), desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
+    with tqdm(total=len(temp_frame_paths), desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
         if mode == 'cpu':
             progress.set_postfix({'mode': mode, 'cores': roop.globals.cpu_cores, 'memory': roop.globals.max_memory})
-            process_frames(source_path, temp_paths, progress)
+            process_frames(source_path, temp_frame_paths, progress)
         elif mode == 'gpu':
             progress.set_postfix({'mode': mode, 'threads': roop.globals.gpu_threads, 'memory': roop.globals.max_memory})
-            multi_process_frame(source_path, temp_paths, progress)
+            multi_process_frame(source_path, temp_frame_paths, progress)

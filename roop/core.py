@@ -23,7 +23,7 @@ import cv2
 import roop.globals
 import roop.ui as ui
 from roop.swapper import process_video, process_image
-from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frames_paths, restore_audio, create_temp, move_temp, clean_temp
+from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.analyser import get_one_face
 
 if 'ROCMExecutionProvider' in roop.globals.providers:
@@ -134,20 +134,20 @@ def pre_check() -> None:
             quit(f'CUDNN version { torch.backends.cudnn.version()} is not supported - please downgrade to 8.9.1')
 
 
-def conditional_process_video(source_path: str, temp_paths: List[str]) -> None:
-    pool_amount = len(temp_paths) // roop.globals.cpu_cores
+def conditional_process_video(source_path: str, temp_frame_paths: List[str]) -> None:
+    pool_amount = len(temp_frame_paths) // roop.globals.cpu_cores
     if pool_amount > 2 and roop.globals.cpu_cores > 1 and roop.globals.gpu_vendor is None:
         POOL = multiprocessing.Pool(roop.globals.cpu_cores, maxtasksperchild=1)
         pools = []
-        for i in range(0, len(temp_paths), pool_amount):
-            pool = POOL.apply_async(process_video, args=(source_path, temp_paths[i:i + pool_amount], 'cpu'))
+        for i in range(0, len(temp_frame_paths), pool_amount):
+            pool = POOL.apply_async(process_video, args=(source_path, temp_frame_paths[i:i + pool_amount], 'cpu'))
             pools.append(pool)
         for pool in pools:
             pool.get()
         POOL.close()
         POOL.join()
     else:
-         process_video(roop.globals.source_path, temp_paths, 'gpu')
+         process_video(roop.globals.source_path, temp_frame_paths, 'gpu')
 
 
 def update_status(message: str) -> None:
@@ -186,9 +186,9 @@ def start() -> None:
     create_temp(roop.globals.target_path)
     update_status('Extracting frames...')
     extract_frames(roop.globals.target_path)
-    temp_paths = get_temp_frames_paths(roop.globals.target_path)
+    temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     update_status('Swapping in progress...')
-    conditional_process_video(roop.globals.source_path, temp_paths)
+    conditional_process_video(roop.globals.source_path, temp_frame_paths)
     # prevent memory leak using ffmpeg with cuda
     if roop.globals.gpu_vendor == 'nvidia':
         torch.cuda.empty_cache()
