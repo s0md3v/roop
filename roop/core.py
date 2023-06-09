@@ -134,21 +134,20 @@ def pre_check() -> None:
             quit(f'CUDNN version { torch.backends.cudnn.version()} is not supported - please downgrade to 8.9.1')
 
 
-def conditional_process_video(source_path: str, frame_paths: List[str]) -> None:
-    pool_amount = len(frame_paths) // roop.globals.cpu_cores
+def conditional_process_video(source_path: str, temp_paths: List[str]) -> None:
+    pool_amount = len(temp_paths) // roop.globals.cpu_cores
     if pool_amount > 2 and roop.globals.cpu_cores > 1 and roop.globals.gpu_vendor is None:
-        global POOL
         POOL = multiprocessing.Pool(roop.globals.cpu_cores, maxtasksperchild=1)
         pools = []
-        for i in range(0, len(frame_paths), pool_amount):
-            pool = POOL.apply_async(process_video, args=(source_path, frame_paths[i:i + pool_amount], 'cpu'))
+        for i in range(0, len(temp_paths), pool_amount):
+            pool = POOL.apply_async(process_video, args=(source_path, temp_paths[i:i + pool_amount], 'cpu'))
             pools.append(pool)
         for pool in pools:
             pool.get()
         POOL.close()
         POOL.join()
     else:
-         process_video(roop.globals.source_path, frame_paths, 'gpu')
+         process_video(roop.globals.source_path, temp_paths, 'gpu')
 
 
 def update_status(message: str) -> None:
@@ -187,9 +186,9 @@ def start() -> None:
     create_temp(roop.globals.target_path)
     update_status('Extracting frames...')
     extract_frames(roop.globals.target_path)
-    frame_paths = get_temp_frames_paths(roop.globals.target_path)
+    temp_paths = get_temp_frames_paths(roop.globals.target_path)
     update_status('Swapping in progress...')
-    conditional_process_video(roop.globals.source_path, frame_paths)
+    conditional_process_video(roop.globals.source_path, temp_paths)
     # prevent memory leak using ffmpeg with cuda
     if roop.globals.gpu_vendor == 'nvidia':
         torch.cuda.empty_cache()

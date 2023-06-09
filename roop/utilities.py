@@ -13,7 +13,7 @@ TEMP_FILE = 'temp.mp4'
 TEMP_DIRECTORY = 'temp'
 
 
-def run_ffmpeg(args: List) -> None:
+def run_ffmpeg(args: List[str]) -> None:
     commands = ['ffmpeg', '-hide_banner', '-hwaccel', 'auto', '-loglevel', roop.globals.log_level]
     commands.extend(args)
     try:
@@ -49,7 +49,7 @@ def restore_audio(target_path: str, output_path: str) -> None:
         move_temp(target_path, output_path)
 
 
-def get_temp_frames_paths(target_path: str) -> List:
+def get_temp_frames_paths(target_path: str) -> List[str]:
     temp_directory_path = get_temp_directory_path(target_path)
     return glob.glob(os.path.join(temp_directory_path, '*.png'))
 
