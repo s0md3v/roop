@@ -87,8 +87,8 @@ def process_video(source_path, frame_paths, mode: str):
     total = len(frame_paths)
     with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
         if mode == 'cpu':
-            progress.set_postfix({'mode': mode, 'cores': roop.globals.cpu_cores})
+            progress.set_postfix({'mode': mode, 'cores': roop.globals.cpu_cores, 'memory': roop.globals.max_memory})
             process_frames(source_path, frame_paths, progress)
         elif mode == 'gpu':
-            progress.set_postfix({'mode': mode, 'threads': roop.globals.gpu_threads})
+            progress.set_postfix({'mode': mode, 'threads': roop.globals.gpu_threads, 'memory': roop.globals.max_memory})
             multi_process_frame(source_path, frame_paths, progress)
