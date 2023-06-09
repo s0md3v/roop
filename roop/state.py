@@ -20,7 +20,7 @@ def prepare_state() -> None:
     all_variables = dir(roop.globals)
     roop.state.state_struct['globals'] = {
         var: getattr(roop.globals, var) for var in all_variables
-        if var not in ['onnxruntime', 'providers'] and not var.startswith('__')
+        if var not in ['onnxruntime', 'providers', 'headless'] and not var.startswith('__')
     }
 
 
