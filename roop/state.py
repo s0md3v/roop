@@ -39,3 +39,10 @@ def load_state(state_path: str = '.state') -> bool:
             if hasattr(roop.globals, variable_name):
                 setattr(roop.globals, variable_name, variable_value)
     return True
+
+
+def mark_frame_done(frame_name: str) -> None:
+    roop.state.done_frames += [int(re.findall(r'\d+', frame_name)[0])]
+    save_state()
+
+
