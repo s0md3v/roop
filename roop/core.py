@@ -95,7 +95,9 @@ def limit_resources() -> None:
     for gpu in gpus:
         tensorflow.config.experimental.set_memory_growth(gpu, True)
     if roop.globals.max_memory:
-        memory = roop.globals.max_memory * 1024 * 1024 * 1024
+        memory = roop.globals.max_memory * 1024 ** 3
+        if platform.system().lower() == 'darwin':
+            memory = roop.globals.max_memory * 1024 ** 6
         if platform.system().lower() == 'windows':
             import ctypes
             kernel32 = ctypes.windll.kernel32
