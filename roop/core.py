@@ -235,7 +235,8 @@ def destroy() -> None:
 
 
 def check_state() -> None:
-    state.load_state()
+    if roop.globals.headless and roop.globals.use_state and state.load_state():
+        update_status('The previous swapping will be continued. To avoid this, delete the .state file from the application directory or execute script with --use-state=false flag')
 
 
 def run() -> None:
