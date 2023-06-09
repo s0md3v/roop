@@ -22,8 +22,8 @@ def run_ffmpeg(args: List) -> None:
         pass
 
 
-def detect_fps(source_path: str) -> int:
-    command = ['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=r_frame_rate', '-of', 'default=noprint_wrappers=1:nokey=1', source_path]
+def detect_fps(target_path: str) -> int:
+    command = ['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=r_frame_rate', '-of', 'default=noprint_wrappers=1:nokey=1', target_path]
     output = subprocess.check_output(command).decode().strip()
     try:
         return int(eval(output))
