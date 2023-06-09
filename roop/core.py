@@ -35,41 +35,43 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def parse_args() -> None:
     signal.signal(signal.SIGINT, lambda signal_number, frame: destroy())
-    if not state.load_state():
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
-        parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
-        parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
-        parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
-        parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
-        parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
-        parser.add_argument('--many-faces', help='swap every face in the frame', dest='many_faces', action='store_true', default=False)
-        parser.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264')
-        parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
-        parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int, default=suggest_max_memory())
-        parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=suggest_cpu_cores())
-        parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=suggest_gpu_threads())
-        parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
+    parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
+    parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
+    parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
+    parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
+    parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
+    parser.add_argument('--many-faces', help='swap every face in the frame', dest='many_faces', action='store_true', default=False)
+    parser.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264')
+    parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
+    parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int, default=suggest_max_memory())
+    parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=suggest_cpu_cores())
+    parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=suggest_gpu_threads())
+    parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
+    parser.add_argument('--use-state', help='save progress between runs', dest='use_state', type=bool, default=True)
 
-        args = parser.parse_known_args()[0]
+    args = parser.parse_known_args()[0]
 
-        roop.globals.source_path = args.source_path
-        roop.globals.target_path = args.target_path
-        roop.globals.output_path = args.output_path
-        roop.globals.headless = bool(args.source_path or args.target_path or args.output_path)
-        roop.globals.keep_fps = args.keep_fps
-        roop.globals.keep_audio = args.keep_audio
-        roop.globals.keep_frames = args.keep_frames
-        roop.globals.many_faces = args.many_faces
-        roop.globals.video_encoder = args.video_encoder
-        roop.globals.video_quality = args.video_quality
-        roop.globals.max_memory = args.max_memory
-        roop.globals.cpu_cores = args.cpu_cores
-        roop.globals.gpu_threads = args.gpu_threads
-        if args.gpu_vendor:
-            roop.globals.gpu_vendor = args.gpu_vendor
+    roop.globals.source_path = args.source_path
+    roop.globals.target_path = args.target_path
+    roop.globals.output_path = args.output_path
+    roop.globals.headless = args.source_path or args.target_path or args.output_path
+    roop.globals.keep_fps = args.keep_fps
+    roop.globals.keep_audio = args.keep_audio
+    roop.globals.keep_frames = args.keep_frames
+    roop.globals.many_faces = args.many_faces
+    roop.globals.video_encoder = args.video_encoder
+    roop.globals.video_quality = args.video_quality
+    roop.globals.max_memory = args.max_memory
+    roop.globals.cpu_cores = args.cpu_cores
+    roop.globals.gpu_threads = args.gpu_threads
+    roop.globals.use_state = args.use_state
 
-    if roop.globals.gpu_vendor is None: roop.globals.providers = ['CPUExecutionProvider']
+    if args.gpu_vendor:
+        roop.globals.gpu_vendor = args.gpu_vendor
+    else:
+        roop.globals.providers = ['CPUExecutionProvider']
 
 
 def suggest_max_memory() -> int:
@@ -232,8 +234,13 @@ def destroy() -> None:
     quit()
 
 
+def check_state() -> None:
+    state.load_state()
+
+
 def run() -> None:
     parse_args()
+    check_state()
     pre_check()
     limit_resources()
     if roop.globals.headless:
