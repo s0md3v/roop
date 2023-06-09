@@ -187,7 +187,7 @@ def start() -> None:
         torch.cuda.empty_cache()
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
-        fps = detect_fps(roop.globals.source_path)
+        fps = detect_fps(roop.globals.target_path)
         update_status(f'Creating video with {fps} fps...')
         create_video(roop.globals.target_path, fps)
     else:
