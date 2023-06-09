@@ -55,9 +55,9 @@ def get_temp_frames_paths(target_path: str) -> List:
 
 
 def get_temp_directory_path(target_path: str) -> str:
-    filename, _ = os.path.splitext(os.path.basename(target_path))
-    target_name = os.path.dirname(target_path)
-    return os.path.join(target_name, TEMP_DIRECTORY, filename)
+    target_name, _ = os.path.splitext(os.path.basename(target_path))
+    target_directory_path = os.path.dirname(target_path)
+    return os.path.join(target_directory_path, TEMP_DIRECTORY, target_name)
 
 
 def get_temp_file_path(target_path: str) -> str:
@@ -79,10 +79,9 @@ def move_temp(target_path: str, output_path: str) -> None:
 def clean_temp(target_path: str) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
     parent_directory_path = os.path.dirname(temp_directory_path)
-    parent_directory_name = os.path.basename(parent_directory_path)
     if not roop.globals.keep_frames and os.path.isdir(temp_directory_path):
         shutil.rmtree(temp_directory_path)
-    if not os.listdir(parent_directory_path) and parent_directory_name == TEMP_DIRECTORY:
+    if os.path.exists(parent_directory_path) and not os.listdir(parent_directory_path):
         os.rmdir(parent_directory_path)
 
 

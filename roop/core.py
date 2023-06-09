@@ -31,7 +31,6 @@ if 'ROCMExecutionProvider' in roop.globals.providers:
     del torch
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
-# keyboard.on_press(lambda event: print("Key pressed:", event.name))
 
 
 def parse_args() -> None:
@@ -47,7 +46,7 @@ def parse_args() -> None:
         parser.add_argument('--many-faces', help='swap every face in the frame', dest='many_faces', action='store_true', default=False)
         parser.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264')
         parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
-        parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
+        parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int, default=suggest_max_memory())
         parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=suggest_cpu_cores())
         parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=suggest_gpu_threads())
         parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
@@ -64,12 +63,19 @@ def parse_args() -> None:
         roop.globals.many_faces = args.many_faces
         roop.globals.video_encoder = args.video_encoder
         roop.globals.video_quality = args.video_quality
+        roop.globals.max_memory = args.max_memory
         roop.globals.cpu_cores = args.cpu_cores
         roop.globals.gpu_threads = args.gpu_threads
         if args.gpu_vendor:
             roop.globals.gpu_vendor = args.gpu_vendor
 
     roop.globals.providers = ['CPUExecutionProvider'] if roop.globals.gpu_vendor is None else None
+
+
+def suggest_max_memory() -> int:
+    if platform.system().lower() == 'darwin':
+        return 4
+    return 16
 
 
 def suggest_gpu_threads() -> int:
@@ -79,7 +85,7 @@ def suggest_gpu_threads() -> int:
 
 
 def suggest_cpu_cores() -> int:
-    if sys.platform == 'darwin':
+    if platform.system().lower() == 'darwin':
         return 2
     return int(max(psutil.cpu_count() / 2, 1))
 
@@ -90,8 +96,10 @@ def limit_resources() -> None:
     for gpu in gpus:
         tensorflow.config.experimental.set_memory_growth(gpu, True)
     if roop.globals.max_memory:
-        memory = roop.globals.max_memory * 1024 * 1024 * 1024
-        if str(platform.system()).lower() == 'windows':
+        memory = roop.globals.max_memory * 1024 ** 3
+        if platform.system().lower() == 'darwin':
+            memory = roop.globals.max_memory * 1024 ** 6
+        if platform.system().lower() == 'windows':
             import ctypes
             kernel32 = ctypes.windll.kernel32
             kernel32.SetProcessWorkingSetSize(-1, ctypes.c_size_t(memory), ctypes.c_size_t(memory))
