@@ -69,7 +69,7 @@ def parse_args() -> None:
         if args.gpu_vendor:
             roop.globals.gpu_vendor = args.gpu_vendor
 
-    roop.globals.providers = ['CPUExecutionProvider'] if roop.globals.gpu_vendor is None else None
+    if roop.globals.gpu_vendor is None: roop.globals.providers = ['CPUExecutionProvider']
 
 
 def suggest_max_memory() -> int:
