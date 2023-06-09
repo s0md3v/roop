@@ -17,8 +17,6 @@ class BasicPostprocess(Postprocess):
         if os.path.isfile(input_audio):
             run_ffmpeg(f'-i "{output}" -i "{input}.aac" -c copy "{out_audio}"')
             os.remove(input_audio)
-
-        if not os.path.isfile(out_audio):
             shutil.move(out_audio, output)
 
     def release(self) -> None:

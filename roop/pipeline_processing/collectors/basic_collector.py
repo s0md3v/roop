@@ -25,6 +25,10 @@ class BasicCollector(FramesCollector):
             self.out = cv2.VideoWriter()
             self.out.open(self.output, fourcc, self.fps, self.size, True)
 
+        self.out.write(frame.data)
+        self.current_frame += 1
+
+        """
         # Syncronization
         if lock:
             lock.acquire()
@@ -38,6 +42,7 @@ class BasicCollector(FramesCollector):
         else:
             self.out.write(frame.data)
             self.current_frame += 1
+            
             # Save next frames by order
             remove_frames = []
             for buffer_frame in self.frame_buffer:
@@ -53,9 +58,10 @@ class BasicCollector(FramesCollector):
                 self.frame_buffer.remove(remove_frame)
 
             self.current_frame += 1
-
+            
         if lock:
             lock.release()
+        """
 
     def release(self) -> None:
         if self.out:

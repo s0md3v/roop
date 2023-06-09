@@ -70,6 +70,7 @@ class Pipeline:
             self.extractor.init(params.target)
             for block in self.blocks:
                 block.init(params.face)
+                block.warmup()
             size, fps, frames_count = self.extractor.info()
             self.collector.init(params.output, fps, size)
 
@@ -78,11 +79,12 @@ class Pipeline:
             progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
 
             with tqdm(total=frames_count, desc="Processing", unit="frame", dynamic_ncols=True, bar_format=progress_bar_format) as progress:
+                self.process_frame(params, cancellation_token, None, progress)
                 # Threads
-                lock = Lock()
-                threads = [Thread(target = self.process_frame, args = (params, cancellation_token, lock, progress, )) for i in range(cpu_count())]
-                [t.start() for t in threads]
-                [t.join() for t in threads]
+                #lock = Lock()
+                #threads = [Thread(target = self.process_frame, args = (params, cancellation_token, lock, progress, )) for i in range(cpu_count())]
+                #[t.start() for t in threads]
+                #[t.join() for t in threads]
             
             params.progress_handler("Process finished.")
             self.extractor.release()

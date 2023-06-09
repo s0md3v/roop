@@ -22,6 +22,11 @@ class ProcessBlock(PipelineBlock):
         pass
 
     @abc.abstractmethod
+    def warmup(self) -> None:
+        """Warming up block"""
+        pass
+
+    @abc.abstractmethod
     def process(self, frame: Frame) -> Frame:
         """Process frame"""
         pass
