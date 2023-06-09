@@ -2,7 +2,7 @@ import roop.globals
 import json
 import os
 import re
-from typing import List
+from typing import List, Optional
 
 # Flag should be set to true when the swapping is started
 swapping_in_progress: bool = False
@@ -58,7 +58,7 @@ def mark_frame_processed(frame_name: str) -> None:
     marks passed frame as processed
     :param frame_name:
     """
-    roop.state.state_struct['frames'].append(re.findall(r'\d+', frame_name)[0])
+    roop.state.state_struct['frames'].append(get_frame_number(frame_name))
     save_state()
 
 
@@ -68,7 +68,7 @@ def prepare_frames(frames_paths: List) -> List:
     :param frames_paths: list of all frames to process
     :return: list of non-processed frames
     """
-    frames_paths = [x for x in frames_paths if not re.findall(r'\d+', x)[0] in roop.state.state_struct['frames']]
+    frames_paths = [x for x in frames_paths if not get_frame_number(x) in roop.state.state_struct['frames']]
     return frames_paths
 
 
@@ -79,3 +79,11 @@ def exists(target_path: str) -> bool:
     :return: if state is exists
     """
     return 'target_path' in roop.state.state_struct['globals'] and roop.state.state_struct['globals']['target_path'] == target_path and roop.state.state_struct['frames']
+
+def get_frame_number(frame_name: str) -> Optional[str]:
+    """
+    :param frame_name:
+    :return: the number part from the frame_name, or None, if frame has no number in it
+    """
+    matches = re.findall(r'\d+', frame_name)
+    return matches[-1] if matches else None
