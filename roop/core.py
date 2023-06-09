@@ -48,10 +48,12 @@ def parse_args() -> None:
     parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=suggest_cpu_cores())
     parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=suggest_gpu_threads())
     parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
+    parser.add_argument('-d', '--directml', help='use Microsoft DirectML runtime', dest='direct_ml', action='store_true', default=False)
 
     args = parser.parse_known_args()[0]
 
     roop.globals.source_path = args.source_path
+    roop.globals.direct_ml = args.direct_ml
     roop.globals.target_path = args.target_path
     roop.globals.output_path = args.output_path
     roop.globals.headless = args.source_path or args.target_path or args.output_path
@@ -67,6 +69,9 @@ def parse_args() -> None:
 
     if args.gpu_vendor:
         roop.globals.gpu_vendor = args.gpu_vendor
+    if args.direct_ml == True:
+        roop.globals.providers = ['DmlExecutionProvider']
+        roop.globals.gpu_vendor = "DirectML"
     else:
         roop.globals.providers = ['CPUExecutionProvider']
 
@@ -80,6 +85,8 @@ def suggest_max_memory() -> int:
 def suggest_gpu_threads() -> int:
     if 'ROCMExecutionProvider' in roop.globals.providers:
         return 2
+    if 'DmlExecutionProvider' in roop.globals.providers:
+        return 1
     return 8
 
 

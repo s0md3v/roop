@@ -90,6 +90,9 @@ def process_video(source_path: str, frame_paths: [str], mode: str) -> None:
         if mode == 'cpu':
             progress.set_postfix({'mode': mode, 'cores': roop.globals.cpu_cores, 'memory': roop.globals.max_memory})
             process_frames(source_path, frame_paths, progress)
+        elif roop.globals.direct_ml == True:
+            progress.set_postfix({'mode': 'DirectML', 'threads': "1", 'memory': roop.globals.max_memory})
+            process_frames(source_path, frame_paths, progress)
         elif mode == 'gpu':
             progress.set_postfix({'mode': mode, 'threads': roop.globals.gpu_threads, 'memory': roop.globals.max_memory})
             multi_process_frame(source_path, frame_paths, progress)

@@ -13,6 +13,7 @@ max_memory = None
 cpu_cores = None
 gpu_threads = None
 gpu_vendor = None
+direct_ml = None
 headless = None
 log_level = 'error'
 providers = onnxruntime.get_available_providers()
