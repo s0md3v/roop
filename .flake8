@@ -1,2 +1,3 @@
 [flake8]
 select = E3, E4, F
+per-file-ignores = roop/core.py:E402

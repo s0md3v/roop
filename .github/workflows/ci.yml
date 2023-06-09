@@ -13,7 +13,7 @@ jobs:
     with:
      python-version: 3.9
   - run: pip install flake8
-  - run: flake8 run.py core
+  - run: flake8 run.py roop
  test:
   runs-on: ubuntu-latest
   steps:
