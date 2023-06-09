@@ -78,10 +78,9 @@ def multi_process_frame(source_img, frame_paths, progress):
 
 
 def process_img(source_img, target_path, output_file):
-    frame = cv2.imread(target_path)
-    face = get_face_single(frame)
     source_face = get_face_single(cv2.imread(source_img))
-    result = get_face_swapper().get(frame, face, source_face, paste_back=True)
+    target = cv2.imread(target_path)
+    result = process_faces(source_face, target)
     cv2.imwrite(output_file, result)
     print("\n\nImage saved as:", output_file, "\n\n")
 
