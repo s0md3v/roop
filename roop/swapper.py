@@ -75,7 +75,7 @@ def multi_process_frame(source_img, frame_paths, progress):
         thread.join()
 
 
-def process_img(source_img, target_path, output_file):
+def process_image(source_img, target_path, output_file):
     frame = cv2.imread(target_path)
     target_frame = get_one_face(frame)
     source_face = get_one_face(cv2.imread(source_img))
