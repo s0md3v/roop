@@ -31,45 +31,45 @@ if 'ROCMExecutionProvider' in roop.globals.providers:
     del torch
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
+# keyboard.on_press(lambda event: print("Key pressed:", event.name))
 
 
 def parse_args() -> None:
     signal.signal(signal.SIGINT, lambda signal_number, frame: destroy())
-    if state.load_state(): return
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
-    parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
-    parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
-    parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
-    parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
-    parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
-    parser.add_argument('--many-faces', help='swap every face in the frame', dest='many_faces', action='store_true', default=False)
-    parser.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264')
-    parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
-    parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
-    parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=suggest_cpu_cores())
-    parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=suggest_gpu_threads())
-    parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
+    if not state.load_state():
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
+        parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
+        parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
+        parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
+        parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
+        parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
+        parser.add_argument('--many-faces', help='swap every face in the frame', dest='many_faces', action='store_true', default=False)
+        parser.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264')
+        parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
+        parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int)
+        parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=suggest_cpu_cores())
+        parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=suggest_gpu_threads())
+        parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
 
-    args = parser.parse_known_args()[0]
+        args = parser.parse_known_args()[0]
 
-    roop.globals.source_path = args.source_path
-    roop.globals.target_path = args.target_path
-    roop.globals.output_path = args.output_path
-    roop.globals.headless = bool(args.source_path or args.target_path or args.output_path)
-    roop.globals.keep_fps = args.keep_fps
-    roop.globals.keep_audio = args.keep_audio
-    roop.globals.keep_frames = args.keep_frames
-    roop.globals.many_faces = args.many_faces
-    roop.globals.video_encoder = args.video_encoder
-    roop.globals.video_quality = args.video_quality
-    roop.globals.cpu_cores = args.cpu_cores
-    roop.globals.gpu_threads = args.gpu_threads
+        roop.globals.source_path = args.source_path
+        roop.globals.target_path = args.target_path
+        roop.globals.output_path = args.output_path
+        roop.globals.headless = bool(args.source_path or args.target_path or args.output_path)
+        roop.globals.keep_fps = args.keep_fps
+        roop.globals.keep_audio = args.keep_audio
+        roop.globals.keep_frames = args.keep_frames
+        roop.globals.many_faces = args.many_faces
+        roop.globals.video_encoder = args.video_encoder
+        roop.globals.video_quality = args.video_quality
+        roop.globals.cpu_cores = args.cpu_cores
+        roop.globals.gpu_threads = args.gpu_threads
+        if args.gpu_vendor:
+            roop.globals.gpu_vendor = args.gpu_vendor
 
-    if args.gpu_vendor:
-        roop.globals.gpu_vendor = args.gpu_vendor
-    else:
-        roop.globals.providers = ['CPUExecutionProvider']
+    roop.globals.providers = ['CPUExecutionProvider'] if roop.globals.gpu_vendor is None else None
 
 
 def suggest_gpu_threads() -> int:
@@ -178,10 +178,15 @@ def start() -> None:
         destroy()
     update_status('Creating temp resources...')
     create_temp(roop.globals.target_path)
-    update_status('Extracting frames...')
-    extract_frames(roop.globals.target_path)
+    if not state.exists(roop.globals.target_path): # extract frames only for new runs to avoid replace of processed frames
+        update_status('Extracting frames...')
+        extract_frames(roop.globals.target_path)
+    else: update_status('Continue previous swapping...')
     frame_paths = get_temp_frames_paths(roop.globals.target_path)
+    frame_paths = state.prepare_frames(frame_paths)
     update_status('Swapping in progress...')
+    # from this point saving a state has a sense
+    state.swapping_in_progress = True
     conditional_process_video(roop.globals.source_path, frame_paths)
     # prevent memory leak using ffmpeg with cuda
     if roop.globals.gpu_vendor == 'nvidia':
@@ -203,6 +208,9 @@ def start() -> None:
     else:
         move_temp(roop.globals.target_path, roop.globals.output_path)
     clean_temp(roop.globals.target_path)
+    # when result video is complete, saved state isn't required anymore
+    state.swapping_in_progress = False
+    state.save_state()
     if is_video(roop.globals.target_path):
         update_status('Swapping to video succeed!')
     else:
@@ -210,7 +218,7 @@ def start() -> None:
 
 
 def destroy() -> None:
-    if roop.globals.target_path:
+    if roop.globals.target_path and not state.save_state():
         clean_temp(roop.globals.target_path)
     quit()
 
@@ -220,7 +228,6 @@ def run() -> None:
     pre_check()
     limit_resources()
     if roop.globals.headless:
-        state.save_state()
         start()
     else:
         window = ui.init(start, destroy)
