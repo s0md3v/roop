@@ -13,7 +13,7 @@ TEMP_FILE = 'temp.mp4'
 TEMP_DIRECTORY = 'temp'
 
 
-def run_ffmpeg(args: List) -> None:
+def run_ffmpeg(args: List[str]) -> None:
     commands = ['ffmpeg', '-hide_banner', '-hwaccel', 'auto', '-loglevel', roop.globals.log_level]
     commands.extend(args)
     try:
@@ -39,17 +39,17 @@ def extract_frames(target_path: str) -> None:
 
 def create_video(target_path: str, fps: int) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
-    run_ffmpeg(['-i', os.path.join(temp_directory_path, '%04d.png'), '-framerate', str(fps), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-y', get_temp_file_path(target_path)])
+    run_ffmpeg(['-i', os.path.join(temp_directory_path, '%04d.png'), '-framerate', str(fps), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-y', get_temp_output_path(target_path)])
 
 
 def restore_audio(target_path: str, output_path: str) -> None:
-    temp_file_path = get_temp_file_path(target_path)
-    run_ffmpeg(['-i', temp_file_path, '-i', target_path, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-y', output_path])
+    temp_output_path = get_temp_output_path(target_path)
+    run_ffmpeg(['-i', temp_output_path, '-i', target_path, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-y', output_path])
     if not os.path.isfile(output_path):
         move_temp(target_path, output_path)
 
 
-def get_temp_frames_paths(target_path: str) -> List:
+def get_temp_frame_paths(target_path: str) -> List[str]:
     temp_directory_path = get_temp_directory_path(target_path)
     return glob.glob(os.path.join(temp_directory_path, '*.png'))
 
@@ -60,7 +60,7 @@ def get_temp_directory_path(target_path: str) -> str:
     return os.path.join(target_directory_path, TEMP_DIRECTORY, target_name)
 
 
-def get_temp_file_path(target_path: str) -> str:
+def get_temp_output_path(target_path: str) -> str:
     temp_directory_path = get_temp_directory_path(target_path)
     return os.path.join(temp_directory_path, TEMP_FILE)
 
@@ -71,9 +71,9 @@ def create_temp(target_path: str) -> None:
 
 
 def move_temp(target_path: str, output_path: str) -> None:
-    temp_file_path = get_temp_file_path(target_path)
-    if os.path.isfile(temp_file_path):
-        shutil.move(temp_file_path, output_path)
+    temp_output_path = get_temp_output_path(target_path)
+    if os.path.isfile(temp_output_path):
+        shutil.move(temp_output_path, output_path)
 
 
 def clean_temp(target_path: str) -> None:

@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, List
 
 from tqdm import tqdm
 import cv2
@@ -21,32 +21,32 @@ def get_face_swapper() -> None:
     return FACE_SWAPPER
 
 
-def swap_face_in_frame(source_face: Any, target_face: Any, frame: Any) -> None:
+def swap_face(source_face: Any, target_face: Any, temp_frame: Any) -> Any:
     if target_face:
-        return get_face_swapper().get(frame, target_face, source_face, paste_back=True)
-    return frame
+        return get_face_swapper().get(temp_frame, target_face, source_face, paste_back=True)
+    return temp_frame
 
 
-def process_faces(source_face: Any, target_frame: Any) -> Any:
+def process_faces(source_face: Any, temp_frame: Any) -> Any:
     if roop.globals.many_faces:
-        many_faces = get_many_faces(target_frame)
+        many_faces = get_many_faces(temp_frame)
         if many_faces:
-            for face in many_faces:
-                target_frame = swap_face_in_frame(source_face, face, target_frame)
+            for target_face in many_faces:
+                temp_frame = swap_face(source_face, target_face, temp_frame)
     else:
-        face = get_one_face(target_frame)
-        if face:
-            target_frame = swap_face_in_frame(source_face, face, target_frame)
-    return target_frame
+        target_face = get_one_face(temp_frame)
+        if target_face:
+            temp_frame = swap_face(source_face, target_face, temp_frame)
+    return temp_frame
 
 
-def process_frames(source_path: str, frame_paths: [str], progress=None) -> None:
+def process_frames(source_path: str, temp_frame_paths: List[str], progress=None) -> None:
     source_face = get_one_face(cv2.imread(source_path))
-    for frame_path in frame_paths:
-        frame = cv2.imread(frame_path)
+    for temp_frame_path in temp_frame_paths:
+        temp_frame = cv2.imread(temp_frame_path)
         try:
-            result = process_faces(source_face, frame)
-            cv2.imwrite(frame_path, result)
+            result = process_faces(source_face, temp_frame)
+            cv2.imwrite(temp_frame_path, result)
         except Exception as exception:
             print(exception)
             pass
@@ -54,10 +54,10 @@ def process_frames(source_path: str, frame_paths: [str], progress=None) -> None:
             progress.update(1)
 
 
-def multi_process_frame(source_img, frame_paths, progress) -> None:
+def multi_process_frame(source_path: str, temp_frame_paths: List[str], progress) -> None:
     threads = []
-    frames_per_thread = len(frame_paths) // roop.globals.gpu_threads
-    remaining_frames = len(frame_paths) % roop.globals.gpu_threads
+    frames_per_thread = len(temp_frame_paths) // roop.globals.gpu_threads
+    remaining_frames = len(temp_frame_paths) % roop.globals.gpu_threads
     start_index = 0
     # create threads by frames
     for _ in range(roop.globals.gpu_threads):
@@ -65,8 +65,8 @@ def multi_process_frame(source_img, frame_paths, progress) -> None:
         if remaining_frames > 0:
             end_index += 1
             remaining_frames -= 1
-        thread_frame_paths = frame_paths[start_index:end_index]
-        thread = threading.Thread(target=process_frames, args=(source_img, thread_frame_paths, progress))
+        thread_paths = temp_frame_paths[start_index:end_index]
+        thread = threading.Thread(target=process_frames, args=(source_path, thread_paths, progress))
         threads.append(thread)
         thread.start()
         start_index = end_index
@@ -75,21 +75,19 @@ def multi_process_frame(source_img, frame_paths, progress) -> None:
         thread.join()
 
 
-def process_image(source_path: str, target_path: str, output_file) -> None:
-    frame = cv2.imread(target_path)
-    target_frame = get_one_face(frame)
+def process_image(source_path: str, target_path: str, output_path: str) -> None:
     source_face = get_one_face(cv2.imread(source_path))
-    result = get_face_swapper().get(frame, target_frame, source_face, paste_back=True)
-    cv2.imwrite(output_file, result)
+    target_frame = cv2.imread(target_path)
+    result = process_faces(source_face, target_frame)
+    cv2.imwrite(output_path, result)
 
 
-def process_video(source_path: str, frame_paths: [str], mode: str) -> None:
+def process_video(source_path: str, temp_frame_paths: List[str], mode: str) -> None:
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
-    total = len(frame_paths)
-    with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
+    with tqdm(total=len(temp_frame_paths), desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
         if mode == 'cpu':
             progress.set_postfix({'mode': mode, 'cores': roop.globals.cpu_cores, 'memory': roop.globals.max_memory})
-            process_frames(source_path, frame_paths, progress)
+            process_frames(source_path, temp_frame_paths, progress)
         elif mode == 'gpu':
             progress.set_postfix({'mode': mode, 'threads': roop.globals.gpu_threads, 'memory': roop.globals.max_memory})
-            multi_process_frame(source_path, frame_paths, progress)
+            multi_process_frame(source_path, temp_frame_paths, progress)
