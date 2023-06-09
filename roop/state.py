@@ -23,14 +23,13 @@ def prepare_state():
     }
 
 
-def save_state() -> None:
+def save_state(state_path: str = '.state') -> None:
     prepare_state()
-    with open('.state', 'wb') as file:
+    with open(state_path, 'wb') as file:
         pickle.dump(state_struct, file)
 
 
-def load_state(state_path: str = None) -> bool:
-    if state_path is None: state_path = '.state'
+def load_state(state_path: str = '.state') -> bool:
     if not os.path.exists(state_path): return False
     with open(state_path, 'rb') as file:
         roop.state.state_struct = pickle.load(file)
