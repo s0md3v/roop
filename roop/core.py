@@ -189,7 +189,8 @@ def start() -> None:
     if not state.exists(roop.globals.target_path): # extract frames only for new runs to avoid replace of processed frames
         update_status('Extracting frames...')
         extract_frames(roop.globals.target_path)
-    else: update_status('Continue previous swapping...')
+    else: update_status("Continue previous swapping: %d frames are already swapped..." % len(state.state_struct['frames']))
+
     frame_paths = get_temp_frames_paths(roop.globals.target_path)
     frame_paths = state.prepare_frames(frame_paths)
     update_status('Swapping in progress...')
