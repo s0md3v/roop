@@ -62,11 +62,12 @@ Looking for a CLI mode? Using the -f/--face argument will make the program in cl
 
 ## Future plans
 - [ ] Improve the quality of faces in results
-- [ ] Replace a selective face throughout the video
+- [x] Replace a selective face throughout the video
 - [ ] Support for replacing multiple faces
 
 ## Credits
 - [henryruhs](https://github.com/henryruhs): for being an irreplacable contributor to the project
 - [ffmpeg](https://ffmpeg.org/): for making video related operations easy
 - [deepinsight](https://github.com/deepinsight): for their [insightface](https://github.com/deepinsight/insightface) project which provided a well-made library and models.
+- [maximq](https://github.com/maximq): for replace a selective face throughout the video
 - and all developers behind libraries used in this project.
