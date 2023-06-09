@@ -1,13 +1,15 @@
 import roop.globals
 import pickle
 import os
+import re
 
 state_struct = {
-    'parameters': {},
+    'globals': {},
     'step': None,
     'frame_sets': {}
 }
 
+done_frames = []
 
 def prepare_state():
     all_variables = dir(roop.globals)
@@ -17,9 +19,9 @@ def prepare_state():
     }
 
     roop.state.state_struct = {
-        'parameters': filtered_variables,
+        'globals': filtered_variables,
         'step': None,
-        'frame_sets': {}
+        'frame_sets': done_frames
     }
 
 
@@ -33,4 +35,7 @@ def load_state(state_path: str = '.state') -> bool:
     if not os.path.exists(state_path): return False
     with open(state_path, 'rb') as file:
         roop.state.state_struct = pickle.load(file)
+        for variable_name, variable_value in roop.state.state_struct['globals'].items():
+            if hasattr(roop.globals, variable_name):
+                setattr(roop.globals, variable_name, variable_value)
     return True
