@@ -57,7 +57,7 @@ def parse_args() -> None:
     roop.globals.source_path = args.source_path
     roop.globals.target_path = args.target_path
     roop.globals.output_path = args.output_path
-    roop.globals.frame_processors = args.frame_processor
+    roop.globals.frame_processor = args.frame_processor
     roop.globals.headless = args.source_path or args.target_path or args.output_path
     roop.globals.keep_fps = args.keep_fps
     roop.globals.keep_audio = args.keep_audio
@@ -196,17 +196,17 @@ def start() -> None:
     update_status('Extracting frames...')
     extract_frames(roop.globals.target_path)
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
-    if 'face-swapper' in roop.globals.frame_processors:
+    if 'face-swapper' in roop.globals.frame_processor:
         update_status('Swapping in progress...')
         conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
     if roop.globals.gpu_vendor == 'nvidia':
         torch.cuda.empty_cache()
-    if 'ROCMExecutionProvider' in roop.globals.providers:
-        pass
-    else:
-        if 'face-enhancer' in roop.globals.frame_processors:
+    if roop.globals.cpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processor:
             update_status('enhancinging in progress...')
             conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
+    else:
+        if 'face-enhancer' in roop.globals.frame_processor:
+            print('face-enhancer only surpported on CUDA')
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
         fps = detect_fps(roop.globals.target_path)
