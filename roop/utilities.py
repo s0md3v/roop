@@ -88,7 +88,7 @@ def clean_temp(target_path: str) -> None:
         os.rmdir(parent_directory_path)
 
 
-def has_image_extention(image_path: str) -> bool:
+def has_image_extension(image_path: str) -> bool:
     return image_path.lower().endswith(('png', 'jpg', 'jpeg'))
 
 
