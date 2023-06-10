@@ -78,9 +78,9 @@ def get_face_enhancer(FACE_ENHANCER):
 def enhance_face_in_frame(cropped_faces):
     try:
         for _, cropped_face in enumerate(cropped_faces):
-            face_in_tensor = data_preprocess(cropped_face)
-            face_enhanced = restore_face(face_in_tensor)
-            return face_enhanced
+            face_in_tensor = normalize_face(cropped_face)
+            faces_enhanced = restore_face(face_in_tensor)
+            return faces_enhanced
     except RuntimeError as error:
         print(f"Failed inference for CodeFormer-code: {error}")
 
@@ -106,15 +106,15 @@ def process_faces(source_face: any, frame: any) -> any:
         print(f"Failed inference for CodeFormer-code-paste: {error}")
 
 
-def data_preprocess(frame):
-    frame_in_tensor = img2tensor(frame / 255.0, bgr2rgb=True, float32=True)
-    normalize(frame_in_tensor, (0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True)
-    return frame_in_tensor.unsqueeze(0).to(device)
+def normalize_face(face):
+    face_in_tensor = img2tensor(face / 255.0, bgr2rgb=True, float32=True)
+    normalize(face_in_tensor, (0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True)
+    return face_in_tensor.unsqueeze(0).to(device)
 
 
-def generate_output(frame_in_tensor, codeformer_fidelity = 0.6):
+def enhance_face_in_tensor(face_in_tensor, codeformer_fidelity = 0.6):
     with torch.no_grad():
-        output = get_code_former()(frame_in_tensor, w=codeformer_fidelity, adain=True)[0]
+        output = get_code_former()(face_in_tensor, w=codeformer_fidelity, adain=True)[0]
     return output
 
 
@@ -125,7 +125,7 @@ def postprocess_output(output):
 
 def restore_face(face_in_tensor):
     try:
-        output = generate_output(face_in_tensor)
+        output = enhance_face_in_tensor(face_in_tensor)
         restored_face = postprocess_output(output)
         del output
     except RuntimeError as error:
