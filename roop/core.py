@@ -181,7 +181,8 @@ def start() -> None:
     if has_image_extention(roop.globals.target_path):
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
-        roop.swapper.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+        if 'face-swapper' in roop.globals.frame_processor:
+            roop.swapper.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
         if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processor:
             roop.enhancer.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
         elif 'face-enhancer' in roop.globals.frame_processor:
