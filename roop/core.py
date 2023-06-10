@@ -39,7 +39,7 @@ def parse_args() -> None:
     parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
     parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
     parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
-    parser.add_argument('--frame-processor', help='list of frame processors to run', dest='frame-processor', default='face-swapper', choices=['face-swapper', 'face-enhancer'])
+    parser.add_argument('--frame-processor', help='list of frame processors to run', dest='frame_processor', default='face-swapper', choices=['face-swapper', 'face-enhancer'])
     parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
     parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
     parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
