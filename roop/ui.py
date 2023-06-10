@@ -156,7 +156,7 @@ def update_status(text: str) -> None:
     ROOT.update()
 
 
-def select_source_path():
+def select_source_path() -> None:
     global RECENT_DIRECTORY_SOURCE
     source_path = filedialog.askopenfilename(title='Select an face image', initialdir=RECENT_DIRECTORY_SOURCE)
     if is_image(source_path):
@@ -171,7 +171,7 @@ def select_source_path():
         source_label.image = None
 
 
-def select_target_path():
+def select_target_path() -> None:
     global RECENT_DIRECTORY_TARGET
     target_path = filedialog.askopenfilename(title='Select an image or video target', initialdir=RECENT_DIRECTORY_TARGET)
     if is_image(target_path):

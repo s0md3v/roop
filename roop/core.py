@@ -23,7 +23,7 @@ import cv2
 import roop.globals
 import roop.ui as ui
 from roop.swapper import process_video, process_image
-from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frames_paths, restore_audio, create_temp, move_temp, clean_temp
+from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.analyser import get_one_face
 import roop.state as state
 
@@ -47,6 +47,7 @@ def parse_args() -> None:
     parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
     parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int, default=suggest_max_memory())
     parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=suggest_cpu_cores())
+    parser.add_argument('--execution-provider', help='execution provider', dest='execution_provider', default='cpu', choices=['cpu', 'directml'])
     parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=suggest_gpu_threads())
     parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
     parser.add_argument('--use-state', help='save progress between runs', dest='use_state', type=bool, default=True)
@@ -68,6 +69,9 @@ def parse_args() -> None:
     roop.globals.gpu_threads = args.gpu_threads
     roop.globals.use_state = args.use_state
 
+    if args.execution_provider == 'directml':
+        roop.globals.providers = ['DmlExecutionProvider']
+        roop.globals.gpu_vendor = 'other'
     if args.gpu_vendor:
         roop.globals.gpu_vendor = args.gpu_vendor
     else:
@@ -81,6 +85,8 @@ def suggest_max_memory() -> int:
 
 
 def suggest_gpu_threads() -> int:
+    if 'DmlExecutionProvider' in roop.globals.providers:
+        return 1
     if 'ROCMExecutionProvider' in roop.globals.providers:
         return 2
     return 8
@@ -137,21 +143,20 @@ def pre_check() -> None:
             quit(f'CUDNN version { torch.backends.cudnn.version()} is not supported - please downgrade to 8.9.1')
 
 
-def conditional_process_video(source_path: str, frame_paths: List[str]) -> None:
-    pool_amount = len(frame_paths) // roop.globals.cpu_cores
+def conditional_process_video(source_path: str, temp_frame_paths: List[str]) -> None:
+    pool_amount = len(temp_frame_paths) // roop.globals.cpu_cores
     if pool_amount > 2 and roop.globals.cpu_cores > 1 and roop.globals.gpu_vendor is None:
-        global POOL
         POOL = multiprocessing.Pool(roop.globals.cpu_cores, maxtasksperchild=1)
         pools = []
-        for i in range(0, len(frame_paths), pool_amount):
-            pool = POOL.apply_async(process_video, args=(source_path, frame_paths[i:i + pool_amount], 'cpu'))
+        for i in range(0, len(temp_frame_paths), pool_amount):
+            pool = POOL.apply_async(process_video, args=(source_path, temp_frame_paths[i:i + pool_amount], 'cpu'))
             pools.append(pool)
         for pool in pools:
             pool.get()
         POOL.close()
         POOL.join()
     else:
-         process_video(roop.globals.source_path, frame_paths, 'gpu')
+         process_video(roop.globals.source_path, temp_frame_paths, 'gpu')
 
 
 def update_status(message: str) -> None:
@@ -193,12 +198,12 @@ def start() -> None:
         extract_frames(roop.globals.target_path)
     else: update_status("Continue previous swapping: %d frames are already swapped..." % len(state.state_struct['frames']))
 
-    frame_paths = get_temp_frames_paths(roop.globals.target_path)
-    frame_paths = state.prepare_frames(frame_paths)
+    temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
+    temp_frame_paths  = state.prepare_frames(temp_frame_paths)
     update_status('Swapping in progress...')
     # from this point saving a state has a sense
     state.swapping_in_progress = True
-    conditional_process_video(roop.globals.source_path, frame_paths)
+    conditional_process_video(roop.globals.source_path, temp_frame_paths)
     # prevent memory leak using ffmpeg with cuda
     if roop.globals.gpu_vendor == 'nvidia':
         torch.cuda.empty_cache()
