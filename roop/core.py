@@ -24,7 +24,7 @@ import roop.globals
 import roop.ui as ui
 import roop.swapper
 import roop.enhancer
-from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
+from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.analyser import get_one_face
 
 if 'ROCMExecutionProvider' in roop.globals.providers:
@@ -180,7 +180,7 @@ def start() -> None:
         update_status('No face detected in source image. Please try with another one!')
         return
     # process image to image
-    if has_image_extention(roop.globals.target_path):
+    if has_image_extension(roop.globals.target_path):
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
         if 'face-swapper' in roop.globals.frame_processors:
