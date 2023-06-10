@@ -112,7 +112,7 @@ def normalize_face(face):
     return face_in_tensor.unsqueeze(0).to(device)
 
 
-def enhanced_face_in_tensor(face_in_tensor, codeformer_fidelity = 0.6):
+def enhance_face_in_tensor(face_in_tensor, codeformer_fidelity = 0.6):
     with torch.no_grad():
         enhanced_face_in_tensor = get_code_former()(face_in_tensor, w=codeformer_fidelity, adain=True)[0]
     return enhanced_face_in_tensor
@@ -124,8 +124,8 @@ def convert_tensor_to_image(enhanced_face_in_tensor):
 
 
 def restore_face(face_in_tensor):
+    enhanced_face_in_tensor = enhance_face_in_tensor(face_in_tensor)
     try:
-        enhanced_face_in_tensor = enhanced_face_in_tensor(face_in_tensor)
         restored_face = convert_tensor_to_image(enhanced_face_in_tensor)
         del enhanced_face_in_tensor
     except RuntimeError as error:
@@ -137,13 +137,13 @@ def restore_face(face_in_tensor):
 def process_frames(source_path: str, frame_paths: list[str], progress=None) -> None:
     source_face = None
     for frame_path in frame_paths:
-        frame = cv2.imread(frame_path)
         try:
+            frame = cv2.imread(frame_path)
             result = process_faces(source_face, frame)
             cv2.imwrite(frame_path, result)
         except Exception as exception:
             print(exception)
-            pass
+            continue
         if progress:
             progress.update(1)
 
