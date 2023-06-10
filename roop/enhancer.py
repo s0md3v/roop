@@ -131,6 +131,7 @@ def restore_face(face_in_tensor):
     except RuntimeError as error:
         print(f"Failed inference for CodeFormer-tensor: {error}")
         restored_face = convert_tensor_to_image(face_in_tensor)
+        return restored_face
     return restored_face
 
 
