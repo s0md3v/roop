@@ -74,7 +74,6 @@ def create_temp(target_path: str) -> None:
 def move_temp(target_path: str, output_path: str) -> None:
     temp_output_path = get_temp_output_path(target_path)
     if os.path.isfile(temp_output_path):
-        # shit.move will not cover the file if it exists.
         shutil.move(temp_output_path, output_path, copy_function=shutil.copy2)
 
 

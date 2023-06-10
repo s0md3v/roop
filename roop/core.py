@@ -200,9 +200,6 @@ def start() -> None:
         torch.cuda.empty_cache()
     update_status('enhancinging in progress...')
     conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
-    # prevent memory leak using ffmpeg with cuda
-    # if roop.globals.gpu_vendor == 'nvidia':
-    #     torch.cuda.empty_cache()
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
         fps = detect_fps(roop.globals.target_path)

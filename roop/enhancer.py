@@ -135,28 +135,8 @@ def restore_face(face_t):
     return restored_face
 
 
-# def paste_face_back(face_enhanced):
-#     try:
-#         with THREAD_LOCK:
-#             get_facepaste_back().add_restored_face(face_enhanced)
-#             get_facepaste_back().get_inverse_affine()
-#             enhanced_img = get_facepaste_back().paste_faces_to_input_image()
-#         return enhanced_img
-#     except:
-#         print('error')
-
-        
-# def process_faces(source_face: any, frame: any) -> any:
-#     try:
-#         result = process_faces(frame)
-#         get_facepaste_back().clean_all()
-#         return result
-#     except RuntimeError as error:
-#         print(f"Failed inference for CodeFormer-code-paste: {error}")
-
-
 def process_frames(source_path: str, frame_paths: list[str], progress=None) -> None:
-    source_face = None #get_one_face(cv2.imread(source_path))
+    source_face = None
     for frame_path in frame_paths:
         frame = cv2.imread(frame_path)
         try:
@@ -188,14 +168,6 @@ def multi_process_frame(source_img, frame_paths, progress) -> None:
     # join threads
     for thread in threads:
         thread.join()
-
-
-# def process_image(source_path: str, target_path: str, output_file) -> None:
-#     frame = cv2.imread(target_path)
-#     target_frame = get_one_face(frame)
-#     source_face = get_one_face(cv2.imread(source_path))
-#     result = get_face_swapper().get(frame, target_frame, source_face, paste_back=True)
-#     cv2.imwrite(output_file, result)
 
 
 def process_video(source_path: str, frame_paths: list[str], mode: str) -> None:
