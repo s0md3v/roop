@@ -22,7 +22,7 @@ import cv2
 
 import roop.globals
 import roop.ui as ui
-from roop.swapper import process_video, process_image
+import roop.swapper
 import roop.enhancer
 from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.analyser import get_one_face
@@ -179,7 +179,7 @@ def start() -> None:
     if has_image_extention(roop.globals.target_path):
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
-        process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+        roop.swapper.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
         if is_image(roop.globals.target_path):
             update_status('Swapping to image succeed!')
         else:
@@ -195,7 +195,7 @@ def start() -> None:
     extract_frames(roop.globals.target_path)
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     update_status('Swapping in progress...')
-    conditional_process_video(roop.globals.source_path, temp_frame_paths, process_video)
+    conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
     if roop.globals.gpu_vendor == 'nvidia':
         torch.cuda.empty_cache()
     update_status('enhancinging in progress...')
