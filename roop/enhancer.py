@@ -112,25 +112,25 @@ def normalize_face(face):
     return face_in_tensor.unsqueeze(0).to(device)
 
 
-def enhance_face_in_tensor(face_in_tensor, codeformer_fidelity = 0.6):
+def enhanced_face_in_tensor(face_in_tensor, codeformer_fidelity = 0.6):
     with torch.no_grad():
-        output = get_code_former()(face_in_tensor, w=codeformer_fidelity, adain=True)[0]
-    return output
+        enhanced_face_in_tensor = get_code_former()(face_in_tensor, w=codeformer_fidelity, adain=True)[0]
+    return enhanced_face_in_tensor
 
 
-def postprocess_output(output):
-    restored_face = tensor2img(output, rgb2bgr=True, min_max=(-1, 1))
+def convert_tensor_to_image(enhanced_face_in_tensor):
+    restored_face = tensor2img(enhanced_face_in_tensor, rgb2bgr=True, min_max=(-1, 1))
     return restored_face.astype("uint8")
 
 
 def restore_face(face_in_tensor):
     try:
-        output = enhance_face_in_tensor(face_in_tensor)
-        restored_face = postprocess_output(output)
-        del output
+        enhanced_face_in_tensor = enhanced_face_in_tensor(face_in_tensor)
+        restored_face = convert_tensor_to_image(enhanced_face_in_tensor)
+        del enhanced_face_in_tensor
     except RuntimeError as error:
         print(f"Failed inference for CodeFormer-tensor: {error}")
-        restored_face = postprocess_output(face_in_tensor)
+        restored_face = convert_tensor_to_image(face_in_tensor)
     return restored_face
 
 
