@@ -126,9 +126,6 @@ def pre_check() -> None:
         quit('Python version is not supported - please upgrade to 3.9 or higher.')
     if not shutil.which('ffmpeg'):
         quit('ffmpeg is not installed!')
-    model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../inswapper_128.onnx')
-    if not os.path.isfile(model_path):
-        quit('File "inswapper_128.onnx" does not exist!')
     if roop.globals.gpu_vendor == 'apple':
         if 'CoreMLExecutionProvider' not in roop.globals.providers:
             quit('You are using --gpu=apple flag but CoreML is not available or properly installed on your system.')
@@ -248,6 +245,8 @@ def destroy() -> None:
 def run() -> None:
     parse_args()
     pre_check()
+    if 'face-swapper' in roop.globals.frame_processors:
+        roop.swapper.pre_check()
     limit_resources()
     if roop.globals.headless:
         start()
