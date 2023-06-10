@@ -60,6 +60,7 @@ def get_facepaste_enhancer():
             CODE_FORMER.eval()
         return CODE_FORMER
 
+
 def get_facepaste_back(FACE_HELPER):
     if FACE_HELPER is None:
         FACE_HELPER = FaceRestoreHelper(
@@ -103,8 +104,6 @@ def process_faces(source_face: any, frame: any) -> any:
         return result
     except RuntimeError as error:
         print(f"Failed inference for CodeFormer-code-paste: {error}")
-
-
 
 
 def data_preprocess(frame):
