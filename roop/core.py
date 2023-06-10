@@ -40,7 +40,7 @@ def parse_args() -> None:
     parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
     parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
     parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
-    parser.add_argument('--frame-processor', help='list of frame processors to run', dest='frame_processor', default='face-swapper', choices=['face-swapper', 'face-enhancer'])
+    parser.add_argument('--frame-processor', help='list of frame processors to run', dest='frame_processor', default=['face-swapper'], choices=['face-swapper', 'face-enhancer'], nargs='+')
     parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
     parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
     parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
@@ -59,7 +59,7 @@ def parse_args() -> None:
     roop.globals.source_path = args.source_path
     roop.globals.target_path = args.target_path
     roop.globals.output_path = args.output_path
-    roop.globals.frame_processor = args.frame_processor
+    roop.globals.frame_processors = args.frame_processor
     roop.globals.headless = args.source_path or args.target_path or args.output_path
     roop.globals.keep_fps = args.keep_fps
     roop.globals.keep_audio = args.keep_audio
@@ -119,14 +119,16 @@ def limit_resources() -> None:
             resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))
 
 
+def release_resources() -> None:
+    if roop.globals.gpu_vendor == 'nvidia':
+        torch.cuda.empty_cache()
+
+
 def pre_check() -> None:
     if sys.version_info < (3, 9):
         quit('Python version is not supported - please upgrade to 3.9 or higher.')
     if not shutil.which('ffmpeg'):
         quit('ffmpeg is not installed!')
-    model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../inswapper_128.onnx')
-    if not os.path.isfile(model_path):
-        quit('File "inswapper_128.onnx" does not exist!')
     if roop.globals.gpu_vendor == 'apple':
         if 'CoreMLExecutionProvider' not in roop.globals.providers:
             quit('You are using --gpu=apple flag but CoreML is not available or properly installed on your system.')
@@ -184,16 +186,16 @@ def start() -> None:
     if has_image_extention(roop.globals.target_path):
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
-        if 'face-swapper' in roop.globals.frame_processor:
+        if 'face-swapper' in roop.globals.frame_processors:
+            update_status('Swapping in progress...')
             roop.swapper.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
-        if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processor:
+        if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processors:
+            update_status('Enhancing in progress...')
             roop.enhancer.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
-        elif 'face-enhancer' in roop.globals.frame_processor:
-            print('face-enhancer is only supported on CUDA')
         if is_image(roop.globals.target_path):
-            update_status('Swapping to image succeed!')
+            update_status('Processing to image succeed!')
         else:
-            update_status('Swapping to image failed!')
+            update_status('Processing to image failed!')
         return
     # process image to videos
     seconds, probabilities = predict_video_frames(video_path=roop.globals.target_path, frame_interval=100)
@@ -208,18 +210,18 @@ def start() -> None:
 
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     temp_frame_paths = state.prepare_frames(temp_frame_paths)
-    if 'face-swapper' in roop.globals.frame_processor:
+    if 'face-swapper' in roop.globals.frame_processors:
         update_status('Swapping in progress...')
         # from this point saving a state has a sense
         state.swapping_in_progress = True
         conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
-    if roop.globals.gpu_vendor == 'nvidia':
-        torch.cuda.empty_cache()
-    if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processor:
-        update_status('enhancinging in progress...')
+    release_resources()
+    # limit to one gpu thread
+    roop.globals.gpu_threads = 1
+    if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processors:
+        update_status('Enhancing in progress...')
         conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
-    elif 'face-enhancer' in roop.globals.frame_processor:
-        print('face-enhancer is only supported on CUDA')
+    release_resources()
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
         fps = detect_fps(roop.globals.target_path)
@@ -241,9 +243,9 @@ def start() -> None:
     state.swapping_in_progress = False
     state.save_state()
     if is_video(roop.globals.target_path):
-        update_status('Swapping to video succeed!')
+        update_status('Processing to video succeed!')
     else:
-        update_status('Swapping to video failed!')
+        update_status('Processing to video failed!')
 
 
 def destroy() -> None:
@@ -261,6 +263,8 @@ def run() -> None:
     parse_args()
     check_state()
     pre_check()
+    if 'face-swapper' in roop.globals.frame_processors:
+        roop.swapper.pre_check()
     limit_resources()
     if roop.globals.headless:
         start()
