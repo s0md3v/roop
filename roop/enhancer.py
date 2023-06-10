@@ -136,6 +136,13 @@ def restore_face(face_in_tensor):
     return restored_face
 
 
+def process_image(source_path: str, image_path: str, output_file: str) -> None:
+    source_face = None
+    image = cv2.imread(image_path)
+    result = process_faces(source_face, image)
+    cv2.imwrite(output_file, result)
+
+
 def process_frames(source_path: str, frame_paths: list[str], progress=None) -> None:
     source_face = None
     for frame_path in frame_paths:

@@ -182,6 +182,10 @@ def start() -> None:
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
         roop.swapper.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+        if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processor:
+            roop.enhancer.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+        elif 'face-enhancer' in roop.globals.frame_processor:
+            print('face-enhancer is only supported on CUDA')
         if is_image(roop.globals.target_path):
             update_status('Swapping to image succeed!')
         else:
@@ -201,12 +205,11 @@ def start() -> None:
         conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
     if roop.globals.gpu_vendor == 'nvidia':
         torch.cuda.empty_cache()
-    if roop.globals.cpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processor:
-            update_status('enhancinging in progress...')
-            conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
-    else:
-        if 'face-enhancer' in roop.globals.frame_processor:
-            print('face-enhancer only surpported on CUDA')
+    if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processor:
+        update_status('enhancinging in progress...')
+        conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
+    elif 'face-enhancer' in roop.globals.frame_processor:
+        print('face-enhancer is only supported on CUDA')
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
         fps = detect_fps(roop.globals.target_path)
