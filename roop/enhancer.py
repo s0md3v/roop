@@ -45,6 +45,7 @@ else:
     ckpt_path = "CodeFormer/weights/CodeFormer/codeformer.pth"
     checkpoint = torch.load(ckpt_path)["params_ema"]
 
+
 def get_code_former():
     global CODE_FORMER
     with THREAD_LOCK:
