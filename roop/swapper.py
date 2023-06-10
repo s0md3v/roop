@@ -7,16 +7,22 @@ import insightface
 import threading
 import roop.globals
 from roop.analyser import get_one_face, get_many_faces
+from roop.utilities import conditional_download
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
+
+
+def pre_check() -> None:
+    download_directory_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../models')
+    conditional_download(download_directory_path, ['https://huggingface.co/deepinsight/inswapper/resolve/main/inswapper_128.onnx'])
 
 
 def get_face_swapper() -> None:
     global FACE_SWAPPER
     with THREAD_LOCK:
         if FACE_SWAPPER is None:
-            model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../inswapper_128.onnx')
+            model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../models/inswapper_128.onnx')
             FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=roop.globals.providers)
     return FACE_SWAPPER
 
@@ -84,7 +90,8 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
 
 def process_video(source_path: str, temp_frame_paths: List[str], mode: str) -> None:
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
-    with tqdm(total=len(temp_frame_paths), desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
+    total = len(temp_frame_paths)
+    with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
         if mode == 'cpu':
             progress.set_postfix({'mode': mode, 'cores': roop.globals.cpu_cores, 'memory': roop.globals.max_memory})
             process_frames(source_path, temp_frame_paths, progress)
