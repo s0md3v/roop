@@ -22,7 +22,8 @@ import cv2
 
 import roop.globals
 import roop.ui as ui
-from roop.swapper import process_video, process_image
+import roop.swapper
+import roop.enhancer
 from roop.utilities import has_image_extention, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.analyser import get_one_face
 import roop.state as state
@@ -39,6 +40,7 @@ def parse_args() -> None:
     parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
     parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
     parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
+    parser.add_argument('--frame-processor', help='list of frame processors to run', dest='frame_processor', default='face-swapper', choices=['face-swapper', 'face-enhancer'])
     parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
     parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
     parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
@@ -57,6 +59,7 @@ def parse_args() -> None:
     roop.globals.source_path = args.source_path
     roop.globals.target_path = args.target_path
     roop.globals.output_path = args.output_path
+    roop.globals.frame_processor = args.frame_processor
     roop.globals.headless = args.source_path or args.target_path or args.output_path
     roop.globals.keep_fps = args.keep_fps
     roop.globals.keep_audio = args.keep_audio
@@ -143,7 +146,7 @@ def pre_check() -> None:
             quit(f'CUDNN version { torch.backends.cudnn.version()} is not supported - please downgrade to 8.9.1')
 
 
-def conditional_process_video(source_path: str, temp_frame_paths: List[str]) -> None:
+def conditional_process_video(source_path: str, temp_frame_paths: List[str], process_video) -> None:
     pool_amount = len(temp_frame_paths) // roop.globals.cpu_cores
     if pool_amount > 2 and roop.globals.cpu_cores > 1 and roop.globals.gpu_vendor is None:
         POOL = multiprocessing.Pool(roop.globals.cpu_cores, maxtasksperchild=1)
@@ -181,7 +184,12 @@ def start() -> None:
     if has_image_extention(roop.globals.target_path):
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
-        process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+        if 'face-swapper' in roop.globals.frame_processor:
+            roop.swapper.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+        if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processor:
+            roop.enhancer.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+        elif 'face-enhancer' in roop.globals.frame_processor:
+            print('face-enhancer is only supported on CUDA')
         if is_image(roop.globals.target_path):
             update_status('Swapping to image succeed!')
         else:
@@ -199,14 +207,19 @@ def start() -> None:
     else: update_status("Continue previous swapping: %d frames are already swapped..." % len(state.state_struct['frames']))
 
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
-    temp_frame_paths  = state.prepare_frames(temp_frame_paths)
-    update_status('Swapping in progress...')
-    # from this point saving a state has a sense
-    state.swapping_in_progress = True
-    conditional_process_video(roop.globals.source_path, temp_frame_paths)
-    # prevent memory leak using ffmpeg with cuda
+    temp_frame_paths = state.prepare_frames(temp_frame_paths)
+    if 'face-swapper' in roop.globals.frame_processor:
+        update_status('Swapping in progress...')
+        # from this point saving a state has a sense
+        state.swapping_in_progress = True
+        conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
     if roop.globals.gpu_vendor == 'nvidia':
         torch.cuda.empty_cache()
+    if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processor:
+        update_status('enhancinging in progress...')
+        conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
+    elif 'face-enhancer' in roop.globals.frame_processor:
+        print('face-enhancer is only supported on CUDA')
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
         fps = detect_fps(roop.globals.target_path)

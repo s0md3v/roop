@@ -3,6 +3,7 @@ import onnxruntime
 source_path = None
 target_path = None
 output_path = None
+frame_processors = None
 keep_fps = None
 keep_audio = None
 keep_frames = None
