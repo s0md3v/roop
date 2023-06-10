@@ -1,6 +1,5 @@
 import os
 import cv2
-import numpy as np
 import torch
 import threading
 from tqdm import tqdm
@@ -13,39 +12,40 @@ from codeformer.basicsr.utils.download_util import load_file_from_url
 from codeformer.basicsr.utils.registry import ARCH_REGISTRY
 from codeformer.basicsr.utils import img2tensor, tensor2img
 
-pretrain_model_url = {
-    "codeformer": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth",
-    "detection": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/detection_Resnet50_Final.pth",
-    "parsing": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/parsing_parsenet.pth",
-    "realesrgan": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/RealESRGAN_x2plus.pth",
-}
+if 'ROCMExecutionProvider' in roop.globals.providers:
+    del torch
+else:
+    pretrain_model_url = {
+        "codeformer": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth",
+        "detection": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/detection_Resnet50_Final.pth",
+        "parsing": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/parsing_parsenet.pth",
+        "realesrgan": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/RealESRGAN_x2plus.pth",
+    }
+    # download weights
+    if not os.path.exists("CodeFormer/weights/CodeFormer/codeformer.pth"):
+        load_file_from_url(
+            url=pretrain_model_url["codeformer"], model_dir="CodeFormer/weights/CodeFormer", progress=True, file_name=None
+        )
+    if not os.path.exists("CodeFormer/weights/facelib/detection_Resnet50_Final.pth"):
+        load_file_from_url(
+            url=pretrain_model_url["detection"], model_dir="CodeFormer/weights/facelib", progress=True, file_name=None
+        )
+    if not os.path.exists("CodeFormer/weights/facelib/parsing_parsenet.pth"):
+        load_file_from_url(
+            url=pretrain_model_url["parsing"], model_dir="CodeFormer/weights/facelib", progress=True, file_name=None
+        )
+    if not os.path.exists("CodeFormer/weights/realesrgan/RealESRGAN_x2plus.pth"):
+        load_file_from_url(
+            url=pretrain_model_url["realesrgan"], model_dir="CodeFormer/weights/realesrgan", progress=True, file_name=None
+        )
+    #FACE_HELPER = None
+    CODE_FORMER = None
+    THREAD_LOCK = threading.Lock()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    ckpt_path = "CodeFormer/weights/CodeFormer/codeformer.pth"
+    checkpoint = torch.load(ckpt_path)["params_ema"]
 
-# download weights
-if not os.path.exists("CodeFormer/weights/CodeFormer/codeformer.pth"):
-    load_file_from_url(
-        url=pretrain_model_url["codeformer"], model_dir="CodeFormer/weights/CodeFormer", progress=True, file_name=None
-    )
-if not os.path.exists("CodeFormer/weights/facelib/detection_Resnet50_Final.pth"):
-    load_file_from_url(
-        url=pretrain_model_url["detection"], model_dir="CodeFormer/weights/facelib", progress=True, file_name=None
-    )
-if not os.path.exists("CodeFormer/weights/facelib/parsing_parsenet.pth"):
-    load_file_from_url(
-        url=pretrain_model_url["parsing"], model_dir="CodeFormer/weights/facelib", progress=True, file_name=None
-    )
-if not os.path.exists("CodeFormer/weights/realesrgan/RealESRGAN_x2plus.pth"):
-    load_file_from_url(
-        url=pretrain_model_url["realesrgan"], model_dir="CodeFormer/weights/realesrgan", progress=True, file_name=None
-    )
-
-#FACE_HELPER = None
-CODE_FORMER = None
-THREAD_LOCK = threading.Lock()
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-ckpt_path = "CodeFormer/weights/CodeFormer/codeformer.pth"
-checkpoint = torch.load(ckpt_path)["params_ema"]
-
-def get_facepaste_enhancer():
+def get_code_former():
     global CODE_FORMER
     with THREAD_LOCK:
         if CODE_FORMER is None:
@@ -59,11 +59,11 @@ def get_facepaste_enhancer():
             CODE_FORMER.load_state_dict(checkpoint)
             CODE_FORMER.eval()
         return CODE_FORMER
+    
 
-
-def get_facepaste_back(FACE_HELPER):
-    if FACE_HELPER is None:
-        FACE_HELPER = FaceRestoreHelper(
+def get_face_enhancer(FACE_ENHANCER):
+    if FACE_ENHANCER is None:
+        FACE_ENHANCER = FaceRestoreHelper(
         upscale_factor = int(2),
         face_size=512,
         crop_ratio=(1, 1),
@@ -72,14 +72,14 @@ def get_facepaste_back(FACE_HELPER):
         use_parse=True,
         device=device,
     )
-    return FACE_HELPER
+    return FACE_ENHANCER
 
 
 def enhance_face_in_frame(cropped_faces):
     try:
-        for idx, cropped_face in enumerate(cropped_faces):
-            face_t = data_preprocess(cropped_face)
-            face_enhanced = restore_face(face_t)
+        for _, cropped_face in enumerate(cropped_faces):
+            face_in_tensor = data_preprocess(cropped_face)
+            face_enhanced = restore_face(face_in_tensor)
             return face_enhanced
     except RuntimeError as error:
         print(f"Failed inference for CodeFormer-code: {error}")
@@ -87,7 +87,7 @@ def enhance_face_in_frame(cropped_faces):
 
 def process_faces(source_face: any, frame: any) -> any:
     try:
-        face_helper = get_facepaste_back(None)
+        face_helper = get_face_enhancer(None)
         face_helper.read_image(frame)
         # get face landmarks for each face
         face_helper.get_face_landmarks_5(
@@ -107,14 +107,14 @@ def process_faces(source_face: any, frame: any) -> any:
 
 
 def data_preprocess(frame):
-    frame_t = img2tensor(frame / 255.0, bgr2rgb=True, float32=True)
-    normalize(frame_t, (0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True)
-    return frame_t.unsqueeze(0).to(device)
+    frame_in_tensor = img2tensor(frame / 255.0, bgr2rgb=True, float32=True)
+    normalize(frame_in_tensor, (0.5, 0.5, 0.5), (0.5, 0.5, 0.5), inplace=True)
+    return frame_in_tensor.unsqueeze(0).to(device)
 
 
-def generate_output(frame_t, codeformer_fidelity = 0.6):
+def generate_output(frame_in_tensor, codeformer_fidelity = 0.6):
     with torch.no_grad():
-        output = get_facepaste_enhancer()(frame_t, w=codeformer_fidelity, adain=True)[0]
+        output = get_code_former()(frame_in_tensor, w=codeformer_fidelity, adain=True)[0]
     return output
 
 
@@ -123,14 +123,14 @@ def postprocess_output(output):
     return restored_face.astype("uint8")
 
 
-def restore_face(face_t):
+def restore_face(face_in_tensor):
     try:
-        output = generate_output(face_t)
+        output = generate_output(face_in_tensor)
         restored_face = postprocess_output(output)
         del output
     except RuntimeError as error:
         print(f"Failed inference for CodeFormer-tensor: {error}")
-        restored_face = postprocess_output(face_t)
+        restored_face = postprocess_output(face_in_tensor)
     return restored_face
 
 

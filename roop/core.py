@@ -39,6 +39,7 @@ def parse_args() -> None:
     parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
     parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
     parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
+    parser.add_argument('--frame-processor', help='list of frame processors to run', dest='frame-processor', default='face-swapper', choices=['face-swapper', 'face-enhancer'])
     parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
     parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
     parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
@@ -56,6 +57,7 @@ def parse_args() -> None:
     roop.globals.source_path = args.source_path
     roop.globals.target_path = args.target_path
     roop.globals.output_path = args.output_path
+    roop.globals.frame_processors = args.frame_processor
     roop.globals.headless = args.source_path or args.target_path or args.output_path
     roop.globals.keep_fps = args.keep_fps
     roop.globals.keep_audio = args.keep_audio
@@ -194,12 +196,17 @@ def start() -> None:
     update_status('Extracting frames...')
     extract_frames(roop.globals.target_path)
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
-    update_status('Swapping in progress...')
-    conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
+    if 'face-swapper' in roop.globals.frame_processors:
+        update_status('Swapping in progress...')
+        conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
     if roop.globals.gpu_vendor == 'nvidia':
         torch.cuda.empty_cache()
-    update_status('enhancinging in progress...')
-    conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
+    if 'ROCMExecutionProvider' in roop.globals.providers:
+        pass
+    else:
+        if 'face-enhancer' in roop.globals.frame_processors:
+            update_status('enhancinging in progress...')
+            conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
         fps = detect_fps(roop.globals.target_path)
