@@ -7,7 +7,7 @@ from PIL import Image, ImageTk, ImageOps
 
 import roop.globals
 from roop.analyser import get_one_face
-from roop.capturer import get_video_frame
+from roop.capturer import get_video_frame, get_video_frame_total
 from roop.swapper import process_faces
 from roop.utilities import is_image, is_video, resolve_relative_path
 
@@ -96,7 +96,7 @@ def create_preview(parent) -> ctk.CTkToplevel:
     preview_label = ctk.CTkLabel(preview, text=None)
     preview_label.pack(fill='both', expand=True)
 
-    preview_slider = ctk.CTkSlider(preview, from_=0, to=100, border_width=10, command=lambda frame_value: update_preview(frame_value))
+    preview_slider = ctk.CTkSlider(preview, from_=0, to=0, border_width=10, command=lambda frame_value: update_preview(frame_value))
     preview_slider.pack(fill='x')
 
     return preview
@@ -165,7 +165,7 @@ def render_image_preview(image_path: str, dimensions: Tuple[int, int] = None) ->
     return ImageTk.PhotoImage(image)
 
 
-def render_video_preview(video_path: str, dimensions: Tuple[int, int] = None, frame_number: int = 1) -> ImageTk.PhotoImage:
+def render_video_preview(video_path: str, dimensions: Tuple[int, int] = None, frame_number: int = 0) -> ImageTk.PhotoImage:
     capture = cv2.VideoCapture(video_path)
     if frame_number:
         capture.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
@@ -183,12 +183,19 @@ def toggle_preview() -> None:
     if PREVIEW.state() == 'normal':
         PREVIEW.withdraw()
     else:
-        update_preview(1)
+        init_preview()
+        update_preview(0)
         PREVIEW.deiconify()
 
 
-def update_preview(frame_number: int) -> None:
-    if roop.globals.source_path and roop.globals.target_path and frame_number:
+def init_preview() -> None:
+    if roop.globals.target_path:
+        video_frame_total = get_video_frame_total(roop.globals.target_path)
+        preview_slider.configure(to=video_frame_total)
+
+
+def update_preview(frame_number: int = 0) -> None:
+    if roop.globals.source_path and roop.globals.target_path:
         video_frame = process_faces(
             get_one_face(cv2.imread(roop.globals.source_path)),
             get_video_frame(roop.globals.target_path, frame_number)
