@@ -82,7 +82,7 @@ def clean_temp(target_path: str) -> None:
     parent_directory_name = os.path.basename(parent_directory_path)
     if not roop.globals.keep_frames and os.path.isdir(temp_directory_path):
         shutil.rmtree(temp_directory_path)
-    if not os.listdir(parent_directory_path) and parent_directory_name == TEMP_DIRECTORY:
+    if os.path.isdir(parent_directory_path) and not os.listdir(parent_directory_path) and parent_directory_name == TEMP_DIRECTORY:
         os.rmdir(parent_directory_path)
 
 
