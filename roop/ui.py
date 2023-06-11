@@ -96,8 +96,7 @@ def create_preview(parent) -> ctk.CTkToplevel:
     preview_label = ctk.CTkLabel(preview, text=None)
     preview_label.pack(fill='both', expand=True)
 
-    preview_slider = ctk.CTkSlider(preview, from_=0, to=0, border_width=10, command=lambda frame_value: update_preview(frame_value))
-    preview_slider.pack(fill='x')
+    preview_slider = ctk.CTkSlider(preview, from_=0, to=0, command=lambda frame_value: update_preview(frame_value))
 
     return preview
 
@@ -110,6 +109,7 @@ def update_status(text: str) -> None:
 def select_source_path() -> None:
     global RECENT_DIRECTORY_SOURCE
 
+    PREVIEW.withdraw()
     source_path = ctk.filedialog.askopenfilename(title='Select an face image', initialdir=RECENT_DIRECTORY_SOURCE)
     if is_image(source_path):
         roop.globals.source_path = source_path
@@ -126,6 +126,7 @@ def select_source_path() -> None:
 def select_target_path() -> None:
     global RECENT_DIRECTORY_TARGET
 
+    PREVIEW.withdraw()
     target_path = ctk.filedialog.askopenfilename(title='Select an image or video target', initialdir=RECENT_DIRECTORY_TARGET)
     if is_image(target_path):
         roop.globals.target_path = target_path
@@ -152,6 +153,8 @@ def select_output_path(start):
         output_path = ctk.filedialog.asksaveasfilename(title='Save image output', initialfile='output.png', initialdir=RECENT_DIRECTORY_OUTPUT)
     elif is_video(roop.globals.target_path):
         output_path = ctk.filedialog.asksaveasfilename(title='Save video output', initialfile='output.mp4', initialdir=RECENT_DIRECTORY_OUTPUT)
+    else:
+        output_path = None
     if output_path:
         roop.globals.output_path = output_path
         RECENT_DIRECTORY_OUTPUT = os.path.dirname(roop.globals.output_path)
@@ -182,16 +185,20 @@ def render_video_preview(video_path: str, dimensions: Tuple[int, int] = None, fr
 def toggle_preview() -> None:
     if PREVIEW.state() == 'normal':
         PREVIEW.withdraw()
-    else:
+    elif roop.globals.source_path and roop.globals.target_path:
         init_preview()
-        update_preview(0)
+        update_preview()
         PREVIEW.deiconify()
 
 
 def init_preview() -> None:
-    if roop.globals.target_path:
+    if is_image(roop.globals.target_path):
+        preview_slider.pack_forget()
+    if is_video(roop.globals.target_path):
         video_frame_total = get_video_frame_total(roop.globals.target_path)
         preview_slider.configure(to=video_frame_total)
+        preview_slider.pack(fill='x')
+        preview_slider.set(0)
 
 
 def update_preview(frame_number: int = 0) -> None:

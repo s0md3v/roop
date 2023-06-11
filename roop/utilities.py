@@ -1,4 +1,5 @@
 import glob
+import mimetypes
 import os
 import shutil
 import subprocess
@@ -94,25 +95,15 @@ def has_image_extension(image_path: str) -> bool:
 
 def is_image(image_path: str) -> bool:
     if image_path and os.path.isfile(image_path):
-        try:
-            image = Image.open(image_path)
-            image.verify()
-            return True
-        except Exception:
-            pass
+        mimetype, _ = mimetypes.guess_type(image_path)
+        return mimetype and mimetype.startswith('image/')
     return False
 
 
 def is_video(video_path: str) -> bool:
     if video_path and os.path.isfile(video_path):
-        try:
-            capture = cv2.VideoCapture(video_path)
-            if capture.isOpened():
-                is_video, _ = capture.read()
-                capture.release()
-                return is_video
-        except Exception:
-            pass
+        mimetype, _ = mimetypes.guess_type(video_path)
+        return mimetype and mimetype.startswith('video/')
     return False
 
 
