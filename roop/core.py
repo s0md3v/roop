@@ -44,7 +44,7 @@ def parse_args() -> None:
     parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
     parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
     parser.add_argument('--many-faces', help='swap every face in the frame', dest='many_faces', action='store_true', default=False)
-    parser.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264')
+    parser.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264', choices=['libx264', 'libx265', 'libvpx', 'nvenc'])
     parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
     parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int, default=suggest_max_memory())
     parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=suggest_cpu_cores())
