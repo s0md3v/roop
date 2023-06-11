@@ -1,5 +1,6 @@
 import os
 import tkinter as tk
+import customtkinter as ctk
 from tkinter import filedialog
 from typing import Callable, Any, Tuple
 
@@ -7,6 +8,7 @@ import cv2
 from PIL import Image, ImageTk, ImageOps
 
 import roop.globals
+import roop.events as events
 from roop.analyser import get_one_face
 from roop.capturer import get_video_frame
 from roop.swapper import process_faces
@@ -25,7 +27,11 @@ RECENT_DIRECTORY_TARGET = None
 RECENT_DIRECTORY_OUTPUT = None
 
 
-def init(start: Callable, destroy: Callable) -> tk.Tk:
+def init(start: Callable, destroy: Callable) -> ctk.CTk:
+    ctk.deactivate_automatic_dpi_awareness()
+    
+    events.change_status(update_status)
+
     global ROOT, PREVIEW
 
     ROOT = create_root(start, destroy)
@@ -34,20 +40,19 @@ def init(start: Callable, destroy: Callable) -> tk.Tk:
     return ROOT
 
 
-def create_root(start: Callable, destroy: Callable) -> tk.Tk:
+def create_root(start: Callable, destroy: Callable) -> ctk.CTk:
     global source_label, target_label, status_label
 
-    root = tk.Tk()
+    root = ctk.CTk()
     root.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
     root.title('roop')
-    root.configure(bg=PRIMARY_COLOR)
     root.option_add('*Font', ('Arial', 11))
     root.protocol('WM_DELETE_WINDOW', lambda: destroy())
 
-    source_label = tk.Label(root, bg=PRIMARY_COLOR)
+    source_label = ctk.CTkLabel(root, text=None)
     source_label.place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.25)
 
-    target_label = tk.Label(root, bg=PRIMARY_COLOR)
+    target_label = ctk.CTkLabel(root, text=None)
     target_label.place(relx=0.6, rely=0.1, relwidth=0.3, relheight=0.25)
 
     source_button = create_primary_button(root, 'Select a face', lambda: select_source_path())
@@ -81,78 +86,60 @@ def create_root(start: Callable, destroy: Callable) -> tk.Tk:
     preview_button = create_secondary_button(root, 'Preview', lambda: toggle_preview())
     preview_button.place(relx=0.65, rely=0.75, relwidth=0.2, relheight=0.05)
 
-    status_label = tk.Label(root, justify='center', text='Status: None', fg=ACCENT_COLOR, bg=PRIMARY_COLOR)
+    status_label = ctk.CTkLabel(root, justify='center', text='Status: None')
     status_label.place(relx=0.1, rely=0.9)
 
     return root
 
 
-def create_preview(parent) -> tk.Toplevel:
+def create_preview(parent) -> ctk.CTkToplevel:
     global preview_label, preview_scale
 
-    preview = tk.Toplevel(parent)
+    preview = ctk.CTkToplevel(parent)
     preview.withdraw()
     preview.title('Preview')
-    preview.configure(bg=PRIMARY_COLOR)
+    preview.configure()
     preview.option_add('*Font', ('Arial', 11))
     preview.protocol('WM_DELETE_WINDOW', lambda: toggle_preview())
     preview.resizable(width=False, height=False)
 
-    preview_label = tk.Label(preview, bg=PRIMARY_COLOR)
+    preview_label = ctk.CTkLabel(preview, text=None)
     preview_label.pack(fill='both', expand=True)
 
-    preview_scale = tk.Scale(preview, orient='horizontal', command=lambda frame_value: update_preview(int(frame_value)))
+    preview_scale = ctk.CTkSlider(preview, orientation='horizontal', from_=0, to=100, command=lambda frame_value: update_preview(int(frame_value)))
+    preview_scale.set(0)
     preview_scale.pack(fill='x')
 
     return preview
 
 
-def create_primary_button(parent: Any, text: str, command: Callable) -> tk.Button:
-    return tk.Button(
+def create_primary_button(parent: Any, text: str, command: Callable) -> ctk.CTkButton:
+    return ctk.CTkButton(
         parent,
         text=text,
-        command=command,
-        bg=PRIMARY_COLOR,
-        fg=SECONDARY_COLOR,
-        relief='flat',
-        highlightthickness=4,
-        highlightbackground=SECONDARY_COLOR,
-        activebackground=SECONDARY_COLOR,
-        borderwidth=4
+        command=command
     )
 
 
-def create_secondary_button(parent: Any, text: str, command: Callable) -> tk.Button:
-    return tk.Button(
+def create_secondary_button(parent: Any, text: str, command: Callable) -> ctk.CTkButton:
+    return ctk.CTkButton(
         parent,
         text=text,
-        command=command,
-        bg=TERTIARY_COLOR,
-        relief='flat',
-        borderwidth=0,
-        highlightthickness=0
+        command=command
     )
 
 
-def create_checkbox(parent: Any, text: str, variable: tk.BooleanVar, command: Callable) -> tk.Checkbutton:
-    return tk.Checkbutton(
+def create_checkbox(parent: Any, text: str, variable: tk.BooleanVar, command: Callable) -> ctk.CTkCheckBox:
+    return ctk.CTkCheckBox(
         parent,
         text=text,
         variable=variable,
-        command=command,
-        relief='flat',
-        bg=PRIMARY_COLOR,
-        activebackground=PRIMARY_COLOR,
-        activeforeground=SECONDARY_COLOR,
-        selectcolor=PRIMARY_COLOR,
-        fg=SECONDARY_COLOR,
-        borderwidth=0,
-        highlightthickness=0
+        command=command
     )
 
 
 def update_status(text: str) -> None:
-    status_label['text'] = text
+    status_label.configure(text=text)
     ROOT.update()
 
 

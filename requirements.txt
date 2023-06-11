@@ -20,3 +20,4 @@ opennsfw2==0.10.2
 protobuf==4.23.2
 tqdm==4.65.0
 codeformer-pip==0.0.4
+customtkinter==5.1.3

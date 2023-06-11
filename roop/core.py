@@ -22,6 +22,7 @@ import cv2
 
 import roop.globals
 import roop.ui as ui
+import roop.events as events
 import roop.swapper
 import roop.enhancer
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
@@ -162,10 +163,12 @@ def conditional_process_video(source_path: str, temp_frame_paths: List[str], pro
 
 
 def update_status(message: str) -> None:
-    value = 'Status: ' + message
-    print(value)
-    if not roop.globals.headless:
-        ui.update_status(value)
+    events.on_change_status('Status: ' + message)
+
+
+@events.change_status
+def console_status(message: str) -> None:
+    print(message)
 
 
 def start() -> None:
