@@ -4,8 +4,8 @@ import os
 import re
 from typing import List, Optional
 
-# Flag should be set to true when the swapping is started
-swapping_in_progress: bool = False
+# Flag should be set to true when the processing is started
+in_progress: bool = False
 
 state_struct = {
     'globals': {},
@@ -29,7 +29,7 @@ def save_state(state_path: str = '.state') -> bool:
     :param state_path: path to the state file
     :return: if the state file saved successfully
     """
-    if not swapping_in_progress:
+    if not in_progress:
         if os.path.exists(state_path): os.remove(state_path)
         return False
     prepare_state()

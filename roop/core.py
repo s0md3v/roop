@@ -213,7 +213,7 @@ def start() -> None:
     if 'face-swapper' in roop.globals.frame_processors:
         update_status('Swapping in progress...')
         # from this point saving a state has a sense
-        state.swapping_in_progress = True
+        state.in_progress = True
         conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
     release_resources()
     # limit to one gpu thread
@@ -240,7 +240,7 @@ def start() -> None:
         move_temp(roop.globals.target_path, roop.globals.output_path)
     clean_temp(roop.globals.target_path)
     # when result video is complete, saved state isn't required anymore
-    state.swapping_in_progress = False
+    state.in_progress = False
     state.save_state()
     if is_video(roop.globals.target_path):
         update_status('Processing to video succeed!')
