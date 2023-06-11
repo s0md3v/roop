@@ -6,8 +6,6 @@ import subprocess
 import urllib
 from pathlib import Path
 from typing import List
-import cv2
-from PIL import Image
 from tqdm import tqdm
 
 import roop.globals
