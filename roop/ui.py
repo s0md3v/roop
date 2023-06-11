@@ -27,12 +27,11 @@ RECENT_DIRECTORY_TARGET = None
 RECENT_DIRECTORY_OUTPUT = None
 
 
-status_label = None
-
-
 def init(start: Callable, destroy: Callable) -> ctk.CTk:
     ctk.deactivate_automatic_dpi_awareness()
     
+    events.change_status(update_status)
+
     global ROOT, PREVIEW
 
     ROOT = create_root(start, destroy)
@@ -139,11 +138,9 @@ def create_checkbox(parent: Any, text: str, variable: tk.BooleanVar, command: Ca
     )
 
 
-@events.change_status
 def update_status(text: str) -> None:
-    if status_label:
-        status_label.configure(text=text)
-        ROOT.update()
+    status_label.configure(text=text)
+    ROOT.update()
 
 
 def select_source_path() -> None:
