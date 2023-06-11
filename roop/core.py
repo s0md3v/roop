@@ -132,17 +132,18 @@ def pre_check() -> None:
     if roop.globals.gpu_vendor == 'amd':
         if 'ROCMExecutionProvider' not in roop.globals.providers:
             quit('You are using --gpu=amd flag but ROCM is not available or properly installed on your system.')
+    if roop.globals.providers == ['DmlExecutionProvider']:
+        if 'DmlExecutionProvider' not in roop.globals.providers:
+            quit('You are using --execution-provider=directml flag but DirectML is not available or properly installed on your system.')
     if roop.globals.gpu_vendor == 'nvidia':
-        if not torch.cuda.is_available():
+        try:
+            if '11.4' < torch.version.cuda < '11.8':
+                quit(f'CUDA version {torch.version.cuda} is not supported - please use version 11.8')
+        except TypeError:
             quit('You are using --gpu=nvidia flag but CUDA is not available or properly installed on your system.')
-        if torch.version.cuda > '11.8':
-            quit(f'CUDA version {torch.version.cuda} is not supported - please downgrade to 11.8')
-        if torch.version.cuda < '11.4':
-            quit(f'CUDA version {torch.version.cuda} is not supported - please upgrade to 11.8')
-        if torch.backends.cudnn.version() < 8220:
-            quit(f'CUDNN version { torch.backends.cudnn.version()} is not supported - please upgrade to 8.9.1')
-        if torch.backends.cudnn.version() > 8910:
-            quit(f'CUDNN version { torch.backends.cudnn.version()} is not supported - please downgrade to 8.9.1')
+        if 8910 < torch.backends.cudnn.version() < 8220:
+            quit(f'CUDNN version { torch.backends.cudnn.version()} is not supported - please use version8.9.1')
+            
 
 
 def conditional_process_video(source_path: str, temp_frame_paths: List[str], process_video) -> None:
