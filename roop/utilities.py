@@ -33,11 +33,13 @@ def detect_fps(target_path: str) -> int:
         pass
     return 30
 
+
 def copy_temp_image(target_path: str) -> str:
     temp_directory_path = get_temp_directory_path(target_path)
     temp_image_path = os.path.join(temp_directory_path, 'temp.png')
     shutil.copyfile(target_path, temp_image_path)
     return temp_image_path
+
 
 def extract_frames(target_path: str) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
