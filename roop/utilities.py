@@ -126,3 +126,7 @@ def conditional_download(download_directory_path: str, urls: List[str]):
             total = int(request.headers.get('Content-Length', 0))
             with tqdm(total=total, desc='Downloading', unit='B', unit_scale=True, unit_divisor=1024) as progress:
                 urllib.request.urlretrieve(url, download_file_path, reporthook=lambda count, block_size, total_size: progress.update(block_size))
+
+
+def resolve_relative_path(path: str) -> str:
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), path))
