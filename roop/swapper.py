@@ -7,19 +7,20 @@ import insightface
 import threading
 import roop.globals
 from roop.analyser import get_one_face, get_many_faces
-from roop.utilities import conditional_download
+from roop.utilities import conditional_download, resolve_relative_path
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
 
 
 def pre_check() -> None:
-    download_directory_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../models')
+    download_directory_path = resolve_relative_path('../models')
     conditional_download(download_directory_path, ['https://huggingface.co/deepinsight/inswapper/resolve/main/inswapper_128.onnx'])
 
 
 def get_face_swapper() -> None:
     global FACE_SWAPPER
+
     with THREAD_LOCK:
         if FACE_SWAPPER is None:
             model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../models/inswapper_128.onnx')
