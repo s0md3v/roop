@@ -78,7 +78,7 @@ def move_temp(target_path: str, output_path: str) -> None:
     if os.path.isfile(temp_output_path):
         if os.path.isfile(output_path):
             os.remove(output_path)
-        shutil.move(temp_output_path, output_path, copy_function=shutil.copy2)
+        shutil.move(temp_output_path, output_path)
 
 
 def clean_temp(target_path: str) -> None:
