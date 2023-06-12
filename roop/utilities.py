@@ -1,7 +1,9 @@
 import glob
 import mimetypes
 import os
+import platform
 import shutil
+import ssl
 import subprocess
 import urllib
 from pathlib import Path
@@ -12,6 +14,10 @@ import roop.globals
 
 TEMP_FILE = 'temp.mp4'
 TEMP_DIRECTORY = 'temp'
+
+# monkey patch ssl for mac
+if platform.system().lower() == 'darwin':
+    ssl._create_default_https_context = ssl._create_unverified_context
 
 
 def run_ffmpeg(args: List[str]) -> None:
