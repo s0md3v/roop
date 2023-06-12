@@ -48,6 +48,7 @@ else:
 
 def get_code_former():
     global CODE_FORMER
+
     with THREAD_LOCK:
         if CODE_FORMER is None:
             CODE_FORMER = ARCH_REGISTRY.get("CodeFormer")(
