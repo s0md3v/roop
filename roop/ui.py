@@ -21,17 +21,24 @@ RECENT_DIRECTORY_TARGET = None
 RECENT_DIRECTORY_OUTPUT = None
 
 
-def init(start: Callable, destroy: Callable) -> ctk.CTk:
+def init(destroy: Callable) -> ctk.CTk:
     global ROOT, PREVIEW
 
-    ROOT = create_root(start, destroy)
+    # For same sizes on displays with different resolution
+    ctk.deactivate_automatic_dpi_awareness()
+
+    # Event listeners
+    events.change_status(update_status)
+    events.progress(update_progress)
+
+    ROOT = create_root(destroy)
     PREVIEW = create_preview(ROOT)
 
     return ROOT
 
 
-def create_root(start: Callable, destroy: Callable) -> ctk.CTk:
-    global source_label, target_label, status_label
+def create_root(destroy: Callable) -> ctk.CTk:
+    global source_label, target_label, status_label, progress_bar
 
     ctk.set_appearance_mode('system')
     ctk.set_default_color_theme(resolve_relative_path('ui.json'))
@@ -69,7 +76,7 @@ def create_root(start: Callable, destroy: Callable) -> ctk.CTk:
     many_faces_switch = ctk.CTkSwitch(root, text='Many faces', variable=many_faces_value, command=lambda: setattr(roop.globals, 'many_faces', many_faces_value.get()))
     many_faces_switch.place(relx=0.6, rely=0.65)
 
-    start_button = ctk.CTkButton(root, text='Start', command=lambda: select_output_path(start))
+    start_button = ctk.CTkButton(root, text='Start', command=select_output_path)
     start_button.place(relx=0.15, rely=0.75, relwidth=0.2, relheight=0.05)
 
     stop_button = ctk.CTkButton(root, text='Destroy', command=lambda: destroy())
@@ -77,6 +84,10 @@ def create_root(start: Callable, destroy: Callable) -> ctk.CTk:
 
     preview_button = ctk.CTkButton(root, text='Preview', command=lambda: toggle_preview())
     preview_button.place(relx=0.65, rely=0.75, relwidth=0.2, relheight=0.05)
+
+    progress_bar = ctk.CTkProgressBar(root, mode='determinate')
+    progress_bar.set(0)
+    progress_bar.place(relx=0.1, rely=0.95, relwidth=0.8)
 
     status_label = ctk.CTkLabel(root, text='Status: None', justify='center')
     status_label.place(relx=0.1, rely=0.9)
@@ -104,6 +115,12 @@ def create_preview(parent) -> ctk.CTkToplevel:
 
 def update_status(text: str) -> None:
     status_label.configure(text=text)
+    ROOT.update()
+
+
+def update_progress(value) -> None:
+    progress_bar.set(value)
+    progress_bar.update()
     ROOT.update()
 
 
@@ -147,7 +164,7 @@ def select_target_path() -> None:
         target_label.image = None
 
 
-def select_output_path(start):
+def select_output_path():
     global RECENT_DIRECTORY_OUTPUT
 
     if is_image(roop.globals.target_path):
@@ -159,7 +176,7 @@ def select_output_path(start):
     if output_path:
         roop.globals.output_path = output_path
         RECENT_DIRECTORY_OUTPUT = os.path.dirname(roop.globals.output_path)
-        start()
+        events.on_start()
 
 
 def render_image_preview(image_path: str, dimensions: Tuple[int, int] = None) -> ImageTk.PhotoImage:

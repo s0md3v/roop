@@ -9,6 +9,7 @@ from typing import List
 from tqdm import tqdm
 
 import roop.globals
+import roop.events as events
 
 TEMP_FILE = 'temp.mp4'
 TEMP_DIRECTORY = 'temp'
@@ -126,3 +127,7 @@ def conditional_download(download_directory_path: str, urls: List[str]):
 
 def resolve_relative_path(path: str) -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), path))
+
+
+def update_progress(value: float) -> None:
+    events.on_progress(value)

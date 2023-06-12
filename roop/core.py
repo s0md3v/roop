@@ -2,6 +2,7 @@
 
 import os
 import sys
+import threading
 # single thread doubles performance of gpu-mode - needs to be set before torch import
 if any(arg.startswith('--gpu-vendor') for arg in sys.argv):
     os.environ['OMP_NUM_THREADS'] = '1'
@@ -250,6 +251,11 @@ def destroy() -> None:
     quit()
 
 
+@events.start
+def start_in_thread():
+    threading.Thread(target=start).start()
+
+
 def run() -> None:
     parse_args()
     pre_check()
@@ -259,5 +265,5 @@ def run() -> None:
     if roop.globals.headless:
         start()
     else:
-        window = ui.init(start, destroy)
+        window = ui.init(destroy)
         window.mainloop()

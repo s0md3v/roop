@@ -7,7 +7,7 @@ import insightface
 import threading
 import roop.globals
 from roop.analyser import get_one_face, get_many_faces
-from roop.utilities import conditional_download, resolve_relative_path
+from roop.utilities import conditional_download, resolve_relative_path, update_progress
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
@@ -58,6 +58,7 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress=None)
             print(exception)
             pass
         if progress:
+            update_progress(progress.last_print_n / progress.total)
             progress.update(1)
 
 
