@@ -1,5 +1,3 @@
-import onnxruntime
-
 source_path = None
 target_path = None
 output_path = None
