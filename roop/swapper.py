@@ -10,6 +10,7 @@ from roop.utilities import conditional_download, resolve_relative_path
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
+FRAME_COUNTER = 0
 
 
 def pre_check() -> None:
@@ -47,8 +48,15 @@ def process_faces(source_face: Any, temp_frame: Any) -> Any:
 
 
 def process_frames(source_path: str, temp_frame_paths: List[str], progress=None) -> None:
+    global FRAME_COUNTER
+    total_frames = len(temp_frame_paths)
     source_face = get_one_face(cv2.imread(source_path))
-    for temp_frame_path in temp_frame_paths:
+    while True:
+        with THREAD_LOCK:
+            if FRAME_COUNTER >= total_frames:
+                break
+            temp_frame_path = temp_frame_paths[FRAME_COUNTER]
+            FRAME_COUNTER += 1
         temp_frame = cv2.imread(temp_frame_path)
         try:
             result = process_faces(source_face, temp_frame)
@@ -62,20 +70,11 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress=None)
 
 def multi_process_frame(source_path: str, temp_frame_paths: List[str], progress) -> None:
     threads = []
-    frames_per_thread = len(temp_frame_paths) // roop.globals.gpu_threads
-    remaining_frames = len(temp_frame_paths) % roop.globals.gpu_threads
-    start_index = 0
-    # create threads by frames
+    # create threads
     for _ in range(roop.globals.gpu_threads):
-        end_index = start_index + frames_per_thread
-        if remaining_frames > 0:
-            end_index += 1
-            remaining_frames -= 1
-        thread_paths = temp_frame_paths[start_index:end_index]
-        thread = threading.Thread(target=process_frames, args=(source_path, thread_paths, progress))
+        thread = threading.Thread(target=process_frames, args=(source_path, temp_frame_paths, progress))
         threads.append(thread)
         thread.start()
-        start_index = end_index
     # join threads
     for thread in threads:
         thread.join()
@@ -89,6 +88,8 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
 
 
 def process_video(source_path: str, temp_frame_paths: List[str], mode: str) -> None:
+    global FRAME_COUNTER
+    FRAME_COUNTER = 0
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
     total = len(temp_frame_paths)
     with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:

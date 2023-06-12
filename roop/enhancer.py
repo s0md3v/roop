@@ -15,6 +15,7 @@ if 'ROCMExecutionProvider' in roop.globals.providers:
 
 CODE_FORMER = None
 THREAD_LOCK = threading.Lock()
+FRAME_COUNTER = 0
 
 
 def pre_check() -> None:
@@ -122,8 +123,15 @@ def process_image(source_path: str, image_path: str, output_file: str) -> None:
 
 
 def process_frames(source_path: str, frame_paths: list[str], progress=None) -> None:
+    global FRAME_COUNTER
+    total_frames = len(frame_paths)
     source_face = None
-    for frame_path in frame_paths:
+    while True:
+        with THREAD_LOCK:
+            if FRAME_COUNTER >= total_frames:
+                break
+            frame_path = frame_paths[FRAME_COUNTER]
+            FRAME_COUNTER += 1
         try:
             frame = cv2.imread(frame_path)
             result = process_faces(source_face, frame)
@@ -137,26 +145,19 @@ def process_frames(source_path: str, frame_paths: list[str], progress=None) -> N
 
 def multi_process_frame(source_img, frame_paths, progress) -> None:
     threads = []
-    frames_per_thread = len(frame_paths) // roop.globals.gpu_threads
-    remaining_frames = len(frame_paths) % roop.globals.gpu_threads
-    start_index = 0
     # create threads by frames
     for _ in range(roop.globals.gpu_threads):
-        end_index = start_index + frames_per_thread
-        if remaining_frames > 0:
-            end_index += 1
-            remaining_frames -= 1
-        thread_frame_paths = frame_paths[start_index:end_index]
-        thread = threading.Thread(target=process_frames, args=(source_img, thread_frame_paths, progress))
+        thread = threading.Thread(target=process_frames, args=(source_img, frame_paths, progress))
         threads.append(thread)
         thread.start()
-        start_index = end_index
     # join threads
     for thread in threads:
         thread.join()
 
 
 def process_video(source_path: str, frame_paths: list[str], mode: str) -> None:
+    global FRAME_COUNTER
+    FRAME_COUNTER = 0
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
     total = len(frame_paths)
     with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
