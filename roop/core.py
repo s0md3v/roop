@@ -202,45 +202,47 @@ def start() -> None:
             update_status('Processing to image succeed!')
         else:
             update_status('Processing to image failed!')
+        return
+    # process image to videos
+    seconds, probabilities = predict_video_frames(video_path=roop.globals.target_path, frame_interval=100)
+    if any(probability > 0.85 for probability in probabilities):
+        destroy()
+    update_status('Creating temp resources...')
+    create_temp(roop.globals.target_path)
+    update_status('Extracting frames...')
+    extract_frames(roop.globals.target_path)
+    temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
+    if 'face-swapper' in roop.globals.frame_processors:
+        update_status('Swapping in progress...')
+        conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
+    release_resources()
+    # limit to one gpu thread
+    roop.globals.gpu_threads = 1
+    if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processors:
+        update_status('Enhancing in progress...')
+        conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
+    release_resources()
+    if roop.globals.keep_fps:
+        update_status('Detecting fps...')
+        fps = detect_fps(roop.globals.target_path)
+        update_status(f'Creating video with {fps} fps...')
+        create_video(roop.globals.target_path, fps)
     else:
-        # process image to videos
-        seconds, probabilities = predict_video_frames(video_path=roop.globals.target_path, frame_interval=100)
-        if any(probability > 0.85 for probability in probabilities):
-            destroy()
-        update_status('Creating temp resources...')
-        update_status('Extracting frames...')
-        extract_frames(roop.globals.target_path)
-        temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
-        if 'face-swapper' in roop.globals.frame_processors:
-            update_status('Swapping in progress...')
-            conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
-        release_resources()
-        # limit to one gpu thread
-        roop.globals.gpu_threads = 1
-        if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processors:
-            update_status('Enhancing in progress...')
-            conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
-        release_resources()
+        update_status('Creating video with 30.0 fps...')
+        create_video(roop.globals.target_path)
+    if roop.globals.keep_audio:
         if roop.globals.keep_fps:
-            update_status('Detecting fps...')
-            fps = detect_fps(roop.globals.target_path)
-            update_status(f'Creating video with {fps} fps...')
-            create_video(roop.globals.target_path, fps)
+            update_status('Restoring audio...')
         else:
-            update_status('Creating video with 30 fps...')
-            create_video(roop.globals.target_path, 30)
-        if roop.globals.keep_audio:
-            if roop.globals.keep_fps:
-                update_status('Restoring audio...')
-            else:
-                update_status('Restoring audio might cause issues as fps are not kept...')
-            restore_audio(roop.globals.target_path, roop.globals.output_path)
-        else:
-            move_temp(roop.globals.target_path, roop.globals.output_path)
-        if is_video(roop.globals.target_path):
-            update_status('Processing to video succeed!')
-        else:
-            update_status('Processing to video failed!')
+            update_status('Restoring audio might cause issues as fps are not kept...')
+        restore_audio(roop.globals.target_path, roop.globals.output_path)
+    else:
+        move_temp(roop.globals.target_path, roop.globals.output_path)
+    clean_temp(roop.globals.target_path)
+    if is_video(roop.globals.target_path):
+        update_status('Processing to video succeed!')
+    else:
+        update_status('Processing to video failed!')
 
     clean_temp(roop.globals.target_path)
 
