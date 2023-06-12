@@ -1,10 +1,9 @@
-import os
 from typing import Any, List
-
 from tqdm import tqdm
 import cv2
 import insightface
 import threading
+
 import roop.globals
 from roop.analyser import get_one_face, get_many_faces
 from roop.utilities import conditional_download, resolve_relative_path
