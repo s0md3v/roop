@@ -1,14 +1,13 @@
-import os
 import cv2
 import torch
 import threading
 from tqdm import tqdm
-import roop.globals
-
 from torchvision.transforms.functional import normalize
 from codeformer.facelib.utils.face_restoration_helper import FaceRestoreHelper
 from codeformer.basicsr.utils.registry import ARCH_REGISTRY
 from codeformer.basicsr.utils import img2tensor, tensor2img
+
+import roop.globals
 from roop.utilities import conditional_download, resolve_relative_path
 
 if 'ROCMExecutionProvider' in roop.globals.providers:
