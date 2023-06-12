@@ -32,6 +32,7 @@ def init(start: Callable, destroy: Callable) -> ctk.CTk:
 def create_root(start: Callable, destroy: Callable) -> ctk.CTk:
     global source_label, target_label, status_label
 
+    ctk.deactivate_automatic_dpi_awareness()
     ctk.set_appearance_mode('system')
     ctk.set_default_color_theme(resolve_relative_path('ui.json'))
     root = ctk.CTk()
