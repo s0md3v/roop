@@ -247,6 +247,8 @@ def run() -> None:
     pre_check()
     if 'face-swapper' in roop.globals.frame_processors:
         roop.swapper.pre_check()
+    if 'face-enhancer' in roop.globals.frame_processors:
+        roop.enhancer.pre_check()
     limit_resources()
     if roop.globals.headless:
         start()
