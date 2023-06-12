@@ -6,51 +6,33 @@ from tqdm import tqdm
 import roop.globals
 
 from torchvision.transforms.functional import normalize
-
 from codeformer.facelib.utils.face_restoration_helper import FaceRestoreHelper
-from codeformer.basicsr.utils.download_util import load_file_from_url
 from codeformer.basicsr.utils.registry import ARCH_REGISTRY
 from codeformer.basicsr.utils import img2tensor, tensor2img
+from roop.utilities import conditional_download, resolve_relative_path
 
 if 'ROCMExecutionProvider' in roop.globals.providers:
     del torch
-else:
-    pretrain_model_url = {
-        "codeformer": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth",
-        "detection": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/detection_Resnet50_Final.pth",
-        "parsing": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/parsing_parsenet.pth",
-        "realesrgan": "https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/RealESRGAN_x2plus.pth",
-    }
-    # download weights
-    if not os.path.exists("CodeFormer/weights/CodeFormer/codeformer.pth"):
-        load_file_from_url(
-            url=pretrain_model_url["codeformer"], model_dir="CodeFormer/weights/CodeFormer", progress=True, file_name=None
-        )
-    if not os.path.exists("CodeFormer/weights/facelib/detection_Resnet50_Final.pth"):
-        load_file_from_url(
-            url=pretrain_model_url["detection"], model_dir="CodeFormer/weights/facelib", progress=True, file_name=None
-        )
-    if not os.path.exists("CodeFormer/weights/facelib/parsing_parsenet.pth"):
-        load_file_from_url(
-            url=pretrain_model_url["parsing"], model_dir="CodeFormer/weights/facelib", progress=True, file_name=None
-        )
-    if not os.path.exists("CodeFormer/weights/realesrgan/RealESRGAN_x2plus.pth"):
-        load_file_from_url(
-            url=pretrain_model_url["realesrgan"], model_dir="CodeFormer/weights/realesrgan", progress=True, file_name=None
-        )
-    #FACE_HELPER = None
-    CODE_FORMER = None
-    THREAD_LOCK = threading.Lock()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    ckpt_path = "CodeFormer/weights/CodeFormer/codeformer.pth"
-    checkpoint = torch.load(ckpt_path)["params_ema"]
+
+CODE_FORMER = None
+THREAD_LOCK = threading.Lock()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+ckpt_path = os.path.join("models", "codeformer.pth")
+
+
+def pre_check() -> None:
+    pretrain_model_url = [
+        'https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth'
+        ]
+    download_directory_path = resolve_relative_path('../models')
+    conditional_download(download_directory_path, pretrain_model_url)
 
 
 def get_code_former():
     global CODE_FORMER
-
     with THREAD_LOCK:
         if CODE_FORMER is None:
+            checkpoint = torch.load(ckpt_path)["params_ema"]
             CODE_FORMER = ARCH_REGISTRY.get("CodeFormer")(
                 dim_embd=512,
                 codebook_size=1024,
@@ -114,7 +96,7 @@ def normalize_face(face):
     return face_in_tensor.unsqueeze(0).to(device)
 
 
-def enhance_face_in_tensor(face_in_tensor, codeformer_fidelity = 0.6):
+def enhance_face_in_tensor(face_in_tensor, codeformer_fidelity = 0.7):
     with torch.no_grad():
         enhanced_face_in_tensor = get_code_former()(face_in_tensor, w=codeformer_fidelity, adain=True)[0]
     return enhanced_face_in_tensor
