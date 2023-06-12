@@ -1,4 +1,5 @@
 import os
+from tkinterdnd2 import TkinterDnD, DND_ALL
 import customtkinter as ctk
 from typing import Callable, Tuple
 
@@ -20,6 +21,13 @@ RECENT_DIRECTORY_TARGET = None
 RECENT_DIRECTORY_OUTPUT = None
 
 
+# HACK: Inject dnd to ctk
+class Tk(ctk.CTk, TkinterDnD.DnDWrapper):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.TkdndVersion = TkinterDnD._require(self)
+
+
 def init(start: Callable, destroy: Callable) -> ctk.CTk:
     global ROOT, PREVIEW
 
@@ -35,16 +43,20 @@ def create_root(start: Callable, destroy: Callable) -> ctk.CTk:
     ctk.deactivate_automatic_dpi_awareness()
     ctk.set_appearance_mode('system')
     ctk.set_default_color_theme(resolve_relative_path('ui.json'))
-    root = ctk.CTk()
+    root = Tk()
     root.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
     root.title('roop')
     root.configure()
     root.protocol('WM_DELETE_WINDOW', lambda: destroy())
 
     source_label = ctk.CTkLabel(root, text=None)
+    source_label.drop_target_register(DND_ALL)
+    source_label.dnd_bind("<<Drop>>", lambda e: update_source_path(e.data))
     source_label.place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.25)
 
     target_label = ctk.CTkLabel(root, text=None)
+    target_label.drop_target_register(DND_ALL)
+    target_label.dnd_bind("<<Drop>>", lambda e: update_target_path(e.data))
     target_label.place(relx=0.6, rely=0.1, relwidth=0.3, relheight=0.25)
 
     source_button = ctk.CTkButton(root, text='Select a face', command=lambda: select_source_path())
@@ -107,11 +119,9 @@ def update_status(text: str) -> None:
     ROOT.update()
 
 
-def select_source_path() -> None:
+def update_source_path(source_path: str) -> None:
     global RECENT_DIRECTORY_SOURCE
 
-    PREVIEW.withdraw()
-    source_path = ctk.filedialog.askopenfilename(title='Select an face image', initialdir=RECENT_DIRECTORY_SOURCE)
     if is_image(source_path):
         roop.globals.source_path = source_path
         RECENT_DIRECTORY_SOURCE = os.path.dirname(roop.globals.source_path)
@@ -124,11 +134,17 @@ def select_source_path() -> None:
         source_label.image = None
 
 
-def select_target_path() -> None:
-    global RECENT_DIRECTORY_TARGET
+def select_source_path() -> None:
+    global RECENT_DIRECTORY_SOURCE
 
     PREVIEW.withdraw()
-    target_path = ctk.filedialog.askopenfilename(title='Select an image or video target', initialdir=RECENT_DIRECTORY_TARGET)
+    source_path = ctk.filedialog.askopenfilename(title='Select an face image', initialdir=RECENT_DIRECTORY_SOURCE)
+    update_source_path(source_path)
+
+
+def update_target_path(target_path: str) -> None:
+    global RECENT_DIRECTORY_TARGET
+
     if is_image(target_path):
         roop.globals.target_path = target_path
         RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
@@ -145,6 +161,14 @@ def select_target_path() -> None:
         roop.globals.target_path = None
         target_label.configure(image=None)
         target_label.image = None
+
+
+def select_target_path() -> None:
+    global RECENT_DIRECTORY_TARGET
+
+    PREVIEW.withdraw()
+    target_path = ctk.filedialog.askopenfilename(title='Select an image or video target', initialdir=RECENT_DIRECTORY_TARGET)
+    update_target_path(target_path)
 
 
 def select_output_path(start):
