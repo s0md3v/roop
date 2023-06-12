@@ -14,7 +14,7 @@ THREAD_LOCK = threading.Lock()
 
 
 def pre_check() -> None:
-    download_directory_path = resolve_relative_path('../models')
+    download_directory_path = resolve_relative_path('../models/inswapper_128.onnx')
     conditional_download(download_directory_path, ['https://huggingface.co/deepinsight/inswapper/resolve/main/inswapper_128.onnx'])
 
 
