@@ -96,7 +96,7 @@ def normalize_face(face):
     return face_in_tensor.unsqueeze(0).to(device)
 
 
-def enhance_face_in_tensor(face_in_tensor, codeformer_fidelity = 0.7):
+def enhance_face_in_tensor(face_in_tensor, codeformer_fidelity = 0.6):
     with torch.no_grad():
         enhanced_face_in_tensor = get_code_former()(face_in_tensor, w=codeformer_fidelity, adain=True)[0]
     return enhanced_face_in_tensor
