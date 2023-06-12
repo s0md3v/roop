@@ -219,8 +219,8 @@ def start() -> None:
         update_status(f'Creating video with {fps} fps...')
         create_video(roop.globals.target_path, fps)
     else:
-        update_status('Creating video with 30 fps...')
-        create_video(roop.globals.target_path, 30)
+        update_status('Creating video with 30/1 fps...')
+        create_video(roop.globals.target_path, '30/1')
     if roop.globals.keep_audio:
         if roop.globals.keep_fps:
             update_status('Restoring audio...')

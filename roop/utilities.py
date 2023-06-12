@@ -23,14 +23,9 @@ def run_ffmpeg(args: List[str]) -> None:
         pass
 
 
-def detect_fps(target_path: str) -> int:
+def detect_fps(target_path: str) -> str:
     command = ['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=r_frame_rate', '-of', 'default=noprint_wrappers=1:nokey=1', target_path]
-    output = subprocess.check_output(command).decode().strip()
-    try:
-        return int(eval(output))
-    except Exception:
-        pass
-    return 30
+    return subprocess.check_output(command).decode().strip()
 
 
 def extract_frames(target_path: str) -> None:
@@ -38,10 +33,10 @@ def extract_frames(target_path: str) -> None:
     run_ffmpeg(['-i', target_path, os.path.join(temp_directory_path, '%04d.png')])
 
 
-def create_video(target_path: str, fps: int) -> None:
+def create_video(target_path: str, fps: str) -> None:
     temp_output_path = get_temp_output_path(target_path)
     temp_directory_path = get_temp_directory_path(target_path)
-    run_ffmpeg(['-r', str(fps), '-i', os.path.join(temp_directory_path, '%04d.png'), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-y', temp_output_path])
+    run_ffmpeg(['-r', fps, '-i', os.path.join(temp_directory_path, '%04d.png'), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-y', temp_output_path])
 
 
 def restore_audio(target_path: str, output_path: str) -> None:
