@@ -1,10 +1,10 @@
-FROM python:3.11
+FROM python:3.10
 
 RUN apt-get update && apt-get install -y \
 	ffmpeg
 
-RUN git clone https://github.com/s0md3v/roop.git /app
+RUN git clone https://github.com/s0md3v/roop.git /roop
 
-RUN cd /app && pip install -r requirements.txt
+RUN pip install -r roop/requirements.txt
 
-ENTRYPOINT ["python", "/app/run.py"]
+ENTRYPOINT ["python", "/roop/run.py"]
