@@ -23,7 +23,7 @@ def get_face_swapper() -> None:
     with THREAD_LOCK:
         if FACE_SWAPPER is None:
             model_path = resolve_relative_path('../models/inswapper_128.onnx')
-            FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=roop.globals.providers)
+            FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=roop.globals.execution_providers)
     return FACE_SWAPPER
 
 
@@ -62,11 +62,11 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress=None)
 
 def multi_process_frame(source_path: str, temp_frame_paths: List[str], progress) -> None:
     threads = []
-    frames_per_thread = len(temp_frame_paths) // roop.globals.gpu_threads
-    remaining_frames = len(temp_frame_paths) % roop.globals.gpu_threads
+    frames_per_thread = len(temp_frame_paths) // roop.globals.execution_threads
+    remaining_frames = len(temp_frame_paths) % roop.globals.execution_threads
     start_index = 0
     # create threads by frames
-    for _ in range(roop.globals.gpu_threads):
+    for _ in range(roop.globals.execution_threads):
         end_index = start_index + frames_per_thread
         if remaining_frames > 0:
             end_index += 1
@@ -92,9 +92,9 @@ def process_video(source_path: str, temp_frame_paths: List[str], mode: str) -> N
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
     total = len(temp_frame_paths)
     with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
-        if mode == 'cpu':
+        if mode == 'multi-processing':
             progress.set_postfix({'mode': mode, 'cores': roop.globals.cpu_cores, 'memory': roop.globals.max_memory})
             process_frames(source_path, temp_frame_paths, progress)
-        elif mode == 'gpu':
-            progress.set_postfix({'mode': mode, 'threads': roop.globals.gpu_threads, 'memory': roop.globals.max_memory})
+        elif mode == 'multi-threading':
+            progress.set_postfix({'mode': mode, 'threads': roop.globals.execution_threads, 'memory': roop.globals.max_memory})
             multi_process_frame(source_path, temp_frame_paths, progress)
