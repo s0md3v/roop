@@ -18,14 +18,14 @@ THREAD_LOCK = threading.Lock()
 
 
 def pre_check() -> None:
-    download_directory_path = resolve_relative_path('../models')
+    download_directory_path = resolve_relative_path('../../models')
     conditional_download(download_directory_path, ['https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth'])
 
 
 def get_code_former():
     global CODE_FORMER
     with THREAD_LOCK:
-        model_path = resolve_relative_path('../models/codeformer.pth')
+        model_path = resolve_relative_path('../../models/codeformer.pth')
         if CODE_FORMER is None:
             model = torch.load(model_path)['params_ema']
             CODE_FORMER = ARCH_REGISTRY.get('CodeFormer')(
