@@ -40,7 +40,7 @@ options:
                         replace image or video with face
   -o OUTPUT_PATH, --output OUTPUT_PATH
                         save output to this file
-  --frame-processor {face-swapper,face-enhancer} [{face-swapper,face-enhancer} ...]
+  --frame-processor {face_swapper,face_enhancer} [{face_swapper,face_enhancer} ...]
                         list of frame processors to run
   --keep-fps            maintain original fps
   --keep-audio          maintain original audio
