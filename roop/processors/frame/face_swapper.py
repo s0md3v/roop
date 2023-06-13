@@ -34,7 +34,7 @@ def swap_face(source_face: Any, target_face: Any, temp_frame: Any) -> Any:
     return temp_frame
 
 
-def process_faces(source_face: Any, temp_frame: Any) -> Any:
+def process_frame(source_face: Any, temp_frame: Any) -> Any:
     if roop.globals.many_faces:
         many_faces = get_many_faces(temp_frame)
         if many_faces:
@@ -52,7 +52,7 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress=None)
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
         try:
-            result = process_faces(source_face, temp_frame)
+            result = process_frame(source_face, temp_frame)
             cv2.imwrite(temp_frame_path, result)
         except Exception as exception:
             print(exception)
@@ -64,7 +64,7 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress=None)
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
     source_face = get_one_face(cv2.imread(source_path))
     target_frame = cv2.imread(target_path)
-    result = process_faces(source_face, target_frame)
+    result = process_frame(source_face, target_frame)
     cv2.imwrite(output_path, result)
 
 

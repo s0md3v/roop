@@ -7,11 +7,20 @@ from tqdm import tqdm
 import roop
 
 FRAME_PROCESSORS_MODULES = None
+FRAME_PROCESSORS_INTERFACE = [
+    'pre_check',
+    'process_frame',
+    'process_image',
+    'process_video'
+]
 
 
-def load_frame_processor_module(frame_processor: str)-> Any:
+def load_frame_processor_module(frame_processor: str) -> Any:
     try:
         frame_processor_module = importlib.import_module(f'roop.processors.frame.{frame_processor}')
+        for method_name in FRAME_PROCESSORS_INTERFACE:
+            if not hasattr(frame_processor_module, method_name):
+                sys.exit()
     except ImportError:
         sys.exit()
     return frame_processor_module

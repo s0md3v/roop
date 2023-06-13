@@ -68,7 +68,7 @@ def enhance_face_in_frame(cropped_faces):
         print(f'Failed inference for CodeFormer-code: {error}')
 
 
-def process_faces(source_face: any, temp_frame: any) -> any:
+def process_frame(source_face: any, temp_frame: any) -> any:
     try:
         face_helper = get_face_enhancer(None)
         face_helper.read_image(temp_frame)
@@ -123,7 +123,7 @@ def process_frames(source_path: str, frame_paths: list[str], progress=None) -> N
     for frame_path in frame_paths:
         try:
             frame = cv2.imread(frame_path)
-            result = process_faces(None, frame)
+            result = process_frame(None, frame)
             cv2.imwrite(frame_path, result)
         except Exception as exception:
             print(exception)
@@ -134,7 +134,7 @@ def process_frames(source_path: str, frame_paths: list[str], progress=None) -> N
 
 def process_image(source_path: str, image_path: str, output_file: str) -> None:
     image = cv2.imread(image_path)
-    result = process_faces(None, image)
+    result = process_frame(None, image)
     cv2.imwrite(output_file, result)
 
 
