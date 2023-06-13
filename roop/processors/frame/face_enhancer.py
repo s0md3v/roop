@@ -66,10 +66,10 @@ def enhance_face_in_frame(cropped_faces):
         print(f'Failed inference for CodeFormer-code: {error}')
 
 
-def process_faces(source_face: any, frame: any) -> any:
+def process_faces(temp_frame: any) -> any:
     try:
         face_helper = get_face_enhancer(None)
-        face_helper.read_image(frame)
+        face_helper.read_image(temp_frame)
         # get face landmarks for each face
         face_helper.get_face_landmarks_5(
             only_center_face=False, resize=640, eye_dist_threshold=5
@@ -118,18 +118,16 @@ def restore_face(face_in_tensor):
 
 
 def process_image(source_path: str, image_path: str, output_file: str) -> None:
-    source_face = None
     image = cv2.imread(image_path)
-    result = process_faces(source_face, image)
+    result = process_faces(image)
     cv2.imwrite(output_file, result)
 
 
 def process_frames(source_path: str, frame_paths: list[str], progress=None) -> None:
-    source_face = None
     for frame_path in frame_paths:
         try:
             frame = cv2.imread(frame_path)
-            result = process_faces(source_face, frame)
+            result = process_faces(frame)
             cv2.imwrite(frame_path, result)
         except Exception as exception:
             print(exception)
