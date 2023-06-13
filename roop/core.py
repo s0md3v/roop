@@ -28,7 +28,6 @@ import roop.ui as ui
 from roop.processors.frame.core import get_frame_processor_module
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.face_analyser import get_one_face
-from roop.processors.frame.core import get_frame_processor_module
 
 if 'ROCMExecutionProvider' in roop.globals.execution_providers:
     del torch
