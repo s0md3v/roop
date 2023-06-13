@@ -69,4 +69,7 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
+    execution_threads = roop.globals.execution_threads
+    roop.globals.execution_threads = 1
     roop.processors.frame.core.process_video(source_path, temp_frame_paths, process_frames)
+    roop.globals.execution_threads = execution_threads
