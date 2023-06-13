@@ -3,7 +3,6 @@
 import os
 import sys
 
-from roop.frame_processors.core import get_frame_processor_modules
 
 # single thread doubles cuda performance - needs to be set before torch import
 if any(arg.startswith('--execution-provider') for arg in sys.argv):
@@ -26,8 +25,7 @@ import cv2
 
 import roop.globals
 import roop.ui as ui
-import roop.frame_processors.face_swapper
-import roop.frame_processors.face_enhancer
+from roop.processors.frame.core import get_frame_processor_module
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.face_analyser import get_one_face
 
@@ -181,7 +179,7 @@ def start() -> None:
             destroy()
         for frame_processor in roop.globals.frame_processors:
             update_status(f'{frame_processor} in progress...')
-            module = get_frame_processor_modules(frame_processor)
+            module = get_frame_processor_module(frame_processor)
             module.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
             release_resources()
         if is_image(roop.globals.target_path):
@@ -200,7 +198,7 @@ def start() -> None:
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     for frame_processor in roop.globals.frame_processors:
         update_status(f'{frame_processor} in progress...')
-        module = get_frame_processor_modules(frame_processor)
+        module = get_frame_processor_module(frame_processor)
         conditional_process_video(roop.globals.source_path, temp_frame_paths, module.process_video)
         release_resources()
     if roop.globals.keep_fps:
@@ -236,7 +234,7 @@ def run() -> None:
     parse_args()
     pre_check()
     for frame_processor in roop.globals.frame_processors:
-        module = get_frame_processor_modules(frame_processor)
+        module = get_frame_processor_module(frame_processor)
         module.pre_check()
     limit_resources()
     if roop.globals.headless:

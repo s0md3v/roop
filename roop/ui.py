@@ -8,7 +8,7 @@ from PIL import Image, ImageTk, ImageOps
 import roop.globals
 from roop.face_analyser import get_one_face
 from roop.capturer import get_video_frame, get_video_frame_total
-from roop.frame_processors.core import get_frame_processor_modules
+from roop.processors.frame.core import get_frame_processor_module
 from roop.utilities import is_image, is_video, resolve_relative_path
 
 WINDOW_HEIGHT = 700
@@ -205,7 +205,7 @@ def init_preview() -> None:
 def update_preview(frame_number: int = 0) -> None:
     if roop.globals.source_path and roop.globals.target_path:
         for frame_processor in roop.globals.frame_processors:
-            module = get_frame_processor_modules(frame_processor)
+            module = get_frame_processor_module(frame_processor)
             module.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
             video_frame = module.process_faces(
                 get_one_face(cv2.imread(roop.globals.source_path)),
