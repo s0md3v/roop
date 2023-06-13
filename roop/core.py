@@ -151,7 +151,7 @@ def start() -> None:
             destroy()
         # todo: this needs a temp path for images to work with multiple frame processors
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-            update_status(f'{frame_processor} in progress...')
+            update_status(f'{frame_processor.NAME} in progress...')
             frame_processor.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
             release_resources()
         if is_image(roop.globals.target_path):
@@ -169,7 +169,7 @@ def start() -> None:
     extract_frames(roop.globals.target_path)
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-        update_status(f'{frame_processor} in progress...')
+        update_status(f'{frame_processor.NAME} in progress...')
         frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
         release_resources()
     # handles fps
