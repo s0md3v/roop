@@ -2,13 +2,6 @@ import sys
 import importlib
 from typing import Any
 
-import torch
-
-import roop.globals
-
-if 'ROCMExecutionProvider' in roop.globals.execution_providers:
-    del torch
-
 FRAME_PROCESSOR_MODULES = None
 
 
