@@ -2,7 +2,7 @@
 
 ### Do
 
-- ...consider to fix a bugs over adding a features
+- ...consider to fix bugs over adding a features
 - ...one pull request for one feature or improvement 
 - ...consult us about implementation details
 - ...proper testing before you submit your code
