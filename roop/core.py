@@ -2,8 +2,6 @@
 
 import os
 import sys
-
-
 # single thread doubles cuda performance - needs to be set before torch import
 if any(arg.startswith('--execution-provider') for arg in sys.argv):
     os.environ['OMP_NUM_THREADS'] = '1'
@@ -151,6 +149,7 @@ def start() -> None:
     if has_image_extension(roop.globals.target_path):
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
+        # todo: this needs a temp path for images to work with multiple frame processors
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             update_status(f'{frame_processor} in progress...')
             frame_processor.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
@@ -173,6 +172,7 @@ def start() -> None:
         update_status(f'{frame_processor} in progress...')
         frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
         release_resources()
+    # handles fps
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
         fps = detect_fps(roop.globals.target_path)
@@ -181,6 +181,7 @@ def start() -> None:
     else:
         update_status('Creating video with 30.0 fps...')
         create_video(roop.globals.target_path)
+    # handle audio
     if roop.globals.keep_audio:
         if roop.globals.keep_fps:
             update_status('Restoring audio...')
@@ -189,6 +190,7 @@ def start() -> None:
         restore_audio(roop.globals.target_path, roop.globals.output_path)
     else:
         move_temp(roop.globals.target_path, roop.globals.output_path)
+    # clean and validate
     clean_temp(roop.globals.target_path)
     if is_video(roop.globals.target_path):
         update_status('Processing to video succeed!')
