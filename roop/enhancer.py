@@ -78,8 +78,8 @@ def process_faces(source_face: any, frame: any) -> any:
         face_helper.align_warp_face()
         cropped_faces = face_helper.cropped_faces
         enhanced_faces = enhance_face_in_frame(cropped_faces)
-        for face_enhanced in enhanced_faces:
-            face_helper.add_restored_face(face_enhanced)
+        for enhanced_face in enhanced_faces:
+            face_helper.add_restored_face(enhanced_face)
         face_helper.get_inverse_affine()
         result = face_helper.paste_faces_to_input_image()
         face_helper.clean_all()
