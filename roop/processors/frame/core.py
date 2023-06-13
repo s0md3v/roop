@@ -12,11 +12,12 @@ def load_processor_module(frame_processor: str)-> Any:
     return frame_processor_module
 
 
-def get_frame_processor_modules(frame_processors):
+def get_frame_processors_modules(frame_processors):
     global FRAME_PROCESSORS_MODULES
     if FRAME_PROCESSORS_MODULES is None:
         FRAME_PROCESSORS_MODULES = []
         for frame_processor in frame_processors:
             frame_processor_module = load_processor_module(frame_processor)
             FRAME_PROCESSORS_MODULES.append(frame_processor_module)
-        return FRAME_PROCESSORS_MODULES
+    return FRAME_PROCESSORS_MODULES
+
