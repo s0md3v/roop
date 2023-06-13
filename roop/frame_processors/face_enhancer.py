@@ -56,10 +56,12 @@ def get_face_enhancer(FACE_ENHANCER):
 
 def enhance_face_in_frame(cropped_faces):
     try:
+        faces_enhanced = []
         for _, cropped_face in enumerate(cropped_faces):
             face_in_tensor = normalize_face(cropped_face)
-            faces_enhanced = restore_face(face_in_tensor)
-            return faces_enhanced
+            face_enhanced = restore_face(face_in_tensor)
+            faces_enhanced.append(face_enhanced)
+        return faces_enhanced
     except RuntimeError as error:
         print(f'Failed inference for CodeFormer-code: {error}')
 
@@ -75,8 +77,9 @@ def process_faces(source_face: any, frame: any) -> any:
         # align and warp each face
         face_helper.align_warp_face()
         cropped_faces = face_helper.cropped_faces
-        face_enhanced = enhance_face_in_frame(cropped_faces)
-        face_helper.add_restored_face(face_enhanced)
+        faces_enhanced = enhance_face_in_frame(cropped_faces)
+        for face_enhanced in faces_enhanced:
+            face_helper.add_restored_face(face_enhanced)
         face_helper.get_inverse_affine()
         result = face_helper.paste_faces_to_input_image()
         face_helper.clean_all()
@@ -137,11 +140,11 @@ def process_frames(source_path: str, frame_paths: list[str], progress=None) -> N
 
 def multi_process_frame(source_img, frame_paths, progress) -> None:
     threads = []
-    frames_per_thread = len(frame_paths) // roop.globals.execution_threads
-    remaining_frames = len(frame_paths) % roop.globals.execution_threads
+    frames_per_thread = len(frame_paths) // roop.globals.gpu_threads
+    remaining_frames = len(frame_paths) % roop.globals.gpu_threads
     start_index = 0
     # create threads by frames
-    for _ in range(roop.globals.execution_threads):
+    for _ in range(roop.globals.gpu_threads):
         end_index = start_index + frames_per_thread
         if remaining_frames > 0:
             end_index += 1
@@ -160,9 +163,9 @@ def process_video(source_path: str, frame_paths: list[str], mode: str) -> None:
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
     total = len(frame_paths)
     with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
-        if mode == 'multi-processing':
+        if mode == 'cpu':
             progress.set_postfix({'mode': mode, 'cores': roop.globals.cpu_cores, 'memory': roop.globals.max_memory})
             process_frames(source_path, frame_paths, progress)
-        elif mode == 'multi-threading':
-            progress.set_postfix({'mode': mode, 'threads': roop.globals.execution_threads, 'memory': roop.globals.max_memory})
+        elif mode == 'gpu':
+            progress.set_postfix({'mode': mode, 'threads': roop.globals.gpu_threads, 'memory': roop.globals.max_memory})
             multi_process_frame(source_path, frame_paths, progress)

@@ -8,7 +8,7 @@ from PIL import Image, ImageTk, ImageOps
 import roop.globals
 from roop.analyser import get_one_face
 from roop.capturer import get_video_frame, get_video_frame_total
-from roop.swapper import process_faces
+from roop.frame_processors.face_swapper import process_faces
 from roop.utilities import is_image, is_video, resolve_relative_path
 
 WINDOW_HEIGHT = 700
