@@ -18,14 +18,14 @@ THREAD_LOCK = threading.Lock()
 
 
 def pre_check() -> None:
-    download_directory_path = resolve_relative_path('../../../models')
+    download_directory_path = resolve_relative_path('../models')
     conditional_download(download_directory_path, ['https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth'])
 
 
 def get_code_former():
     global CODE_FORMER
     with THREAD_LOCK:
-        model_path = resolve_relative_path('../../../models/codeformer.pth')
+        model_path = resolve_relative_path('../models/codeformer.pth')
         if CODE_FORMER is None:
             model = torch.load(model_path)['params_ema']
             CODE_FORMER = ARCH_REGISTRY.get('CodeFormer')(
@@ -55,10 +55,12 @@ def get_face_enhancer(FACE_ENHANCER):
 
 
 def enhance_face_in_frame(cropped_faces):
+    faces_enhanced = []
     try:
         for _, cropped_face in enumerate(cropped_faces):
             face_in_tensor = normalize_face(cropped_face)
-            faces_enhanced = restore_face(face_in_tensor)
+            face_enhanced = restore_face(face_in_tensor)
+            faces_enhanced.append(face_enhanced)
             return faces_enhanced
     except RuntimeError as error:
         print(f'Failed inference for CodeFormer-code: {error}')
@@ -75,8 +77,9 @@ def process_faces(source_face: any, frame: any) -> any:
         # align and warp each face
         face_helper.align_warp_face()
         cropped_faces = face_helper.cropped_faces
-        face_enhanced = enhance_face_in_frame(cropped_faces)
-        face_helper.add_restored_face(face_enhanced)
+        faces_enhanced = enhance_face_in_frame(cropped_faces)
+        for face_enhanced in faces_enhanced:
+            face_helper.add_restored_face(face_enhanced)
         face_helper.get_inverse_affine()
         result = face_helper.paste_faces_to_input_image()
         face_helper.clean_all()
