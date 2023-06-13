@@ -2,6 +2,9 @@
 
 import os
 import sys
+
+from roop.frame_processors.core import get_frame_processor_modules
+
 # single thread doubles cuda performance - needs to be set before torch import
 if any(arg.startswith('--execution-provider') for arg in sys.argv):
     os.environ['OMP_NUM_THREADS'] = '1'
@@ -23,10 +26,10 @@ import cv2
 
 import roop.globals
 import roop.ui as ui
-import roop.swapper
-import roop.enhancer
+import roop.frame_processors.face_swapper
+import roop.frame_processors.face_enhancer
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
-from roop.analyser import get_one_face
+from roop.face_analyser import get_one_face
 
 if 'ROCMExecutionProvider' in roop.globals.execution_providers:
     del torch
@@ -40,7 +43,7 @@ def parse_args() -> None:
     parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
     parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
     parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
-    parser.add_argument('--frame-processor', help='list of frame processors to run', dest='frame_processor', default=['face-swapper'], choices=['face-swapper', 'face-enhancer'], nargs='+')
+    parser.add_argument('--frame-processor', help='list of frame processors to run', dest='frame_processor', default=['face_swapper'], choices=['face_swapper', 'face_enhancer'], nargs='+')
     parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
     parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
     parser.add_argument('--keep-frames', help='keep frames directory', dest='keep_frames', action='store_true', default=False)
@@ -69,6 +72,10 @@ def parse_args() -> None:
     roop.globals.cpu_cores = args.cpu_cores
     roop.globals.execution_providers = decode_execution_providers(args.execution_provider)
     roop.globals.execution_threads = args.execution_threads
+
+    # limit face enhancer to cuda
+    if 'CUDAExecutionProvider' not in roop.globals.execution_providers and 'face_enhancer' in roop.globals.frame_processors:
+        roop.globals.frame_processors.remove('face_enhancer')
 
 
 def encode_execution_providers(execution_providers: List[str]) -> List[str]:
@@ -172,12 +179,11 @@ def start() -> None:
     if has_image_extension(roop.globals.target_path):
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
-        if 'face-swapper' in roop.globals.frame_processors:
-            update_status('Swapping in progress...')
-            roop.swapper.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
-        if 'CUDAExecutionProvider' in roop.globals.execution_providers and 'face-enhancer' in roop.globals.frame_processors:
-            update_status('Enhancing in progress...')
-            roop.enhancer.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+        for frame_processor in roop.globals.frame_processors:
+            update_status(f'{frame_processor} in progress...')
+            module = get_frame_processor_modules(frame_processor)
+            module.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+            release_resources()
         if is_image(roop.globals.target_path):
             update_status('Processing to image succeed!')
         else:
@@ -192,16 +198,11 @@ def start() -> None:
     update_status('Extracting frames...')
     extract_frames(roop.globals.target_path)
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
-    if 'face-swapper' in roop.globals.frame_processors:
-        update_status('Swapping in progress...')
-        conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
-    release_resources()
-    # limit to one execution thread
-    roop.globals.execution_threads = 1
-    if 'CUDAExecutionProvider' in roop.globals.execution_providers and 'face-enhancer' in roop.globals.frame_processors:
-        update_status('Enhancing in progress...')
-        conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
-    release_resources()
+    for frame_processor in roop.globals.frame_processors:
+        update_status(f'{frame_processor} in progress...')
+        module = get_frame_processor_modules(frame_processor)
+        conditional_process_video(roop.globals.source_path, temp_frame_paths, module.process_video)
+        release_resources()
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
         fps = detect_fps(roop.globals.target_path)
@@ -234,10 +235,9 @@ def destroy() -> None:
 def run() -> None:
     parse_args()
     pre_check()
-    if 'face-swapper' in roop.globals.frame_processors:
-        roop.swapper.pre_check()
-    if 'face-enhancer' in roop.globals.frame_processors:
-        roop.enhancer.pre_check()
+    for frame_processor in roop.globals.frame_processors:
+        module = get_frame_processor_modules(frame_processor)
+        module.pre_check()
     limit_resources()
     if roop.globals.headless:
         start()
