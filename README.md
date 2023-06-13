@@ -52,8 +52,6 @@ options:
                         adjust output video quality
   --max-memory MAX_MEMORY
                         maximum amount of RAM in GB to be used
-  --cpu-cores CPU_CORES
-                        number of CPU cores to use
   --execution-provider {cpu,...} [{cpu,...} ...]
                         execution provider
   --execution-threads EXECUTION_THREADS
