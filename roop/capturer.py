@@ -9,7 +9,7 @@ def get_video_frame(video_path: str, frame_number: int = 0) -> Any:
     has_frame, frame = capture.read()
     capture.release()
     if has_frame:
-        return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        return frame
     return None
 
 

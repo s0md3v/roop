@@ -208,7 +208,7 @@ def update_preview(frame_number: int = 0) -> None:
             get_one_face(cv2.imread(roop.globals.source_path)),
             get_video_frame(roop.globals.target_path, frame_number)
         )
-        image = Image.fromarray(video_frame)
+        image = Image.fromarray(cv2.cvtColor(video_frame, cv2.COLOR_BGR2RGB))
         image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
         image = ImageTk.PhotoImage(image)
         preview_label.configure(image=image)
