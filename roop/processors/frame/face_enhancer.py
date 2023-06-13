@@ -1,13 +1,15 @@
+from typing import List
+
 import cv2
 import torch
 import threading
-from tqdm import tqdm
 from torchvision.transforms.functional import normalize
 from codeformer.facelib.utils.face_restoration_helper import FaceRestoreHelper
 from codeformer.basicsr.utils.registry import ARCH_REGISTRY
 from codeformer.basicsr.utils import img2tensor, tensor2img
 
 import roop.globals
+import roop.processors.frame.core
 from roop.utilities import conditional_download, resolve_relative_path
 
 if 'ROCMExecutionProvider' in roop.globals.execution_providers:
@@ -136,30 +138,5 @@ def process_frames(source_path: str, frame_paths: list[str], progress=None) -> N
             progress.update(1)
 
 
-def multi_process_frame(source_img, frame_paths, progress) -> None:
-    threads = []
-    frames_per_thread = len(frame_paths) // roop.globals.execution_threads
-    remaining_frames = len(frame_paths) % roop.globals.execution_threads
-    start_index = 0
-    # create threads by frames
-    for _ in range(roop.globals.execution_threads):
-        end_index = start_index + frames_per_thread
-        if remaining_frames > 0:
-            end_index += 1
-            remaining_frames -= 1
-        thread_frame_paths = frame_paths[start_index:end_index]
-        thread = threading.Thread(target=process_frames, args=(source_img, thread_frame_paths, progress))
-        threads.append(thread)
-        thread.start()
-        start_index = end_index
-    # join threads
-    for thread in threads:
-        thread.join()
-
-
-def process_video(source_path: str, frame_paths: list[str]) -> None:
-    progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
-    total = len(frame_paths)
-    with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
-        progress.set_postfix({'execution_providers': roop.globals.execution_providers, 'threads': roop.globals.execution_threads, 'memory': roop.globals.max_memory})
-        multi_process_frame(source_path, frame_paths, progress)
+def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
+    roop.processors.frame.core.process_video(source_path, temp_frame_paths, process_frames)
