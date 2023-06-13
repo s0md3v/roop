@@ -25,7 +25,7 @@ import cv2
 
 import roop.globals
 import roop.ui as ui
-from roop.processors.frame.core import get_frame_processor_modules
+from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.face_analyser import get_one_face
 
@@ -177,7 +177,7 @@ def start() -> None:
     if has_image_extension(roop.globals.target_path):
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
-        for frame_processor in get_frame_processor_modules(roop.globals.frame_processors):
+        for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             update_status(f'{frame_processor} in progress...')
             frame_processor.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
             release_resources()
@@ -195,7 +195,7 @@ def start() -> None:
     update_status('Extracting frames...')
     extract_frames(roop.globals.target_path)
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
-    for frame_processor in get_frame_processor_modules(roop.globals.frame_processors):
+    for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         update_status(f'{frame_processor} in progress...')
         conditional_process_video(roop.globals.source_path, temp_frame_paths, frame_processor.process_video)
         release_resources()
@@ -231,7 +231,7 @@ def destroy() -> None:
 def run() -> None:
     parse_args()
     pre_check()
-    for frame_processor in get_frame_processor_modules(roop.globals.frame_processors):
+    for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         frame_processor.pre_check()
     limit_resources()
     if roop.globals.headless:
