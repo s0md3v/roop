@@ -204,7 +204,7 @@ def init_preview() -> None:
 
 def update_preview(frame_number: int = 0) -> None:
     video_frame = None
-    if roop.globals.source_path and roop.globals.target_path:        
+    if roop.globals.source_path and roop.globals.target_path:
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             video_frame = frame_processor.process_faces(
                 get_one_face(cv2.imread(roop.globals.source_path)),
