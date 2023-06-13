@@ -158,13 +158,9 @@ def multi_process_frame(source_img, frame_paths, progress) -> None:
         thread.join()
 
 
-def process_video(source_path: str, frame_paths: list[str], mode: str) -> None:
+def process_video(source_path: str, frame_paths: list[str]) -> None:
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
     total = len(frame_paths)
     with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
-        if mode == 'multi-processing':
-            progress.set_postfix({'mode': mode, 'cores': roop.globals.cpu_cores, 'memory': roop.globals.max_memory})
-            process_frames(source_path, frame_paths, progress)
-        elif mode == 'multi-threading':
-            progress.set_postfix({'mode': mode, 'threads': roop.globals.execution_threads, 'memory': roop.globals.max_memory})
-            multi_process_frame(source_path, frame_paths, progress)
+        progress.set_postfix({'execution_providers': roop.globals.execution_providers, 'threads': roop.globals.execution_threads, 'memory': roop.globals.max_memory})
+        multi_process_frame(source_path, frame_paths, progress)
