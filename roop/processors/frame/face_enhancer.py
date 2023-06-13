@@ -15,6 +15,7 @@ if 'ROCMExecutionProvider' in roop.globals.execution_providers:
 
 CODE_FORMER = None
 THREAD_LOCK = threading.Lock()
+NAME = 'Face Enhancer'
 
 
 def pre_check() -> None:

@@ -10,6 +10,7 @@ from roop.utilities import conditional_download, resolve_relative_path
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
+NAME = 'Face Swapper'
 
 
 def pre_check() -> None:
