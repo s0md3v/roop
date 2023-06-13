@@ -4,6 +4,7 @@ from typing import Any
 
 FRAME_PROCESSORS_MODULES = None
 
+
 def load_processor_module(frame_processor: str)-> Any:
     try:
         frame_processor_module = importlib.import_module(f'roop.processors.frame.{frame_processor}')
