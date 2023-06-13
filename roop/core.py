@@ -28,6 +28,7 @@ import roop.ui as ui
 from roop.processors.frame.core import get_frame_processor_module
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.face_analyser import get_one_face
+from roop.processors.frame.core import get_frame_processor_module
 
 if 'ROCMExecutionProvider' in roop.globals.execution_providers:
     del torch
@@ -139,6 +140,14 @@ def pre_check() -> None:
         quit('ffmpeg is not installed.')
 
 
+def get_frame_processor_modules(frame_processors):
+    frame_processor_modules = []
+    for frame_processor in frame_processors:
+        frame_processor_module = get_frame_processor_module(frame_processor)
+        frame_processor_modules.append(frame_processor_module)
+    return frame_processor_modules
+
+
 def conditional_process_video(source_path: str, temp_frame_paths: List[str], process_video) -> None:
     pool_amount = len(temp_frame_paths) // roop.globals.cpu_cores
     if pool_amount > 2 and roop.globals.cpu_cores > 1 and roop.globals.execution_providers == ['CPUExecutionProvider']:
@@ -233,9 +242,8 @@ def destroy() -> None:
 def run() -> None:
     parse_args()
     pre_check()
-    for frame_processor in roop.globals.frame_processors:
-        module = get_frame_processor_module(frame_processor)
-        module.pre_check()
+    for frame_processor in get_frame_processor_modules(roop.globals.frame_processors):
+        frame_processor.pre_check()
     limit_resources()
     if roop.globals.headless:
         start()
