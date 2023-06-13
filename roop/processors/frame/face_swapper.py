@@ -1,10 +1,10 @@
 from typing import Any, List
-from tqdm import tqdm
 import cv2
 import insightface
 import threading
 
 import roop.globals
+import roop.processors.frame.core
 from roop.face_analyser import get_one_face, get_many_faces
 from roop.utilities import conditional_download, resolve_relative_path
 
@@ -60,27 +60,6 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress=None)
             progress.update(1)
 
 
-def multi_process_frame(source_path: str, temp_frame_paths: List[str], progress) -> None:
-    threads = []
-    frames_per_thread = len(temp_frame_paths) // roop.globals.execution_threads
-    remaining_frames = len(temp_frame_paths) % roop.globals.execution_threads
-    start_index = 0
-    # create threads by frames
-    for _ in range(roop.globals.execution_threads):
-        end_index = start_index + frames_per_thread
-        if remaining_frames > 0:
-            end_index += 1
-            remaining_frames -= 1
-        thread_paths = temp_frame_paths[start_index:end_index]
-        thread = threading.Thread(target=process_frames, args=(source_path, thread_paths, progress))
-        threads.append(thread)
-        thread.start()
-        start_index = end_index
-    # join threads
-    for thread in threads:
-        thread.join()
-
-
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
     source_face = get_one_face(cv2.imread(source_path))
     target_frame = cv2.imread(target_path)
@@ -89,8 +68,4 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
-    progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
-    total = len(temp_frame_paths)
-    with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
-        progress.set_postfix({'execution_providers': roop.globals.execution_providers, 'threads': roop.globals.execution_threads, 'memory': roop.globals.max_memory})
-        multi_process_frame(source_path, temp_frame_paths, progress)
+    roop.processors.frame.core.process_video(source_path, temp_frame_paths, process_frames)
