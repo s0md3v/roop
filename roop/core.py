@@ -20,11 +20,10 @@ import tensorflow
 import multiprocessing
 from opennsfw2 import predict_video_frames, predict_image
 import cv2
+import importlib
 
 import roop.globals
 import roop.ui as ui
-import roop.swapper
-import roop.enhancer
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.analyser import get_one_face
 
@@ -89,6 +88,19 @@ def suggest_execution_threads() -> int:
     if 'ROCMExecutionProvider' in roop.globals.execution_providers:
         return 2
     return 8
+
+
+def load_modules(processors: List[str]) -> List[str]:
+    loaded_modules = []
+    module_names = [f'roop.{module.split("-")[1]}' for module in processors]
+    try:
+        for module in module_names:
+            loaded_module = importlib.import_module(module)
+            loaded_modules.append(loaded_module)
+    except ImportError:
+        print('Failed when importing module: ImportError')
+        sys.exit()
+    return loaded_modules
 
 
 def limit_resources() -> None:
@@ -221,6 +233,7 @@ def destroy() -> None:
 def run() -> None:
     parse_args()
     pre_check()
+    load_modules(roop.globals.frame_processors)
     if 'face-swapper' in roop.globals.frame_processors:
         roop.swapper.pre_check()
     if 'face-enhancer' in roop.globals.frame_processors:
