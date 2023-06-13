@@ -2,8 +2,8 @@
 
 import os
 import sys
-# single thread doubles performance of gpu-mode - needs to be set before torch import
-if any(arg.startswith('--gpu-vendor') for arg in sys.argv):
+# single thread doubles cuda performance - needs to be set before torch import
+if any(arg.startswith('--execution-provider') for arg in sys.argv):
     os.environ['OMP_NUM_THREADS'] = '1'
 # reduce tensorflow log level
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -15,6 +15,7 @@ import shutil
 import argparse
 import psutil
 import torch
+import onnxruntime
 import tensorflow
 import multiprocessing
 from opennsfw2 import predict_video_frames, predict_image
@@ -27,7 +28,7 @@ import roop.enhancer
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
 from roop.analyser import get_one_face
 
-if 'ROCMExecutionProvider' in roop.globals.providers:
+if 'ROCMExecutionProvider' in roop.globals.execution_providers:
     del torch
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -48,9 +49,8 @@ def parse_args() -> None:
     parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
     parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int, default=suggest_max_memory())
     parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=suggest_cpu_cores())
-    parser.add_argument('--execution-provider', help='execution provider', dest='execution_provider', default='cpu', choices=['cpu', 'directml'])
-    parser.add_argument('--gpu-threads', help='number of threads to be use for the GPU', dest='gpu_threads', type=int, default=suggest_gpu_threads())
-    parser.add_argument('--gpu-vendor', help='select your GPU vendor', dest='gpu_vendor', choices=['apple', 'amd', 'nvidia'])
+    parser.add_argument('--execution-provider', help='execution provider', dest='execution_provider', default=['cpu'], choices=suggest_execution_providers(), nargs='+')
+    parser.add_argument('--execution-threads', help='number of threads to be use for the GPU', dest='execution_threads', type=int, default=suggest_execution_threads())
 
     args = parser.parse_known_args()[0]
 
@@ -67,15 +67,17 @@ def parse_args() -> None:
     roop.globals.video_quality = args.video_quality
     roop.globals.max_memory = args.max_memory
     roop.globals.cpu_cores = args.cpu_cores
-    roop.globals.gpu_threads = args.gpu_threads
+    roop.globals.execution_providers = decode_execution_providers(args.execution_provider)
+    roop.globals.execution_threads = args.execution_threads
 
-    if args.execution_provider == 'directml':
-        roop.globals.providers = ['DmlExecutionProvider']
-        roop.globals.gpu_vendor = 'other'
-    if args.gpu_vendor:
-        roop.globals.gpu_vendor = args.gpu_vendor
-    else:
-        roop.globals.providers = ['CPUExecutionProvider']
+
+def encode_execution_providers(execution_providers: List[str]) -> List[str]:
+    return [execution_provider.replace('ExecutionProvider', '').lower() for execution_provider in execution_providers]
+
+
+def decode_execution_providers(execution_providers: List[str]) -> List[str]:
+    return [provider for provider, encoded_execution_provider in zip(onnxruntime.get_available_providers(), encode_execution_providers(onnxruntime.get_available_providers()))
+            if any(execution_provider in encoded_execution_provider for execution_provider in execution_providers)]
 
 
 def suggest_max_memory() -> int:
@@ -84,18 +86,22 @@ def suggest_max_memory() -> int:
     return 16
 
 
-def suggest_gpu_threads() -> int:
-    if 'DmlExecutionProvider' in roop.globals.providers:
-        return 1
-    if 'ROCMExecutionProvider' in roop.globals.providers:
-        return 2
-    return 8
-
-
 def suggest_cpu_cores() -> int:
     if platform.system().lower() == 'darwin':
         return 2
     return int(max(psutil.cpu_count() / 2, 1))
+
+
+def suggest_execution_providers() -> List[str]:
+    return encode_execution_providers(onnxruntime.get_available_providers())
+
+
+def suggest_execution_threads() -> int:
+    if 'DmlExecutionProvider' in roop.globals.execution_providers:
+        return 1
+    if 'ROCMExecutionProvider' in roop.globals.execution_providers:
+        return 2
+    return 8
 
 
 def limit_resources() -> None:
@@ -117,7 +123,7 @@ def limit_resources() -> None:
 
 
 def release_resources() -> None:
-    if roop.globals.gpu_vendor == 'nvidia':
+    if 'CUDAExecutionProvider' in roop.globals.execution_providers:
         torch.cuda.empty_cache()
 
 
@@ -125,40 +131,23 @@ def pre_check() -> None:
     if sys.version_info < (3, 9):
         quit('Python version is not supported - please upgrade to 3.9 or higher.')
     if not shutil.which('ffmpeg'):
-        quit('ffmpeg is not installed!')
-    if roop.globals.gpu_vendor == 'apple':
-        if 'CoreMLExecutionProvider' not in roop.globals.providers:
-            quit('You are using --gpu=apple flag but CoreML is not available or properly installed on your system.')
-    if roop.globals.gpu_vendor == 'amd':
-        if 'ROCMExecutionProvider' not in roop.globals.providers:
-            quit('You are using --gpu=amd flag but ROCM is not available or properly installed on your system.')
-    if roop.globals.gpu_vendor == 'nvidia':
-        if not torch.cuda.is_available():
-            quit('You are using --gpu=nvidia flag but CUDA is not available or properly installed on your system.')
-        if torch.version.cuda > '11.8':
-            quit(f'CUDA version {torch.version.cuda} is not supported - please downgrade to 11.8')
-        if torch.version.cuda < '11.4':
-            quit(f'CUDA version {torch.version.cuda} is not supported - please upgrade to 11.8')
-        if torch.backends.cudnn.version() < 8220:
-            quit(f'CUDNN version { torch.backends.cudnn.version()} is not supported - please upgrade to 8.9.1')
-        if torch.backends.cudnn.version() > 8910:
-            quit(f'CUDNN version { torch.backends.cudnn.version()} is not supported - please downgrade to 8.9.1')
+        quit('ffmpeg is not installed.')
 
 
 def conditional_process_video(source_path: str, temp_frame_paths: List[str], process_video) -> None:
     pool_amount = len(temp_frame_paths) // roop.globals.cpu_cores
-    if pool_amount > 2 and roop.globals.cpu_cores > 1 and roop.globals.gpu_vendor is None:
+    if pool_amount > 2 and roop.globals.cpu_cores > 1 and roop.globals.execution_providers == ['CPUExecutionProvider']:
         POOL = multiprocessing.Pool(roop.globals.cpu_cores, maxtasksperchild=1)
         pools = []
         for i in range(0, len(temp_frame_paths), pool_amount):
-            pool = POOL.apply_async(process_video, args=(source_path, temp_frame_paths[i:i + pool_amount], 'cpu'))
+            pool = POOL.apply_async(process_video, args=(source_path, temp_frame_paths[i:i + pool_amount], 'multi-processing'))
             pools.append(pool)
         for pool in pools:
             pool.get()
         POOL.close()
         POOL.join()
     else:
-         process_video(roop.globals.source_path, temp_frame_paths, 'gpu')
+         process_video(roop.globals.source_path, temp_frame_paths, 'multi-threading')
 
 
 def update_status(message: str) -> None:
@@ -186,7 +175,7 @@ def start() -> None:
         if 'face-swapper' in roop.globals.frame_processors:
             update_status('Swapping in progress...')
             roop.swapper.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
-        if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processors:
+        if 'CUDAExecutionProvider' in roop.globals.execution_providers and 'face-enhancer' in roop.globals.frame_processors:
             update_status('Enhancing in progress...')
             roop.enhancer.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
         if is_image(roop.globals.target_path):
@@ -207,9 +196,9 @@ def start() -> None:
         update_status('Swapping in progress...')
         conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
     release_resources()
-    # limit to one gpu thread
-    roop.globals.gpu_threads = 1
-    if roop.globals.gpu_vendor == 'nvidia' and 'face-enhancer' in roop.globals.frame_processors:
+    # limit to one execution thread
+    roop.globals.execution_threads = 1
+    if 'CUDAExecutionProvider' in roop.globals.execution_providers and 'face-enhancer' in roop.globals.frame_processors:
         update_status('Enhancing in progress...')
         conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
     release_resources()
