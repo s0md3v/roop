@@ -197,10 +197,12 @@ def start() -> None:
         conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.swapper.process_video)
     release_resources()
     # limit to one execution thread
+    backup_execution_threads = roop.globals.execution_threads
     roop.globals.execution_threads = 1
     if 'CUDAExecutionProvider' in roop.globals.execution_providers and 'face-enhancer' in roop.globals.frame_processors:
         update_status('Enhancing in progress...')
         conditional_process_video(roop.globals.source_path, temp_frame_paths, roop.enhancer.process_video)
+    roop.globals.execution_threads = backup_execution_threads
     release_resources()
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
