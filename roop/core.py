@@ -2,7 +2,7 @@
 
 import os
 import sys
-# single thread doubles performance of gpu-mode - needs to be set before torch import
+# single thread doubles cuda performance - needs to be set before torch import
 if any(arg.startswith('--execution-provider') for arg in sys.argv):
     os.environ['OMP_NUM_THREADS'] = '1'
 # reduce tensorflow log level
