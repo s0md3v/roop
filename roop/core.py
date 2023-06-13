@@ -15,11 +15,9 @@ import platform
 import signal
 import shutil
 import argparse
-import psutil
 import torch
 import onnxruntime
 import tensorflow
-import multiprocessing
 from opennsfw2 import predict_video_frames, predict_image
 import cv2
 
@@ -49,7 +47,6 @@ def parse_args() -> None:
     parser.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264', choices=['libx264', 'libx265', 'libvpx-vp9'])
     parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
     parser.add_argument('--max-memory', help='maximum amount of RAM in GB to be used', dest='max_memory', type=int, default=suggest_max_memory())
-    parser.add_argument('--cpu-cores', help='number of CPU cores to use', dest='cpu_cores', type=int, default=suggest_cpu_cores())
     parser.add_argument('--execution-provider', help='execution provider', dest='execution_provider', default=['cpu'], choices=suggest_execution_providers(), nargs='+')
     parser.add_argument('--execution-threads', help='number of threads to be use for the GPU', dest='execution_threads', type=int, default=suggest_execution_threads())
 
@@ -67,7 +64,6 @@ def parse_args() -> None:
     roop.globals.video_encoder = args.video_encoder
     roop.globals.video_quality = args.video_quality
     roop.globals.max_memory = args.max_memory
-    roop.globals.cpu_cores = args.cpu_cores
     roop.globals.execution_providers = decode_execution_providers(args.execution_provider)
     roop.globals.execution_threads = args.execution_threads
 
@@ -89,12 +85,6 @@ def suggest_max_memory() -> int:
     if platform.system().lower() == 'darwin':
         return 4
     return 16
-
-
-def suggest_cpu_cores() -> int:
-    if platform.system().lower() == 'darwin':
-        return 2
-    return int(max(psutil.cpu_count() / 2, 1))
 
 
 def suggest_execution_providers() -> List[str]:
@@ -139,22 +129,6 @@ def pre_check() -> None:
         quit('ffmpeg is not installed.')
 
 
-def conditional_process_video(source_path: str, temp_frame_paths: List[str], process_video) -> None:
-    pool_amount = len(temp_frame_paths) // roop.globals.cpu_cores
-    if pool_amount > 2 and roop.globals.cpu_cores > 1 and roop.globals.execution_providers == ['CPUExecutionProvider']:
-        POOL = multiprocessing.Pool(roop.globals.cpu_cores, maxtasksperchild=1)
-        pools = []
-        for i in range(0, len(temp_frame_paths), pool_amount):
-            pool = POOL.apply_async(process_video, args=(source_path, temp_frame_paths[i:i + pool_amount], 'multi-processing'))
-            pools.append(pool)
-        for pool in pools:
-            pool.get()
-        POOL.close()
-        POOL.join()
-    else:
-         process_video(roop.globals.source_path, temp_frame_paths, 'multi-threading')
-
-
 def update_status(message: str) -> None:
     value = 'Status: ' + message
     print(value)
@@ -197,7 +171,7 @@ def start() -> None:
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         update_status(f'{frame_processor} in progress...')
-        conditional_process_video(roop.globals.source_path, temp_frame_paths, frame_processor.process_video)
+        frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
         release_resources()
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
