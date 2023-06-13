@@ -3,6 +3,7 @@ from typing import List
 import cv2
 import torch
 import threading
+
 from torchvision.transforms.functional import normalize
 from codeformer.facelib.utils.face_restoration_helper import FaceRestoreHelper
 from codeformer.basicsr.utils.registry import ARCH_REGISTRY
@@ -17,6 +18,7 @@ if 'ROCMExecutionProvider' in roop.globals.execution_providers:
 
 CODE_FORMER = None
 THREAD_LOCK = threading.Lock()
+NAME = 'Face Enhancer'
 
 
 def pre_check() -> None:
@@ -57,18 +59,18 @@ def get_face_enhancer(FACE_ENHANCER):
 
 
 def enhance_face_in_frame(cropped_faces):
-    faces_enhanced = []
     try:
+        faces_enhanced = []
         for _, cropped_face in enumerate(cropped_faces):
             face_in_tensor = normalize_face(cropped_face)
             face_enhanced = restore_face(face_in_tensor)
             faces_enhanced.append(face_enhanced)
-            return faces_enhanced
+        return faces_enhanced
     except RuntimeError as error:
         print(f'Failed inference for CodeFormer-code: {error}')
 
 
-def process_faces(temp_frame: any) -> any:
+def process_faces(source_face: any, temp_frame: any) -> any:
     try:
         face_helper = get_face_enhancer(None)
         face_helper.read_image(temp_frame)
@@ -119,23 +121,23 @@ def restore_face(face_in_tensor):
     return restored_face
 
 
-def process_image(source_path: str, image_path: str, output_file: str) -> None:
-    image = cv2.imread(image_path)
-    result = process_faces(image)
-    cv2.imwrite(output_file, result)
-
-
 def process_frames(source_path: str, frame_paths: list[str], progress=None) -> None:
     for frame_path in frame_paths:
         try:
             frame = cv2.imread(frame_path)
-            result = process_faces(frame)
+            result = process_faces(None, frame)
             cv2.imwrite(frame_path, result)
         except Exception as exception:
             print(exception)
             continue
         if progress:
             progress.update(1)
+
+
+def process_image(source_path: str, image_path: str, output_file: str) -> None:
+    image = cv2.imread(image_path)
+    result = process_faces(None, image)
+    cv2.imwrite(output_file, result)
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
