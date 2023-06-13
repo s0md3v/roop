@@ -139,4 +139,8 @@ def process_image(source_path: str, image_path: str, output_file: str) -> None:
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
+    # todo: remove threads limitation again
+    execution_threads = roop.globals.execution_threads
+    roop.globals.execution_threads = 1
     roop.processors.frame.core.process_video(source_path, temp_frame_paths, process_frames)
+    roop.globals.execution_threads = execution_threads
