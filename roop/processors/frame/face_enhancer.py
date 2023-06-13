@@ -1,9 +1,7 @@
 from typing import List
-
 import cv2
 import torch
 import threading
-
 from torchvision.transforms.functional import normalize
 from codeformer.facelib.utils.face_restoration_helper import FaceRestoreHelper
 from codeformer.basicsr.utils.registry import ARCH_REGISTRY
