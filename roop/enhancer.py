@@ -20,6 +20,9 @@ THREAD_LOCK = threading.Lock()
 def pre_check() -> None:
     download_directory_path = resolve_relative_path('../models')
     conditional_download(download_directory_path, ['https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth'])
+    # 'https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/detection_Resnet50_Final.pth',
+    # 'https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/parsing_parsenet.pth'
+    # detection & parsenet is downloaded when init FaceRestoreHelper, but cannot change download folder
 
 
 def get_code_former():
@@ -43,14 +46,14 @@ def get_code_former():
 def get_face_enhancer(FACE_ENHANCER):
     if FACE_ENHANCER is None:
         FACE_ENHANCER = FaceRestoreHelper(
-        upscale_factor = int(2),
-        face_size=512,
-        crop_ratio=(1, 1),
-        det_model='retinaface_resnet50',
-        save_ext='png',
-        use_parse=True,
-        device='cuda',
-    )
+            upscale_factor = int(2),
+            face_size=512,
+            crop_ratio=(1, 1),
+            det_model='retinaface_resnet50',
+            save_ext='png',
+            use_parse=True,
+            device='cuda',
+        )
     return FACE_ENHANCER
 
 

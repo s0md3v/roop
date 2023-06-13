@@ -25,7 +25,7 @@ import roop.globals
 import roop.ui as ui
 import roop.swapper
 import roop.enhancer
-from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
+from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, resolve_relative_path, conditional_download
 from roop.analyser import get_one_face
 
 if 'ROCMExecutionProvider' in roop.globals.execution_providers:
@@ -170,7 +170,7 @@ def start() -> None:
         return
     # process image to image
     if has_image_extension(roop.globals.target_path):
-        if predict_image(roop.globals.target_path) > 0.85:
+        if predict_image(roop.globals.target_path, weights_path=resolve_relative_path('../models/open_nsfw_weights.h5')) > 0.85:
             destroy()
         if 'face-swapper' in roop.globals.frame_processors:
             update_status('Swapping in progress...')
@@ -184,7 +184,7 @@ def start() -> None:
             update_status('Processing to image failed!')
         return
     # process image to videos
-    seconds, probabilities = predict_video_frames(video_path=roop.globals.target_path, frame_interval=100)
+    seconds, probabilities = predict_video_frames(video_path=roop.globals.target_path, frame_interval=100, weights_path=resolve_relative_path('../models/open_nsfw_weights.h5'))
     if any(probability > 0.85 for probability in probabilities):
         destroy()
     update_status('Creating temp resources...')
@@ -234,6 +234,7 @@ def destroy() -> None:
 def run() -> None:
     parse_args()
     pre_check()
+    conditional_download(resolve_relative_path('../models'), ['https://github.com/bhky/opennsfw2/releases/download/v0.1.0/open_nsfw_weights.h5'])
     if 'face-swapper' in roop.globals.frame_processors:
         roop.swapper.pre_check()
     if 'face-enhancer' in roop.globals.frame_processors:
