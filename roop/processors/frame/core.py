@@ -9,6 +9,7 @@ import roop
 FRAME_PROCESSORS_MODULES = None
 FRAME_PROCESSORS_INTERFACE = [
     'pre_check',
+    'pre_start',
     'process_frame',
     'process_image',
     'process_video'
