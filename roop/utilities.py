@@ -74,6 +74,14 @@ def get_temp_output_path(target_path: str) -> str:
     return os.path.join(temp_directory_path, TEMP_FILE)
 
 
+def normalize_output_path(source_path: str, target_path: str, output_path: str) -> str:
+    source_name, _ = os.path.splitext(os.path.basename(source_path))
+    target_name, target_extension = os.path.splitext(os.path.basename(target_path))
+    if os.path.isdir(output_path):
+        return os.path.join(output_path, source_name + '-' + target_name + target_extension)
+    return output_path
+
+
 def create_temp(target_path: str) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
     Path(temp_directory_path).mkdir(parents=True, exist_ok=True)
