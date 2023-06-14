@@ -22,7 +22,7 @@ import cv2
 import roop.globals
 import roop.ui as ui
 from roop.processors.frame.core import get_frame_processors_modules
-from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp
+from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, validate_output_path
 from roop.face_analyser import get_one_face
 
 if 'ROCMExecutionProvider' in roop.globals.execution_providers:
@@ -64,6 +64,8 @@ def parse_args() -> None:
     roop.globals.max_memory = args.max_memory
     roop.globals.execution_providers = decode_execution_providers(args.execution_provider)
     roop.globals.execution_threads = args.execution_threads
+
+    roop.globals.output_path = validate_output_path(roop.globals.target_path, roop.globals.output_path)
 
     # limit face enhancer to cuda
     if 'CUDAExecutionProvider' not in roop.globals.execution_providers and 'face_enhancer' in roop.globals.frame_processors:

@@ -128,3 +128,14 @@ def conditional_download(download_directory_path: str, urls: List[str]):
 
 def resolve_relative_path(path: str) -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), path))
+
+def validate_output_path(target_path: str, output_path: str) -> str:
+    """
+    Checks if output_path is a directory or a file.
+    If it is a directory, it appends the filename from target_path to output_path.
+    If it is a file, it returns output_path as is.
+    """
+    if os.path.isdir(output_path):
+        return os.path.join(output_path, os.path.basename(target_path))
+    else:
+        return output_path
