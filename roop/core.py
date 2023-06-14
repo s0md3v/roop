@@ -34,9 +34,9 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 def parse_args() -> None:
     signal.signal(signal.SIGINT, lambda signal_number, frame: destroy())
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--face', help='use a face image', dest='source_path')
-    parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path')
-    parser.add_argument('-o', '--output', help='save output to this file', dest='output_path')
+    parser.add_argument('-f', '--face', help='use a face image', dest='source_path', required=True)
+    parser.add_argument('-t', '--target', help='replace image or video with face', dest='target_path', required=True)
+    parser.add_argument('-o', '--output', help='save output to this file', dest='output_path', required=True)
     parser.add_argument('--frame-processor', help='list of frame processors to run', dest='frame_processor', default=['face_swapper'], choices=['face_swapper', 'face_enhancer'], nargs='+')
     parser.add_argument('--keep-fps', help='maintain original fps', dest='keep_fps', action='store_true', default=False)
     parser.add_argument('--keep-audio', help='maintain original audio', dest='keep_audio', action='store_true', default=True)
@@ -135,15 +135,16 @@ def update_status(message: str) -> None:
 
 
 def start() -> None:
-    if not roop.globals.source_path or not os.path.isfile(roop.globals.source_path):
-        update_status('Select an image that contains a face.')
+    # validate paths
+    if not is_image(roop.globals.source_path):
+        update_status('Select an image for source path.')
         return
-    elif not roop.globals.target_path or not os.path.isfile(roop.globals.target_path):
-        update_status('Select an image or video target!')
+    elif not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
+        update_status('Select an image or video for target path.')
         return
-    test_face = get_one_face(cv2.imread(roop.globals.source_path))
-    if not test_face:
-        update_status('No face detected in source image. Please try with another one!')
+    has_face = get_one_face(cv2.imread(roop.globals.source_path))
+    if not has_face:
+        update_status('No face detected in source path.')
         return
     # process image to image
     if has_image_extension(roop.globals.target_path):
