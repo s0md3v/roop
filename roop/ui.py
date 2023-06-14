@@ -78,8 +78,8 @@ def create_root(start: Callable, destroy: Callable) -> ctk.CTk:
     preview_button = ctk.CTkButton(root, text='Preview', command=lambda: toggle_preview())
     preview_button.place(relx=0.65, rely=0.75, relwidth=0.2, relheight=0.05)
 
-    status_label = ctk.CTkLabel(root, text='Status: None', justify='center')
-    status_label.place(relx=0.1, rely=0.9)
+    status_label = ctk.CTkLabel(root, text=None, justify='center')
+    status_label.place(relx=0.1, rely=0.9, relwidth=0.8)
 
     return root
 
