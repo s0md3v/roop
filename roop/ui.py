@@ -117,11 +117,9 @@ def select_source_path() -> None:
         RECENT_DIRECTORY_SOURCE = os.path.dirname(roop.globals.source_path)
         image = render_image_preview(roop.globals.source_path, (200, 200))
         source_label.configure(image=image)
-        source_label.image = image
     else:
         roop.globals.source_path = None
         source_label.configure(image=None)
-        source_label.image = None
 
 
 def select_target_path() -> None:
@@ -132,19 +130,16 @@ def select_target_path() -> None:
     if is_image(target_path):
         roop.globals.target_path = target_path
         RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
-        image = render_image_preview(roop.globals.target_path)
+        image = render_image_preview(roop.globals.target_path, (200, 200))
         target_label.configure(image=image)
-        target_label.image = image
     elif is_video(target_path):
         roop.globals.target_path = target_path
         RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
         video_frame = render_video_preview(target_path, (200, 200))
         target_label.configure(image=video_frame)
-        target_label.image = video_frame
     else:
         roop.globals.target_path = None
         target_label.configure(image=None)
-        target_label.image = None
 
 
 def select_output_path(start):
@@ -162,23 +157,23 @@ def select_output_path(start):
         start()
 
 
-def render_image_preview(image_path: str, dimensions: Tuple[int, int] = None) -> ImageTk.PhotoImage:
+def render_image_preview(image_path: str, size: Tuple[int, int] = None) -> ctk.CTkImage:
     image = Image.open(image_path)
-    if dimensions:
-        image = ImageOps.fit(image, dimensions, Image.LANCZOS)
-    return ImageTk.PhotoImage(image)
+    if size:
+        image = ImageOps.fit(image, size, Image.LANCZOS)
+    return ctk.CTkImage(image, size=image.size)
 
 
-def render_video_preview(video_path: str, dimensions: Tuple[int, int] = None, frame_number: int = 0) -> ImageTk.PhotoImage:
+def render_video_preview(video_path: str, size: Tuple[int, int] = None, frame_number: int = 0) -> ctk.CTkImage:
     capture = cv2.VideoCapture(video_path)
     if frame_number:
         capture.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
     has_frame, frame = capture.read()
     if has_frame:
         image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        if dimensions:
-            image = ImageOps.fit(image, dimensions, Image.LANCZOS)
-        return ImageTk.PhotoImage(image)
+        if size:
+            image = ImageOps.fit(image, size, Image.LANCZOS)
+        return ctk.CTkImage(image, size=image.size)
     capture.release()
     cv2.destroyAllWindows()
 
@@ -212,6 +207,5 @@ def update_preview(frame_number: int = 0) -> None:
             )
         image = Image.fromarray(cv2.cvtColor(video_frame, cv2.COLOR_BGR2RGB))
         image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
-        image = ImageTk.PhotoImage(image)
+        image = ctk.CTkImage(image, size=image.size)
         preview_label.configure(image=image)
-        preview_label.image = image
