@@ -9,7 +9,7 @@ from codeformer.basicsr.utils import img2tensor, tensor2img
 
 import roop.globals
 import roop.processors.frame.core
-from roop.utilities import conditional_download, resolve_relative_path
+from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
 
 if 'ROCMExecutionProvider' in roop.globals.execution_providers:
     del torch
@@ -20,6 +20,11 @@ NAME = 'Face Enhancer'
 
 
 def pre_check() -> None:
+    if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
+        quit('Select an image or video for target path.')
+
+
+def pre_start() -> None:
     download_directory_path = resolve_relative_path('../models')
     conditional_download(download_directory_path, ['https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth'])
 
@@ -45,14 +50,14 @@ def get_code_former():
 def get_face_enhancer(FACE_ENHANCER):
     if FACE_ENHANCER is None:
         FACE_ENHANCER = FaceRestoreHelper(
-        upscale_factor = int(2),
-        face_size=512,
-        crop_ratio=(1, 1),
-        det_model='retinaface_resnet50',
-        save_ext='png',
-        use_parse=True,
-        device='cuda',
-    )
+            upscale_factor = int(2),
+            face_size=512,
+            crop_ratio=(1, 1),
+            det_model='retinaface_resnet50',
+            save_ext='png',
+            use_parse=True,
+            device='cuda'
+        )
     return FACE_ENHANCER
 
 
