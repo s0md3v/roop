@@ -17,21 +17,25 @@ if 'ROCMExecutionProvider' in roop.globals.execution_providers:
 
 CODE_FORMER = None
 THREAD_LOCK = threading.Lock()
-NAME = 'Face Enhancer'
+NAME = 'ROOP.FACE-ENHANCER'
 
 
-def pre_check() -> None:
+def pre_check() -> bool:
     download_directory_path = resolve_relative_path('../models')
     conditional_download(download_directory_path, ['https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth'])
+    return True
 
 
-def pre_start() -> None:
+def pre_start() -> bool:
     if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
-        return update_status('Select an image or video for target path.')
+        update_status('Select an image or video for target path.', NAME)
+        return False
+    return True
 
 
 def get_code_former():
     global CODE_FORMER
+
     with THREAD_LOCK:
         model_path = resolve_relative_path('../models/codeformer.pth')
         if CODE_FORMER is None:

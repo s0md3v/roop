@@ -11,21 +11,26 @@ from roop.utilities import conditional_download, resolve_relative_path, is_image
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
-NAME = 'Face Swapper'
+NAME = 'ROOP.FACE-SWAPPER'
 
 
-def pre_check() -> None:
+def pre_check() -> bool:
     download_directory_path = resolve_relative_path('../models')
     conditional_download(download_directory_path, ['https://huggingface.co/deepinsight/inswapper/resolve/main/inswapper_128.onnx'])
+    return True
 
 
-def pre_start() -> None:
+def pre_start() -> bool:
     if not is_image(roop.globals.source_path):
-        return update_status('Select an image for source path.')
+        update_status('Select an image for source path.', NAME)
+        return False
     elif not get_one_face(cv2.imread(roop.globals.source_path)):
-        return update_status('No face in source path detected.')
+        update_status('No face in source path detected.', NAME)
+        return False
     if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
-        return update_status('Select an image or video for target path.')
+        update_status('Select an image or video for target path.', NAME)
+        return False
+    return True
 
 
 def get_face_swapper() -> None:

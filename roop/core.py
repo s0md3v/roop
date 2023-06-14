@@ -46,7 +46,7 @@ def parse_args() -> None:
     parser.add_argument('--execution-provider', help='execution provider', dest='execution_provider', default=['cpu'], choices=suggest_execution_providers(), nargs='+')
     parser.add_argument('--execution-threads', help='number of execution threads', dest='execution_threads', type=int, default=suggest_execution_threads())
 
-    args = parser.parse_known_args()[0]
+    args = parser.parse_args()
 
     roop.globals.source_path = args.source_path
     roop.globals.target_path = args.target_path
@@ -119,32 +119,33 @@ def release_resources() -> None:
         torch.cuda.empty_cache()
 
 
-def pre_check() -> None:
+def pre_check() -> bool:
     if sys.version_info < (3, 9):
-        quit('Python version is not supported - please upgrade to 3.9 or higher.')
+        update_status('Python version is not supported - please upgrade to 3.9 or higher.')
+        return False
     if not shutil.which('ffmpeg'):
-        quit('ffmpeg is not installed.')
+        update_status('ffmpeg is not installed.')
+        return False
+    return True
 
 
-def update_status(message: str) -> None:
-    value = 'Status: ' + message
-    print(value)
+def update_status(message: str, scope: str = 'ROOP.CORE') -> None:
+    print(f'[{scope}] {message}')
     if not roop.globals.headless:
-        ui.update_status(value)
+        ui.update_status(message)
 
 
 def start() -> None:
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-        update_status(f'{frame_processor.NAME} is starting...')
-        frame_processor.pre_start()
-        release_resources()
+        if not frame_processor.pre_start():
+            return
     # process image to image
     if has_image_extension(roop.globals.target_path):
         if predict_image(roop.globals.target_path) > 0.85:
             destroy()
         # todo: this needs a temp path for images to work with multiple frame processors
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-            update_status(f'{frame_processor.NAME} is progressing...')
+            update_status('Progressing...', frame_processor.NAME)
             frame_processor.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
             release_resources()
         if is_image(roop.globals.target_path):
@@ -162,7 +163,7 @@ def start() -> None:
     extract_frames(roop.globals.target_path)
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-        update_status(f'{frame_processor.NAME} is progressing...')
+        update_status('Progressing...', frame_processor.NAME)
         frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
         release_resources()
     # handles fps
@@ -199,9 +200,11 @@ def destroy() -> None:
 
 def run() -> None:
     parse_args()
-    pre_check()
+    if not pre_check():
+        return
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-        frame_processor.pre_check()
+        if not frame_processor.pre_check():
+            return
     limit_resources()
     if roop.globals.headless:
         start()
