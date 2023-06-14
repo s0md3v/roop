@@ -45,6 +45,7 @@ def parse_args() -> None:
     parser.add_argument('--max-memory', help='maximum amount of RAM in GB', dest='max_memory', type=int, default=suggest_max_memory())
     parser.add_argument('--execution-provider', help='execution provider', dest='execution_provider', default=['cpu'], choices=suggest_execution_providers(), nargs='+')
     parser.add_argument('--execution-threads', help='number of execution threads', dest='execution_threads', type=int, default=suggest_execution_threads())
+    parser.add_argument('--image-format', help='adjust intermediate image format', dest='image_format', default='png', choices=['png', 'jpg'])
 
     # register deprecated args
     parser.add_argument('-f', '--face', help=argparse.SUPPRESS, dest='source_path_deprecated')
@@ -68,6 +69,7 @@ def parse_args() -> None:
     roop.globals.max_memory = args.max_memory
     roop.globals.execution_providers = decode_execution_providers(args.execution_provider)
     roop.globals.execution_threads = args.execution_threads
+    roop.globals.image_format = args.image_format
 
     # warn and cast deprecated args
     if args.source_path_deprecated:

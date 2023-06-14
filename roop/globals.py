@@ -11,5 +11,6 @@ video_quality = None
 max_memory = None
 execution_providers = []
 execution_threads = None
+image_format = None
 headless = None
 log_level = 'error'
