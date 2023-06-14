@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 import cv2
 import torch
 import threading
@@ -15,7 +15,9 @@ if 'ROCMExecutionProvider' in roop.globals.execution_providers:
     del torch
 
 CODE_FORMER = None
+FACE_ENHANCER = None
 THREAD_LOCK = threading.Lock()
+THREAD_SEMAPHORE = threading.Semaphore()
 NAME = 'Face Enhancer'
 
 
@@ -26,6 +28,7 @@ def pre_check() -> None:
 
 def get_code_former():
     global CODE_FORMER
+
     with THREAD_LOCK:
         model_path = resolve_relative_path('../models/codeformer.pth')
         if CODE_FORMER is None:
@@ -42,52 +45,49 @@ def get_code_former():
         return CODE_FORMER
     
 
-def get_face_enhancer(FACE_ENHANCER):
-    if FACE_ENHANCER is None:
-        FACE_ENHANCER = FaceRestoreHelper(
-        upscale_factor = int(2),
-        face_size=512,
-        crop_ratio=(1, 1),
-        det_model='retinaface_resnet50',
-        save_ext='png',
-        use_parse=True,
-        device='cuda',
-    )
+def get_face_enhancer():
+    global FACE_ENHANCER
+
+    with THREAD_LOCK:
+        if FACE_ENHANCER is None:
+            FACE_ENHANCER = FaceRestoreHelper(
+                upscale_factor=int(2),
+                face_size=512,
+                crop_ratio=(1, 1),
+                det_model='retinaface_resnet50',
+                save_ext='png',
+                use_parse=True,
+                device='cuda'
+            )
     return FACE_ENHANCER
 
 
 def enhance_face_in_frame(cropped_faces):
-    try:
-        faces_enhanced = []
-        for _, cropped_face in enumerate(cropped_faces):
-            face_in_tensor = normalize_face(cropped_face)
-            face_enhanced = restore_face(face_in_tensor)
-            faces_enhanced.append(face_enhanced)
-        return faces_enhanced
-    except RuntimeError as error:
-        print(f'Failed inference for CodeFormer-code: {error}')
+    faces_enhanced = []
+    for _, cropped_face in enumerate(cropped_faces):
+        face_in_tensor = normalize_face(cropped_face)
+        face_enhanced = restore_face(face_in_tensor)
+        faces_enhanced.append(face_enhanced)
+    return faces_enhanced
 
 
 def process_frame(source_face: any, temp_frame: any) -> any:
-    try:
-        face_helper = get_face_enhancer(None)
-        face_helper.read_image(temp_frame)
-        # get face landmarks for each face
-        face_helper.get_face_landmarks_5(
-            only_center_face=False, resize=640, eye_dist_threshold=5
-        )
-        # align and warp each face
-        face_helper.align_warp_face()
-        cropped_faces = face_helper.cropped_faces
-        faces_enhanced = enhance_face_in_frame(cropped_faces)
-        for face_enhanced in faces_enhanced:
-            face_helper.add_restored_face(face_enhanced)
-        face_helper.get_inverse_affine()
-        result = face_helper.paste_faces_to_input_image()
-        face_helper.clean_all()
-        return result
-    except RuntimeError as error:
-        print(f'Failed inference for CodeFormer-code-paste: {error}')
+    THREAD_SEMAPHORE.acquire()
+    face_helper = get_face_enhancer()
+    face_helper.read_image(temp_frame)
+    # get face landmarks for each face
+    face_helper.get_face_landmarks_5(only_center_face=False, resize=640, eye_dist_threshold=5)
+    # align and warp each face
+    face_helper.align_warp_face()
+    cropped_faces = face_helper.cropped_faces
+    faces_enhanced = enhance_face_in_frame(cropped_faces)
+    for face_enhanced in faces_enhanced:
+        face_helper.add_restored_face(face_enhanced)
+    face_helper.get_inverse_affine()
+    result = face_helper.paste_faces_to_input_image()
+    face_helper.clean_all()
+    THREAD_SEMAPHORE.release()
+    return result
 
 
 def normalize_face(face):
@@ -107,16 +107,13 @@ def convert_tensor_to_image(enhanced_face_in_tensor):
     return restored_face.astype('uint8')
 
 
-def restore_face(face_in_tensor):
-    enhanced_face_in_tensor = enhance_face_in_tensor(face_in_tensor)
+def restore_face(face_in_tensor) -> Any:
     try:
-        restored_face = convert_tensor_to_image(enhanced_face_in_tensor)
-        del enhanced_face_in_tensor
-    except RuntimeError as error:
-        print(f'Failed inference for CodeFormer-tensor: {error}')
-        restored_face = convert_tensor_to_image(face_in_tensor)
-        return restored_face
-    return restored_face
+        enhanced_face_in_tensor = enhance_face_in_tensor(face_in_tensor)
+        return convert_tensor_to_image(enhanced_face_in_tensor)
+    except RuntimeError:
+        pass
+    return convert_tensor_to_image(face_in_tensor)
 
 
 def process_frames(source_path: str, frame_paths: list[str], progress=None) -> None:
@@ -139,8 +136,4 @@ def process_image(source_path: str, image_path: str, output_file: str) -> None:
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
-    # todo: remove threads limitation again
-    execution_threads = roop.globals.execution_threads
-    roop.globals.execution_threads = 1
     roop.processors.frame.core.process_video(source_path, temp_frame_paths, process_frames)
-    roop.globals.execution_threads = execution_threads
