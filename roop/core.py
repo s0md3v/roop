@@ -35,7 +35,7 @@ def parse_args() -> None:
     parser.add_argument('-s', '--source', help='select an source image', dest='source_path')
     parser.add_argument('-t', '--target', help='select an target image or video', dest='target_path')
     parser.add_argument('-o', '--output', help='select output file or directory', dest='output_path')
-    parser.add_argument('--frame-processor', help='list of frame processors to run', dest='frame_processor', default=['face_swapper'], choices=['face_swapper', 'face_enhancer'], nargs='+')
+    parser.add_argument('--frame-processor', help='pipeline of frame processors', dest='frame_processor', default=['face_swapper'], choices=['face_swapper', 'face_enhancer'], nargs='+')
     parser.add_argument('--keep-fps', help='keep original fps', dest='keep_fps', action='store_true', default=False)
     parser.add_argument('--keep-audio', help='keep original audio', dest='keep_audio', action='store_true', default=True)
     parser.add_argument('--keep-frames', help='keep temporary frames', dest='keep_frames', action='store_true', default=False)
@@ -100,6 +100,7 @@ def limit_resources() -> None:
     gpus = tensorflow.config.experimental.list_physical_devices('GPU')
     for gpu in gpus:
         tensorflow.config.experimental.set_memory_growth(gpu, True)
+    # limit memory usage
     if roop.globals.max_memory:
         memory = roop.globals.max_memory * 1024 ** 3
         if platform.system().lower() == 'darwin':
@@ -143,7 +144,7 @@ def start() -> None:
             destroy()
         # todo: this needs a temp path for images to work with multiple frame processors
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-            update_status(f'{frame_processor.NAME} in progress...')
+            update_status(f'{frame_processor.NAME} is progressing...')
             frame_processor.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
             release_resources()
         if is_image(roop.globals.target_path):
@@ -161,7 +162,7 @@ def start() -> None:
     extract_frames(roop.globals.target_path)
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-        update_status(f'{frame_processor.NAME} in progress...')
+        update_status(f'{frame_processor.NAME} is progressing...')
         frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
         release_resources()
     # handles fps

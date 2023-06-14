@@ -5,6 +5,7 @@ import threading
 
 import roop.globals
 import roop.processors.frame.core
+from roop.core import update_status
 from roop.face_analyser import get_one_face, get_many_faces
 from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
 
@@ -14,17 +15,17 @@ NAME = 'Face Swapper'
 
 
 def pre_check() -> None:
-    if not is_image(roop.globals.source_path):
-        quit('Select an image for source path.')
-    if not get_one_face(cv2.imread(roop.globals.source_path)):
-        quit('No face in source path detected.')
-    if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
-        quit('Select an image or video for target path.')
+    download_directory_path = resolve_relative_path('../models')
+    conditional_download(download_directory_path, ['https://huggingface.co/deepinsight/inswapper/resolve/main/inswapper_128.onnx'])
 
 
 def pre_start() -> None:
-    download_directory_path = resolve_relative_path('../models')
-    conditional_download(download_directory_path, ['https://huggingface.co/deepinsight/inswapper/resolve/main/inswapper_128.onnx'])
+    if not is_image(roop.globals.source_path):
+        return update_status('Select an image for source path.')
+    elif not get_one_face(cv2.imread(roop.globals.source_path)):
+        return update_status('No face in source path detected.')
+    if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
+        return update_status('Select an image or video for target path.')
 
 
 def get_face_swapper() -> None:
