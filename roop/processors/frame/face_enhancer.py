@@ -9,6 +9,7 @@ from codeformer.basicsr.utils import img2tensor, tensor2img
 
 import roop.globals
 import roop.processors.frame.core
+from roop.core import update_status
 from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
 
 if 'ROCMExecutionProvider' in roop.globals.execution_providers:
@@ -20,13 +21,13 @@ NAME = 'Face Enhancer'
 
 
 def pre_check() -> None:
-    if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
-        quit('Select an image or video for target path.')
+    download_directory_path = resolve_relative_path('../models')
+    conditional_download(download_directory_path, ['https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth'])
 
 
 def pre_start() -> None:
-    download_directory_path = resolve_relative_path('../models')
-    conditional_download(download_directory_path, ['https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth'])
+    if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
+        return update_status('Select an image or video for target path.')
 
 
 def get_code_former():
