@@ -13,3 +13,4 @@ execution_providers = []
 execution_threads = None
 headless = None
 log_level = 'error'
+temp_path = None

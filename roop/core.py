@@ -45,6 +45,7 @@ def parse_args() -> None:
     parser.add_argument('--max-memory', help='maximum amount of RAM in GB', dest='max_memory', type=int, default=suggest_max_memory())
     parser.add_argument('--execution-provider', help='execution provider', dest='execution_provider', default=['cpu'], choices=suggest_execution_providers(), nargs='+')
     parser.add_argument('--execution-threads', help='number of execution threads', dest='execution_threads', type=int, default=suggest_execution_threads())
+    parser.add_argument('--temp-path', help='select temp directory path', dest='temp_path', default=None)
 
     # register deprecated args
     parser.add_argument('-f', '--face', help=argparse.SUPPRESS, dest='source_path_deprecated')
@@ -57,6 +58,7 @@ def parse_args() -> None:
     roop.globals.source_path = args.source_path
     roop.globals.target_path = args.target_path
     roop.globals.output_path = normalize_output_path(roop.globals.source_path, roop.globals.target_path, args.output_path)
+    roop.globals.temp_path = args.temp_path
     roop.globals.frame_processors = args.frame_processor
     roop.globals.headless = args.source_path or args.target_path or args.output_path
     roop.globals.keep_fps = args.keep_fps

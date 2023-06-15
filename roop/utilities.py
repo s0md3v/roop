@@ -65,7 +65,10 @@ def get_temp_frame_paths(target_path: str) -> List[str]:
 
 def get_temp_directory_path(target_path: str) -> str:
     target_name, _ = os.path.splitext(os.path.basename(target_path))
-    target_directory_path = os.path.dirname(target_path)
+    if roop.globals.temp_path and os.path.isdir(roop.globals.temp_path):
+        target_directory_path = roop.globals.temp_path
+    else:
+        target_directory_path = os.path.dirname(target_path)
     return os.path.join(target_directory_path, TEMP_DIRECTORY, target_name)
 
 
