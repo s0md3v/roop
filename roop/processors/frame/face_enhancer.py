@@ -142,8 +142,8 @@ def process_frames(source_path: str, frame_paths: list[str], progress=None) -> N
             progress.update(1)
 
 
-def process_image(source_path: str, image_path: str, output_file: str) -> None:
-    image = cv2.imread(image_path)
+def process_image(source_path: str, target_path: str, output_file: str) -> None:
+    image = cv2.imread(output_file)
     result = process_frame(None, image)
     cv2.imwrite(output_file, result)
 
