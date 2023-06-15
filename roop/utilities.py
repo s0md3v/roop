@@ -11,6 +11,7 @@ from typing import List
 from tqdm import tqdm
 
 import roop.globals
+from roop import state
 
 TEMP_FILE = 'temp.mp4'
 TEMP_DIRECTORY = 'temp'
@@ -48,7 +49,7 @@ def extract_frames(target_path: str) -> None:
 def create_video(target_path: str, fps: float = 30.0) -> None:
     temp_output_path = get_temp_output_path(target_path)
     temp_directory_path = get_temp_directory_path(target_path)
-    run_ffmpeg(['-r', str(fps), '-i', os.path.join(temp_directory_path, '%04d.png'), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-y', temp_output_path])
+    run_ffmpeg(['-r', str(fps), '-i', os.path.join(temp_directory_path, state.PROCESSED_PREFIX + '%04d.png'), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-y', temp_output_path])
 
 
 def restore_audio(target_path: str, output_path: str) -> None:
@@ -60,7 +61,7 @@ def restore_audio(target_path: str, output_path: str) -> None:
 
 def get_temp_frame_paths(target_path: str) -> List[str]:
     temp_directory_path = get_temp_directory_path(target_path)
-    return glob.glob(os.path.join(temp_directory_path, '*.png'))
+    return [file for file in glob.glob(os.path.join(temp_directory_path, '*.png')) if not os.path.basename(file).startswith(state.PROCESSED_PREFIX)]
 
 
 def get_temp_directory_path(target_path: str) -> str:

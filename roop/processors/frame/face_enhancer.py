@@ -1,4 +1,5 @@
 from typing import Any, List
+import os
 import cv2
 import threading
 import gfpgan
@@ -8,6 +9,7 @@ import roop.processors.frame.core
 from roop.core import update_status
 from roop.face_analyser import get_one_face, get_many_faces
 from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
+from roop import state
 
 FACE_ENHANCER = None
 THREAD_SEMAPHORE = threading.Semaphore()
@@ -72,7 +74,9 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress=None)
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
         result = process_frame(source_face, temp_frame)
-        cv2.imwrite(temp_frame_path, result)
+        processed_frame_path = state.get_frame_processed_name(temp_frame_path)
+        cv2.imwrite(processed_frame_path, result)
+        os.remove(temp_frame_path)
         if progress:
             progress.update(1)
 

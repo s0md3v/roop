@@ -5,6 +5,7 @@ from typing import Any, List
 from tqdm import tqdm
 
 import roop
+from roop import state
 
 FRAME_PROCESSORS_MODULES = None
 FRAME_PROCESSORS_INTERFACE = [
@@ -60,7 +61,7 @@ def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_f
 
 def process_video(source_path: str, frame_paths: list[str], process_frames: Any) -> None:
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
-    total = len(frame_paths)
-    with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
+    total = state.total_frames_count(roop.globals.target_path)
+    with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format, initial=state.processed_frames_count(roop.globals.target_path)) as progress:
         progress.set_postfix({'execution_providers': roop.globals.execution_providers, 'threads': roop.globals.execution_threads, 'memory': roop.globals.max_memory})
         multi_process_frame(source_path, frame_paths, process_frames, progress)

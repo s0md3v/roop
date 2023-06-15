@@ -1,9 +1,11 @@
+import os
 from typing import Any, List
 import cv2
 import insightface
 import threading
 
 import roop.globals
+from roop import state
 import roop.processors.frame.core
 from roop.core import update_status
 from roop.face_analyser import get_one_face, get_many_faces
@@ -68,7 +70,9 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress=None)
         temp_frame = cv2.imread(temp_frame_path)
         try:
             result = process_frame(source_face, temp_frame)
-            cv2.imwrite(temp_frame_path, result)
+            processed_frame_path = state.get_frame_processed_name(temp_frame_path)
+            cv2.imwrite(processed_frame_path, result)
+            os.remove(temp_frame_path)
         except Exception as exception:
             print(exception)
             pass

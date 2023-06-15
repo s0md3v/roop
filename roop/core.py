@@ -22,6 +22,7 @@ import roop.globals
 import roop.ui as ui
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, normalize_output_path
+from roop import state
 
 if 'ROCMExecutionProvider' in roop.globals.execution_providers:
     del torch
@@ -180,10 +181,13 @@ def start() -> None:
     seconds, probabilities = predict_video_frames(video_path=roop.globals.target_path, frame_interval=100)
     if any(probability > 0.85 for probability in probabilities):
         destroy()
-    update_status('Creating temp resources...')
-    create_temp(roop.globals.target_path)
-    update_status('Extracting frames...')
-    extract_frames(roop.globals.target_path)
+    if state.is_resumable(roop.globals.target_path):
+        update_status(f'Temp resources for this target already exists with {state.processed_frames_count(roop.globals.target_path)} frames processed, continue processing...')
+    else:
+        update_status('Creating temp resources...')
+        create_temp(roop.globals.target_path)
+        update_status('Extracting frames...')
+        extract_frames(roop.globals.target_path)
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         update_status('Progressing...', frame_processor.NAME)
@@ -216,7 +220,7 @@ def start() -> None:
 
 
 def destroy() -> None:
-    if roop.globals.target_path:
+    if state.is_finished(roop.globals.target_path):
         clean_temp(roop.globals.target_path)
     quit()
 
