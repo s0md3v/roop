@@ -9,7 +9,9 @@ import roop.globals
 from roop.face_analyser import get_one_face
 from roop.capturer import get_video_frame, get_video_frame_total
 from roop.processors.frame.core import get_frame_processors_modules
-from roop.utilities import is_image, is_video, resolve_relative_path
+from roop.utilities import is_image, is_video, resolve_relative_path, get_temp_directory_path, create_temp
+from opennsfw2 import predict_video_frames, predict_image
+
 
 WINDOW_HEIGHT = 700
 WINDOW_WIDTH = 600
@@ -200,12 +202,20 @@ def init_preview() -> None:
 def update_preview(frame_number: int = 0) -> None:
     if roop.globals.source_path and roop.globals.target_path:
         temp_frame = get_video_frame(roop.globals.target_path, frame_number)
-        for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-            temp_frame = frame_processor.process_frame(
-                get_one_face(cv2.imread(roop.globals.source_path)),
-                temp_frame
-            )
-        image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))
-        image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
-        image = ctk.CTkImage(image, size=image.size)
-        preview_label.configure(image=image)
+        temp_directory_path = get_temp_directory_path(roop.globals.target_path)
+        create_temp(roop.globals.target_path)
+        cv2.imwrite(temp_directory_path+'/preview_image.jpg',temp_frame)
+        if predict_image(temp_directory_path+'/preview_image.jpg') <= 0.85:            
+            for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
+                temp_frame = frame_processor.process_frame(
+                    get_one_face(cv2.imread(roop.globals.source_path)),
+                    temp_frame
+                )
+            image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))
+            image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
+            image = ctk.CTkImage(image, size=image.size)
+            preview_label.configure(image=image)
+        else:
+            preview_label.configure(image=None)
+        if os.path.isfile(temp_directory_path+'/preview_image.jpg'):
+            os.remove(temp_directory_path+'/preview_image.jpg')            
