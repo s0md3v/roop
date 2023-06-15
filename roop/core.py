@@ -26,7 +26,8 @@ from roop.utilities import has_image_extension, is_image, is_video, detect_fps, 
 if 'ROCMExecutionProvider' in roop.globals.execution_providers:
     del torch
 
-warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.filterwarnings('ignore', category=FutureWarning, module='insightface')
+warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
 
 
 def parse_args() -> None:
@@ -88,10 +89,6 @@ def parse_args() -> None:
     if args.gpu_threads_deprecated:
         print('\033[33mArgument --gpu-threads is deprecated. Use --execution-threads instead.\033[0m')
         roop.globals.execution_threads = args.gpu_threads_deprecated
-
-    # limit face enhancer to cuda
-    if 'CUDAExecutionProvider' not in roop.globals.execution_providers and 'face_enhancer' in roop.globals.frame_processors:
-        roop.globals.frame_processors.remove('face_enhancer')
 
 
 def encode_execution_providers(execution_providers: List[str]) -> List[str]:
