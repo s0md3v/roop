@@ -30,6 +30,8 @@ jobs:
   - run: pip install onnx
   - run: pip install insightface
   - run: pip install psutil
+  - run: pip install tk
+  - run: pip install customtkinter
   - run: pip install torch
   - run: pip install torchvision
   - run: pip install onnxruntime
