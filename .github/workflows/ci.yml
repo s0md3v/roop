@@ -25,7 +25,18 @@ jobs:
     uses: actions/setup-python@v2
     with:
      python-version: 3.9
-  - run: pip install -r requirements-ci.txt
+  - run: pip install numpy
+  - run: pip install opencv-python
+  - run: pip install onnx
+  - run: pip install insightface
+  - run: pip install psutil
+  - run: pip install torch
+  - run: pip install torchvision
+  - run: pip install onnxruntime
+  - run: pip install tensorflow
+  - run: pip install opennsfw2
+  - run: pip install protobuf
+  - run: pip install tqdm
   - run: python run.py -s=.github/examples/source.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
   - run: ffmpeg -i .github/examples/snapshot.mp4 -i .github/examples/output.mp4 -filter_complex psnr -f null -
 
