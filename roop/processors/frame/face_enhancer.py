@@ -37,8 +37,7 @@ def get_face_enhancer() -> None:
             # todo: set models path https://github.com/TencentARC/GFPGAN/issues/399
             FACE_ENHANCER = gfpgan.GFPGANer(
                 model_path=model_path,
-                channel_multiplier=2,
-                upscale=2
+                channel_multiplier=2
             )
     return FACE_ENHANCER
 
