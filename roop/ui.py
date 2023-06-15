@@ -3,7 +3,7 @@ import customtkinter as ctk
 from typing import Callable, Tuple
 
 import cv2
-from PIL import Image, ImageTk, ImageOps
+from PIL import Image, ImageOps
 
 import roop.globals
 from roop.face_analyser import get_one_face

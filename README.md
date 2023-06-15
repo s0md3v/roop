@@ -58,7 +58,7 @@ options:
                         number of execution threads
 ```
 
-Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
+Looking for a CLI mode? Using the -s/--source argument will make the program in cli mode.
 
 ## Future plans
 - [ ] Improve the quality of faces in results
