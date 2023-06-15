@@ -5,9 +5,11 @@ That's it, that's the software. You can watch some demos [here](https://drive.go
 ![demo-gif](demo.gif)
 
 ## Disclaimer
-Better deepfake software than this already exist, this is just a hobby project I created to learn about AI. Users must get consent from the concerned people before using their face and must not hide the fact that it is a deepfake when posting content online. I am not responsible for malicious behaviour of end-users.
+This software is meant to be a productive contribution to the rapidly growing AI-generated media industry. It will help artists with tasks such as animating a custom character or using the character as a model for clothing etc.
 
-To prevent misuse, it has a built-in check which prevents the program from working on inappropriate media.
+The developers of this software are aware of its possible unethical applicaitons and are committed to take preventative measures against them. It has a built-in check which prevents the program from working on inappropriate media including but not limited to nudity, graphic content, sensitive material such as war footage etc. We will continue to develop this project in the positive direction while adhering to law and ethics. This project may be shut down or include watermarks on the output if requested by law.
+
+Users of this software are expected to use this software responsibly while abiding the local law. If face of a real person is being used, users are suggested to get consent from the concerned person and clearly mention that it is a deepfake when posting content online. Developers of this software will not be responsible for actions of end-users.
 
 ## How do I install it?
 
@@ -54,11 +56,6 @@ options:
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
-
-## Future plans
-- [ ] Improve the quality of faces in results
-- [ ] Replace a selective face throughout the video
-- [ ] Support for replacing multiple faces
 
 ## Credits
 - [henryruhs](https://github.com/henryruhs): for being an irreplacable contributor to the project
