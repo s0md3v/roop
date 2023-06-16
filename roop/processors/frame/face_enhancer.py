@@ -17,7 +17,7 @@ NAME = 'ROOP.FACE-ENHANCER'
 
 def pre_check() -> bool:
     download_directory_path = resolve_relative_path('../models')
-    conditional_download(download_directory_path, ['https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth'])
+    conditional_download(download_directory_path, ['https://huggingface.co/henryruhs/roop/resolve/main/GFPGANv1.3.pth'])
     return True
 
 
@@ -37,8 +37,7 @@ def get_face_enhancer() -> None:
             # todo: set models path https://github.com/TencentARC/GFPGAN/issues/399
             FACE_ENHANCER = gfpgan.GFPGANer(
                 model_path=model_path,
-                channel_multiplier=2,
-                upscale=2
+                channel_multiplier=2
             )
     return FACE_ENHANCER
 

@@ -70,7 +70,7 @@ def parse_args() -> None:
     roop.globals.execution_providers = decode_execution_providers(args.execution_provider)
     roop.globals.execution_threads = args.execution_threads
 
-    # warn and cast deprecated args
+    # translate deprecated args
     if args.source_path_deprecated:
         print('\033[33mArgument -f and --face are deprecated. Use -s and --source instead.\033[0m')
         roop.globals.source_path = args.source_path_deprecated
