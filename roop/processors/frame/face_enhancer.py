@@ -35,7 +35,7 @@ def get_face_enhancer() -> None:
         if FACE_ENHANCER is None:
             model_path = resolve_relative_path('../models/GFPGANv1.3.pth')
             # todo: set models path https://github.com/TencentARC/GFPGAN/issues/399
-            FACE_ENHANCER = gfpgan.GFPGANer(model_path=model_path)
+            FACE_ENHANCER = gfpgan.GFPGANer(model_path=model_path, upscale=1)
     return FACE_ENHANCER
 
 
