@@ -21,13 +21,15 @@ if platform.system().lower() == 'darwin':
     ssl._create_default_https_context = ssl._create_unverified_context
 
 
-def run_ffmpeg(args: List[str]) -> None:
+def run_ffmpeg(args: List[str]) -> bool:
     commands = ['ffmpeg', '-hide_banner', '-hwaccel', 'auto', '-loglevel', roop.globals.log_level]
     commands.extend(args)
     try:
         subprocess.check_output(commands, stderr=subprocess.STDOUT)
+        return True
     except Exception:
         pass
+    return False
 
 
 def detect_fps(target_path: str) -> float:
@@ -54,8 +56,8 @@ def create_video(target_path: str, fps: float = 30.0) -> None:
 
 def restore_audio(target_path: str, output_path: str) -> None:
     temp_output_path = get_temp_output_path(target_path)
-    run_ffmpeg(['-i', temp_output_path, '-i', target_path, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-y', output_path])
-    if not os.path.isfile(output_path):
+    done = run_ffmpeg(['-i', temp_output_path, '-i', target_path, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-y', output_path])
+    if not done:
         move_temp(target_path, output_path)
 
 
