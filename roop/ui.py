@@ -203,7 +203,8 @@ def init_preview() -> None:
 
 def update_preview(frame_number: int = 0) -> None:
     if roop.globals.source_path and roop.globals.target_path:
-        temp_frame = get_video_frame(roop.globals.target_path, frame_number)   
+        temp_frame = get_video_frame(roop.globals.target_path, frame_number)         
+        temp_frame_original = None
         if predict_temp_frame(temp_frame):
             quit()          
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
@@ -211,7 +212,11 @@ def update_preview(frame_number: int = 0) -> None:
                 get_one_face(cv2.imread(roop.globals.source_path)),
                 temp_frame
             )
-        image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))
+            if temp_frame_original == None:
+                temp_frame_original = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))          
+        temp_frame_original = temp_frame_original.resize([temp_frame_original.width*2,temp_frame_original.height*2])               
+        image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))      
+        image = Image.blend(temp_frame_original, image, 0.75)   
         image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
         image = ctk.CTkImage(image, size=image.size)
         preview_label.configure(image=image)
