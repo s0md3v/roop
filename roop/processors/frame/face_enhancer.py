@@ -43,6 +43,8 @@ def get_face_enhancer() -> None:
 
 
 def enhance_face(source_face: Any, target_face: Any, temp_frame: Any) -> Any:
+    if source_face == None:
+        pass
     THREAD_SEMAPHORE.acquire()
     if target_face:
         _, _, temp_frame = get_face_enhancer().enhance(
@@ -67,7 +69,8 @@ def process_frame(source_face: Any, temp_frame: Any) -> Any:
 
 
 def process_frames(source_path: str, temp_frame_paths: List[str], progress=None) -> None:
-    source_face = get_one_face(cv2.imread(source_path))
+    if source_path is None:
+        source_face = None
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
         result = process_frame(source_face, temp_frame)
@@ -77,7 +80,8 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress=None)
 
 
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
-    source_face = get_one_face(cv2.imread(source_path))
+    if source_path is None:
+        source_face = None
     target_frame = cv2.imread(target_path)
     result = process_frame(source_face, target_frame)
     cv2.imwrite(output_path, result)
