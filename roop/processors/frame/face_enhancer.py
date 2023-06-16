@@ -8,6 +8,8 @@ import roop.processors.frame.core
 from roop.core import update_status
 from roop.face_analyser import get_one_face, get_many_faces
 from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
+from PIL import Image
+from numpy import asarray
 
 FACE_ENHANCER = None
 THREAD_SEMAPHORE = threading.Semaphore()
@@ -45,10 +47,15 @@ def get_face_enhancer() -> None:
 def enhance_face(source_face: Any, target_face: Any, temp_frame: Any) -> Any:
     THREAD_SEMAPHORE.acquire()
     if target_face:
+        temp_frame_original = temp_frame
         _, _, temp_frame = get_face_enhancer().enhance(
             temp_frame,
             paste_back=True
         )
+    temp_frame_original=Image.fromarray(temp_frame_original)
+    temp_frame_original=temp_frame_original.resize([temp_frame_original.width*2,temp_frame_original.height*2])
+    temp_frame = Image.blend(temp_frame_original, Image.fromarray(temp_frame), 0.75) 
+    temp_frame = asarray(temp_frame)
     THREAD_SEMAPHORE.release()
     return temp_frame
 
