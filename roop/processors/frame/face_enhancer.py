@@ -43,8 +43,6 @@ def get_face_enhancer() -> None:
 
 
 def enhance_face(source_face: Any, target_face: Any, temp_frame: Any) -> Any:
-    if source_face == None:
-        pass
     THREAD_SEMAPHORE.acquire()
     if target_face:
         _, _, temp_frame = get_face_enhancer().enhance(
