@@ -44,9 +44,7 @@ def get_face_swapper() -> None:
 
 
 def swap_face(source_face: Any, target_face: Any, temp_frame: Any) -> Any:
-    if target_face:
-        return get_face_swapper().get(temp_frame, target_face, source_face, paste_back=True)
-    return temp_frame
+    return get_face_swapper().get(temp_frame, target_face, source_face, paste_back=True)
 
 
 def process_frame(source_face: Any, temp_frame: Any) -> Any:

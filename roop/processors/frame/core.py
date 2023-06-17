@@ -1,6 +1,6 @@
 import sys
 import importlib
-import threading
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any, List
 from tqdm import tqdm
 
@@ -38,24 +38,13 @@ def get_frame_processors_modules(frame_processors):
 
 
 def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames, progress) -> None:
-    threads = []
-    frames_per_thread = len(temp_frame_paths) // roop.globals.execution_threads
-    remaining_frames = len(temp_frame_paths) % roop.globals.execution_threads
-    start_index = 0
-    # create threads by frames
-    for _ in range(roop.globals.execution_threads):
-        end_index = start_index + frames_per_thread
-        if remaining_frames > 0:
-            end_index += 1
-            remaining_frames -= 1
-        thread_paths = temp_frame_paths[start_index:end_index]
-        thread = threading.Thread(target=process_frames, args=(source_path, thread_paths, progress))
-        threads.append(thread)
-        thread.start()
-        start_index = end_index
-    # join threads
-    for thread in threads:
-        thread.join()
+    with ThreadPoolExecutor(max_workers=roop.globals.execution_threads) as executor:
+        futures = []
+        for path in temp_frame_paths:
+            future = executor.submit(process_frames, source_path, [path], progress)
+            futures.append(future)
+        for future in futures:
+            future.result()
 
 
 def process_video(source_path: str, frame_paths: list[str], process_frames: Any) -> None:
