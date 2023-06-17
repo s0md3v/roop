@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from typing import Any, Callable, Tuple
 from PIL import Image, ImageTk
@@ -9,6 +10,10 @@ import threading
 from roop.utils import is_img
 
 max_preview_size = 800
+
+last_target_path = ""
+last_output_path = ""
+last_face_path = ""
 
 
 def create_preview(parent):
@@ -88,8 +93,10 @@ def update_preview(frame):
 
 
 def select_face(select_face_handler: Callable[[str], None]):
+    global last_face_path
     if select_face_handler:
-        path = filedialog.askopenfilename(title="Select a face")
+        path = filedialog.askopenfilename(initialdir=last_face_path, title="Select a face")
+        last_face_path = os.path.dirname(path)  # Aktualisieren Sie den Pfad für den nächsten Dialog
         preview_face(path)
         return select_face_handler(path)
     return None
@@ -109,8 +116,10 @@ def update_slider(get_video_frame, create_test_preview, video_path, frames_amoun
     set_preview_handler(lambda: preview_thread(lambda: test_preview(create_test_preview)))
 
 
-def analyze_target(select_target_handler: Callable[[str], Tuple[int, Any]], target_path: tk.StringVar, frames_amount: tk.IntVar):    
-    path = filedialog.askopenfilename(title="Select a target")
+def analyze_target(select_target_handler: Callable[[str], Tuple[int, Any]], target_path: tk.StringVar, frames_amount: tk.IntVar):
+    global last_target_path
+    path = filedialog.askopenfilename(initialdir=last_target_path, title="Select a target")
+    last_target_path = os.path.dirname(path)  # Aktualisieren Sie den Pfad für den nächsten Dialog
     target_path.set(path)
     amount, frame = select_target_handler(path)
     frames_amount.set(amount)
@@ -124,14 +133,18 @@ def select_target(select_target_handler: Callable[[str], Tuple[int, Any]], targe
 
 
 def save_file(save_file_handler: Callable[[str], None], target_path: str):
+    global last_output_path
     filename, ext = 'output.mp4', '.mp4'
 
     if is_img(target_path):
         filename, ext = 'output.png', '.png'
 
     if save_file_handler:
-        return save_file_handler(asksaveasfilename(initialfile=filename, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")]))
+        output_path = asksaveasfilename(initialdir=last_output_path, initialfile=filename, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")])
+        last_output_path = os.path.dirname(output_path)  # Aktualisieren Sie den Pfad für den nächsten Dialog
+        return save_file_handler(output_path)
     return None
+
 
 
 def toggle_all_faces(toggle_all_faces_handler: Callable[[int], None], variable: tk.IntVar):
