@@ -1,14 +1,12 @@
 from typing import Any, List
-import cv2
 import threading
 import gfpgan
-import numpy
 
 import roop.globals
 import roop.processors.frame.core
 from roop.core import update_status
 from roop.face_analyser import get_one_face
-from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
+from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video, read_image, write_image
 
 FACE_ENHANCER = None
 THREAD_SEMAPHORE = threading.Semaphore()
@@ -58,19 +56,17 @@ def process_frame(source_face: Any, temp_frame: Any) -> Any:
 
 def process_frames(source_path: str, temp_frame_paths: List[str], progress=None) -> None:
     for temp_frame_path in temp_frame_paths:
-        temp_frame = cv2.imdecode(numpy.fromfile(temp_frame_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED)
+        temp_frame = read_image(temp_frame_path)
         result = process_frame(None, temp_frame)
-        is_success, im_buf_arr = cv2.imencode(".png", result)
-        im_buf_arr.tofile(temp_frame_path)
+        write_image(result, temp_frame_path)
         if progress:
             progress.update(1)
 
 
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
-    target_frame = cv2.imdecode(numpy.fromfile(target_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED)
+    target_frame = read_image(target_path)
     result = process_frame(None, target_frame)
-    is_success, im_buf_arr = cv2.imencode(".png", result)
-    im_buf_arr.tofile(output_path)
+    write_image(result, output_path)
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:

@@ -1,15 +1,12 @@
 from typing import Any, List
-import cv2
 import insightface
 import threading
-
-import numpy
 
 import roop.globals
 import roop.processors.frame.core
 from roop.core import update_status
 from roop.face_analyser import get_one_face, get_many_faces
-from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
+from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video, read_image, write_image
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
@@ -26,7 +23,7 @@ def pre_start() -> bool:
     if not is_image(roop.globals.source_path):
         update_status('Select an image for source path.', NAME)
         return False
-    elif not get_one_face(cv2.imdecode(numpy.fromfile(roop.globals.source_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED)):
+    elif not get_one_face(read_image(roop.globals.source_path)):
         update_status('No face in source path detected.', NAME)
         return False
     if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
@@ -63,13 +60,12 @@ def process_frame(source_face: Any, temp_frame: Any) -> Any:
 
 
 def process_frames(source_path: str, temp_frame_paths: List[str], progress=None) -> None:
-    source_face = get_one_face(cv2.imdecode(numpy.fromfile(source_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED))
+    source_face = get_one_face(read_image(source_path))
     for temp_frame_path in temp_frame_paths:
-        temp_frame = cv2.imdecode(numpy.fromfile(temp_frame_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED)
+        temp_frame = read_image(temp_frame_path)
         try:
             result = process_frame(source_face, temp_frame)
-            is_success, im_buf_arr = cv2.imencode(".png", result)
-            im_buf_arr.tofile(temp_frame_path)
+            write_image(result, temp_frame_path)
         except Exception as exception:
             print(exception)
             pass
@@ -78,11 +74,10 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress=None)
 
 
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
-    source_face = get_one_face(cv2.imdecode(numpy.fromfile(source_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED))
-    target_frame = cv2.imdecode(numpy.fromfile(target_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED)
+    source_face = get_one_face(read_image(source_path))
+    target_frame = read_image(target_path)
     result = process_frame(source_face, target_frame)
-    is_success, im_buf_arr = cv2.imencode(".png", result)
-    im_buf_arr.tofile(output_path)
+    write_image(result, output_path)
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:

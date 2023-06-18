@@ -8,6 +8,9 @@ import subprocess
 import urllib
 from pathlib import Path
 from typing import List
+
+import cv2
+from numpy import array, uint8, fromfile
 from tqdm import tqdm
 
 import roop.globals
@@ -139,3 +142,19 @@ def conditional_download(download_directory_path: str, urls: List[str]) -> None:
 
 def resolve_relative_path(path: str) -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), path))
+
+
+def read_image(path: str) -> array:
+    if platform.system().lower() == 'windows': # issue #511
+        return cv2.imdecode(fromfile(path, dtype=uint8), cv2.IMREAD_UNCHANGED)
+    else:
+        return cv2.imread(path)
+
+
+def write_image(image: array, path: str) -> bool:
+    if platform.system().lower() == 'windows': # issue #511
+        is_success, im_buf_arr = cv2.imencode(".png", image)
+        im_buf_arr.tofile(path)
+        return is_success
+    else:
+        return cv2.imwrite(path, array)
