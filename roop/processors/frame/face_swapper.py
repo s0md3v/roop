@@ -79,10 +79,11 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress=None)
 
 
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
-    source_face = get_one_face(cv2.imread(source_path))
-    target_frame = cv2.imread(target_path)
+    source_face = get_one_face(cv2.imdecode(numpy.fromfile(source_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED))
+    target_frame = cv2.imdecode(numpy.fromfile(target_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED)
     result = process_frame(source_face, target_frame)
-    cv2.imwrite(output_path, result)
+    is_success, im_buf_arr = cv2.imencode(".png", result)
+    im_buf_arr.tofile(output_path)
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
