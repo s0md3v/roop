@@ -44,7 +44,7 @@ def detect_fps(target_path: str) -> float:
 
 def extract_frames(target_path: str) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
-    run_ffmpeg(['-i', target_path, os.path.join(temp_directory_path, '%04d.png')])
+    run_ffmpeg(['-i', target_path, '-pix_fmt rgb24', '-sws_flags +accurate_rnd+full_chroma_int', '-colorspace 1', '-color_primaries 1', '-color_trc 1', os.path.join(temp_directory_path, '%04d.png')])
 
 
 def create_video(target_path: str, fps: float = 30.0) -> None:
