@@ -63,7 +63,8 @@ def restore_audio(target_path: str, output_path: str) -> None:
 
 def get_temp_frame_paths(target_path: str) -> List[str]:
     temp_directory_path = get_temp_directory_path(target_path)
-    return glob.glob(re.sub(r'([\[\]])','[\\1]', os.path.join(temp_directory_path, '*.png')))
+    files =  glob.glob('*.png', root_dir=temp_directory_path)
+    return [os.path.join(temp_directory_path, item) for item in files]
 
 
 def get_temp_directory_path(target_path: str) -> str:
