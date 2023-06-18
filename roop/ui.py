@@ -3,6 +3,7 @@ import customtkinter as ctk
 from typing import Callable, Tuple
 
 import cv2
+import numpy
 from PIL import Image, ImageOps
 
 import roop.globals
@@ -205,7 +206,7 @@ def update_preview(frame_number: int = 0) -> None:
             quit()
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             temp_frame = frame_processor.process_frame(
-                get_one_face(cv2.imread(roop.globals.source_path)),
+                get_one_face(cv2.imdecode(numpy.fromfile(roop.globals.source_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED)),
                 temp_frame
             )
         image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))
