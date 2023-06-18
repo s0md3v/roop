@@ -8,6 +8,7 @@ from PIL import Image, ImageOps
 import roop.globals
 from roop.face_analyser import get_one_face
 from roop.capturer import get_video_frame, get_video_frame_total
+from roop.predicter import predict_frame
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import is_image, is_video, resolve_relative_path
 
@@ -200,6 +201,8 @@ def init_preview() -> None:
 def update_preview(frame_number: int = 0) -> None:
     if roop.globals.source_path and roop.globals.target_path:
         temp_frame = get_video_frame(roop.globals.target_path, frame_number)
+        if predict_frame(temp_frame):
+            quit()
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             temp_frame = frame_processor.process_frame(
                 get_one_face(cv2.imread(roop.globals.source_path)),

@@ -16,10 +16,10 @@ import argparse
 import torch
 import onnxruntime
 import tensorflow
-from opennsfw2 import predict_video_frames, predict_image
 
 import roop.globals
 import roop.ui as ui
+from roop.predicter import predict_image, predict_video
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, normalize_output_path
 
@@ -164,7 +164,7 @@ def start() -> None:
             return
     # process image to image
     if has_image_extension(roop.globals.target_path):
-        if predict_image(roop.globals.target_path) > 0.85:
+        if predict_image(roop.globals.target_path):
             destroy()
         # todo: this needs a temp path for images to work with multiple frame processors
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
@@ -177,8 +177,7 @@ def start() -> None:
             update_status('Processing to image failed!')
         return
     # process image to videos
-    seconds, probabilities = predict_video_frames(video_path=roop.globals.target_path, frame_interval=100)
-    if any(probability > 0.85 for probability in probabilities):
+    if predict_video(roop.globals.target_path):
         destroy()
     update_status('Creating temp resources...')
     create_temp(roop.globals.target_path)
