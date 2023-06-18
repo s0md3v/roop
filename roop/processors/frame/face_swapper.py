@@ -1,7 +1,10 @@
+import os
 from typing import Any, List
 import cv2
 import insightface
 import threading
+
+import numpy
 
 import roop.globals
 import roop.processors.frame.core
@@ -24,7 +27,7 @@ def pre_start() -> bool:
     if not is_image(roop.globals.source_path):
         update_status('Select an image for source path.', NAME)
         return False
-    elif not get_one_face(cv2.imread(roop.globals.source_path)):
+    elif not get_one_face(cv2.imdecode(numpy.fromfile(roop.globals.source_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED)):
         update_status('No face in source path detected.', NAME)
         return False
     if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
@@ -61,12 +64,13 @@ def process_frame(source_face: Any, temp_frame: Any) -> Any:
 
 
 def process_frames(source_path: str, temp_frame_paths: List[str], progress=None) -> None:
-    source_face = get_one_face(cv2.imread(source_path))
+    source_face = get_one_face(cv2.imdecode(numpy.fromfile(source_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED))
     for temp_frame_path in temp_frame_paths:
-        temp_frame = cv2.imread(temp_frame_path)
+        temp_frame = cv2.imdecode(numpy.fromfile(temp_frame_path, dtype=numpy.uint8), cv2.IMREAD_UNCHANGED)
         try:
             result = process_frame(source_face, temp_frame)
-            cv2.imwrite(temp_frame_path, result)
+            is_success, im_buf_arr = cv2.imencode(".png", result)
+            im_buf_arr.tofile(temp_frame_path)
         except Exception as exception:
             print(exception)
             pass
