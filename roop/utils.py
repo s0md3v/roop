@@ -49,7 +49,7 @@ def create_video(video_name, fps, output_dir):
 def extract_frames(input_path, output_dir):
     hwaccel_option = '-hwaccel cuda' if roop.globals.gpu_vendor == 'nvidia' else ''
     input_path, output_dir = path(input_path), path(output_dir)
-    run_ffmpeg(f' {hwaccel_option} -i "{input_path}" pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int -colorspace 1 -color_primaries 1 -color_trc 1 "{output_dir}{sep}%04d.png"')
+    run_ffmpeg(f' {hwaccel_option} -i "{input_path}" -pix_fmt rgb24 -sws_flags +accurate_rnd+full_chroma_int -colorspace 1 -color_primaries 1 -color_trc 1 "{output_dir}{sep}%04d.png"')
 
 
 def add_audio(output_dir, target_path, video, keep_frames, output_file):
