@@ -166,10 +166,10 @@ def start() -> None:
     if has_image_extension(roop.globals.target_path):
         if predict_image(roop.globals.target_path):
             destroy()
-        # todo: this needs a temp path for images to work with multiple frame processors
+        shutil.copy2(roop.globals.target_path, roop.globals.output_path)
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             update_status('Progressing...', frame_processor.NAME)
-            frame_processor.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+            frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
             release_resources()
         if is_image(roop.globals.target_path):
             update_status('Processing to image succeed!')
