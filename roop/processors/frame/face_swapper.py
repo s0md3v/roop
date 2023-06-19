@@ -33,7 +33,7 @@ def pre_start() -> bool:
     return True
 
 
-def get_face_swapper() -> None:
+def get_face_swapper() -> Any:
     global FACE_SWAPPER
 
     with THREAD_LOCK:
@@ -60,7 +60,7 @@ def process_frame(source_face: Any, temp_frame: Any) -> Any:
     return temp_frame
 
 
-def process_frames(source_path: str, temp_frame_paths: List[str], progress=None) -> None:
+def process_frames(source_path: str, temp_frame_paths: List[str], progress: Any = None) -> None:
     source_face = get_one_face(cv2.imread(source_path))
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
