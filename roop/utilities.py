@@ -50,7 +50,7 @@ def extract_frames(target_path: str) -> None:
 def create_video(target_path: str, fps: float = 30.0) -> None:
     temp_output_path = get_temp_output_path(target_path)
     temp_directory_path = get_temp_directory_path(target_path)
-    run_ffmpeg(['-r', str(fps), '-i', os.path.join(temp_directory_path, '%04d.png'), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-y', '-pix_fmt', 'yuv420p10le', '-sws_flags', 'spline+accurate_rnd+full_chroma_int', '-vf', 'colorspace=bt709:iall=bt601-6-625:fast=1', '-color_range', '1', '-colorspace', '1', '-color_primaries', '1', '-color_trc', '1', temp_output_path])
+    run_ffmpeg(['-r', str(fps), '-i', os.path.join(temp_directory_path, '%04d.png'), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-y', temp_output_path])
 
 
 def restore_audio(target_path: str, output_path: str) -> None:
