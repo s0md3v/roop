@@ -74,6 +74,7 @@ def parse_args() -> None:
     if args.source_path_deprecated:
         print('\033[33mArgument -f and --face are deprecated. Use -s and --source instead.\033[0m')
         roop.globals.source_path = args.source_path_deprecated
+        roop.globals.output_path = normalize_output_path(args.source_path_deprecated, roop.globals.target_path, args.output_path)
     if args.cpu_cores_deprecated:
         print('\033[33mArgument --cpu-cores is deprecated. Use --execution-threads instead.\033[0m')
         roop.globals.execution_threads = args.cpu_cores_deprecated
