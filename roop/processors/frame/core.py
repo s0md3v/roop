@@ -1,12 +1,13 @@
 import sys
 import importlib
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, List
+from types import ModuleType
+from typing import Any, List, Callable
 from tqdm import tqdm
 
 import roop
 
-FRAME_PROCESSORS_MODULES = None
+FRAME_PROCESSORS_MODULES: List[ModuleType] = []
 FRAME_PROCESSORS_INTERFACE = [
     'pre_check',
     'pre_start',
@@ -27,17 +28,17 @@ def load_frame_processor_module(frame_processor: str) -> Any:
     return frame_processor_module
 
 
-def get_frame_processors_modules(frame_processors):
+def get_frame_processors_modules(frame_processors: List[str]) -> List[ModuleType]:
     global FRAME_PROCESSORS_MODULES
-    if FRAME_PROCESSORS_MODULES is None:
-        FRAME_PROCESSORS_MODULES = []
+
+    if not FRAME_PROCESSORS_MODULES:
         for frame_processor in frame_processors:
             frame_processor_module = load_frame_processor_module(frame_processor)
             FRAME_PROCESSORS_MODULES.append(frame_processor_module)
     return FRAME_PROCESSORS_MODULES
 
 
-def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames, progress) -> None:
+def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None], progress: Any = None) -> None:
     with ThreadPoolExecutor(max_workers=roop.globals.execution_threads) as executor:
         futures = []
         for path in temp_frame_paths:
@@ -47,7 +48,7 @@ def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_f
             future.result()
 
 
-def process_video(source_path: str, frame_paths: list[str], process_frames: Any) -> None:
+def process_video(source_path: str, frame_paths: list[str], process_frames: Callable[[str, List[str], Any], None]) -> None:
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
     total = len(frame_paths)
     with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:

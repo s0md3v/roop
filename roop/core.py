@@ -16,10 +16,10 @@ import argparse
 import torch
 import onnxruntime
 import tensorflow
-from opennsfw2 import predict_video_frames, predict_image
 
 import roop.globals
 import roop.ui as ui
+from roop.predicter import predict_image, predict_video
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, normalize_output_path
 
@@ -74,6 +74,7 @@ def parse_args() -> None:
     if args.source_path_deprecated:
         print('\033[33mArgument -f and --face are deprecated. Use -s and --source instead.\033[0m')
         roop.globals.source_path = args.source_path_deprecated
+        roop.globals.output_path = normalize_output_path(args.source_path_deprecated, roop.globals.target_path, args.output_path)
     if args.cpu_cores_deprecated:
         print('\033[33mArgument --cpu-cores is deprecated. Use --execution-threads instead.\033[0m')
         roop.globals.execution_threads = args.cpu_cores_deprecated
@@ -85,7 +86,7 @@ def parse_args() -> None:
         roop.globals.execution_providers = decode_execution_providers(['cuda'])
     if args.gpu_vendor_deprecated == 'amd':
         print('\033[33mArgument --gpu-vendor amd is deprecated. Use --execution-provider cuda instead.\033[0m')
-        roop.globals.execution_threads = decode_execution_providers(['rocm'])
+        roop.globals.execution_providers = decode_execution_providers(['rocm'])
     if args.gpu_threads_deprecated:
         print('\033[33mArgument --gpu-threads is deprecated. Use --execution-threads instead.\033[0m')
         roop.globals.execution_threads = args.gpu_threads_deprecated
@@ -164,12 +165,12 @@ def start() -> None:
             return
     # process image to image
     if has_image_extension(roop.globals.target_path):
-        if predict_image(roop.globals.target_path) > 0.85:
+        if predict_image(roop.globals.target_path):
             destroy()
-        # todo: this needs a temp path for images to work with multiple frame processors
+        shutil.copy2(roop.globals.target_path, roop.globals.output_path)
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             update_status('Progressing...', frame_processor.NAME)
-            frame_processor.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+            frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
             release_resources()
         if is_image(roop.globals.target_path):
             update_status('Processing to image succeed!')
@@ -177,8 +178,7 @@ def start() -> None:
             update_status('Processing to image failed!')
         return
     # process image to videos
-    seconds, probabilities = predict_video_frames(video_path=roop.globals.target_path, frame_interval=100)
-    if any(probability > 0.85 for probability in probabilities):
+    if predict_video(roop.globals.target_path):
         destroy()
     update_status('Creating temp resources...')
     create_temp(roop.globals.target_path)
