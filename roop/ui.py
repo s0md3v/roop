@@ -12,6 +12,8 @@ from roop.predicter import predict_frame
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import is_image, is_video, resolve_relative_path
 
+ROOT = None
+PREVIEW = None
 WINDOW_HEIGHT = 700
 WINDOW_WIDTH = 600
 PREVIEW_MAX_HEIGHT = 700
@@ -20,8 +22,14 @@ RECENT_DIRECTORY_SOURCE = None
 RECENT_DIRECTORY_TARGET = None
 RECENT_DIRECTORY_OUTPUT = None
 
+preview_label = None
+preview_slider = None
+source_label = None
+target_label = None
+status_label = None
 
-def init(start: Callable, destroy: Callable) -> ctk.CTk:
+
+def init(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
     global ROOT, PREVIEW
 
     ROOT = create_root(start, destroy)
@@ -30,7 +38,7 @@ def init(start: Callable, destroy: Callable) -> ctk.CTk:
     return ROOT
 
 
-def create_root(start: Callable, destroy: Callable) -> ctk.CTk:
+def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
     global source_label, target_label, status_label
 
     ctk.deactivate_automatic_dpi_awareness()
@@ -85,7 +93,7 @@ def create_root(start: Callable, destroy: Callable) -> ctk.CTk:
     return root
 
 
-def create_preview(parent) -> ctk.CTkToplevel:
+def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
     global preview_label, preview_slider
 
     preview = ctk.CTkToplevel(parent)
@@ -143,7 +151,7 @@ def select_target_path() -> None:
         target_label.configure(image=None)
 
 
-def select_output_path(start):
+def select_output_path(start: Callable[[], None]) -> None:
     global RECENT_DIRECTORY_OUTPUT
 
     if is_image(roop.globals.target_path):
@@ -158,14 +166,14 @@ def select_output_path(start):
         start()
 
 
-def render_image_preview(image_path: str, size: Tuple[int, int] = None) -> ctk.CTkImage:
+def render_image_preview(image_path: str, size: Tuple[int, int]) -> ctk.CTkImage:
     image = Image.open(image_path)
     if size:
         image = ImageOps.fit(image, size, Image.LANCZOS)
     return ctk.CTkImage(image, size=image.size)
 
 
-def render_video_preview(video_path: str, size: Tuple[int, int] = None, frame_number: int = 0) -> ctk.CTkImage:
+def render_video_preview(video_path: str, size: Tuple[int, int], frame_number: int = 0) -> ctk.CTkImage:
     capture = cv2.VideoCapture(video_path)
     if frame_number:
         capture.set(cv2.CAP_PROP_POS_FRAMES, frame_number)

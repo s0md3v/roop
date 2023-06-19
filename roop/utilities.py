@@ -7,7 +7,7 @@ import ssl
 import subprocess
 import urllib
 from pathlib import Path
-from typing import List
+from typing import List, Any
 from tqdm import tqdm
 
 import roop.globals
@@ -76,7 +76,7 @@ def get_temp_output_path(target_path: str) -> str:
     return os.path.join(temp_directory_path, TEMP_FILE)
 
 
-def normalize_output_path(source_path: str, target_path: str, output_path: str) -> str:
+def normalize_output_path(source_path: str, target_path: str, output_path: str) -> Any:
     if source_path and target_path:
         source_name, _ = os.path.splitext(os.path.basename(source_path))
         target_name, target_extension = os.path.splitext(os.path.basename(target_path))
@@ -114,14 +114,14 @@ def has_image_extension(image_path: str) -> bool:
 def is_image(image_path: str) -> bool:
     if image_path and os.path.isfile(image_path):
         mimetype, _ = mimetypes.guess_type(image_path)
-        return mimetype and mimetype.startswith('image/')
+        return bool(mimetype and mimetype.startswith('image/'))
     return False
 
 
 def is_video(video_path: str) -> bool:
     if video_path and os.path.isfile(video_path):
         mimetype, _ = mimetypes.guess_type(video_path)
-        return mimetype and mimetype.startswith('video/')
+        return bool(mimetype and mimetype.startswith('video/'))
     return False
 
 
