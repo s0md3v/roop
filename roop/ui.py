@@ -13,11 +13,13 @@ from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import is_image, is_video, resolve_relative_path
 
 ROOT = None
+ROOT_HEIGHT = 700
+ROOT_WIDTH = 600
+
 PREVIEW = None
-WINDOW_HEIGHT = 700
-WINDOW_WIDTH = 600
 PREVIEW_MAX_HEIGHT = 700
 PREVIEW_MAX_WIDTH = 1200
+
 RECENT_DIRECTORY_SOURCE = None
 RECENT_DIRECTORY_TARGET = None
 RECENT_DIRECTORY_OUTPUT = None
@@ -45,7 +47,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     ctk.set_appearance_mode('system')
     ctk.set_default_color_theme(resolve_relative_path('ui.json'))
     root = ctk.CTk()
-    root.minsize(WINDOW_WIDTH, WINDOW_HEIGHT)
+    root.minsize(ROOT_WIDTH, ROOT_HEIGHT)
     root.title('roop')
     root.configure()
     root.protocol('WM_DELETE_WINDOW', lambda: destroy())
