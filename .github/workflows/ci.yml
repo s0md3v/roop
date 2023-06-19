@@ -13,7 +13,9 @@ jobs:
     with:
      python-version: 3.9
   - run: pip install flake8
+  - run: pip install mypy
   - run: flake8 run.py roop
+  - run: mypy --config-file mypi.ini run.py roop
  test:
   runs-on: ubuntu-latest
   steps:

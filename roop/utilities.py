@@ -7,7 +7,7 @@ import ssl
 import subprocess
 import urllib
 from pathlib import Path
-from typing import List
+from typing import List, Any
 
 import cv2
 from numpy import array, uint8, fromfile
@@ -47,7 +47,7 @@ def detect_fps(target_path: str) -> float:
 
 def extract_frames(target_path: str) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
-    run_ffmpeg(['-i', target_path, os.path.join(temp_directory_path, '%04d.png')])
+    run_ffmpeg(['-i', target_path, '-pix_fmt', 'rgb24', '-sws_flags', '+accurate_rnd+full_chroma_int', '-colorspace', '1', '-color_primaries', '1', '-color_trc', '1', os.path.join(temp_directory_path, '%04d.png')])
 
 
 def create_video(target_path: str, fps: float = 30.0) -> None:
@@ -79,7 +79,7 @@ def get_temp_output_path(target_path: str) -> str:
     return os.path.join(temp_directory_path, TEMP_FILE)
 
 
-def normalize_output_path(source_path: str, target_path: str, output_path: str) -> str:
+def normalize_output_path(source_path: str, target_path: str, output_path: str) -> Any:
     if source_path and target_path:
         source_name, _ = os.path.splitext(os.path.basename(source_path))
         target_name, target_extension = os.path.splitext(os.path.basename(target_path))
@@ -117,14 +117,14 @@ def has_image_extension(image_path: str) -> bool:
 def is_image(image_path: str) -> bool:
     if image_path and os.path.isfile(image_path):
         mimetype, _ = mimetypes.guess_type(image_path)
-        return mimetype and mimetype.startswith('image/')
+        return bool(mimetype and mimetype.startswith('image/'))
     return False
 
 
 def is_video(video_path: str) -> bool:
     if video_path and os.path.isfile(video_path):
         mimetype, _ = mimetypes.guess_type(video_path)
-        return mimetype and mimetype.startswith('video/')
+        return bool(mimetype and mimetype.startswith('video/'))
     return False
 
 
@@ -134,10 +134,10 @@ def conditional_download(download_directory_path: str, urls: List[str]) -> None:
     for url in urls:
         download_file_path = os.path.join(download_directory_path, os.path.basename(url))
         if not os.path.exists(download_file_path):
-            request = urllib.request.urlopen(url)
+            request = urllib.request.urlopen(url) # type: ignore[attr-defined]
             total = int(request.headers.get('Content-Length', 0))
             with tqdm(total=total, desc='Downloading', unit='B', unit_scale=True, unit_divisor=1024) as progress:
-                urllib.request.urlretrieve(url, download_file_path, reporthook=lambda count, block_size, total_size: progress.update(block_size))
+                urllib.request.urlretrieve(url, download_file_path, reporthook=lambda count, block_size, total_size: progress.update(block_size)) # type: ignore[attr-defined]
 
 
 def resolve_relative_path(path: str) -> str:

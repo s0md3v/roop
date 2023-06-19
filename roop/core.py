@@ -74,6 +74,7 @@ def parse_args() -> None:
     if args.source_path_deprecated:
         print('\033[33mArgument -f and --face are deprecated. Use -s and --source instead.\033[0m')
         roop.globals.source_path = args.source_path_deprecated
+        roop.globals.output_path = normalize_output_path(args.source_path_deprecated, roop.globals.target_path, args.output_path)
     if args.cpu_cores_deprecated:
         print('\033[33mArgument --cpu-cores is deprecated. Use --execution-threads instead.\033[0m')
         roop.globals.execution_threads = args.cpu_cores_deprecated
@@ -85,7 +86,7 @@ def parse_args() -> None:
         roop.globals.execution_providers = decode_execution_providers(['cuda'])
     if args.gpu_vendor_deprecated == 'amd':
         print('\033[33mArgument --gpu-vendor amd is deprecated. Use --execution-provider cuda instead.\033[0m')
-        roop.globals.execution_threads = decode_execution_providers(['rocm'])
+        roop.globals.execution_providers = decode_execution_providers(['rocm'])
     if args.gpu_threads_deprecated:
         print('\033[33mArgument --gpu-threads is deprecated. Use --execution-threads instead.\033[0m')
         roop.globals.execution_threads = args.gpu_threads_deprecated
@@ -166,10 +167,10 @@ def start() -> None:
     if has_image_extension(roop.globals.target_path):
         if predict_image(roop.globals.target_path):
             destroy()
-        # todo: this needs a temp path for images to work with multiple frame processors
+        shutil.copy2(roop.globals.target_path, roop.globals.output_path)
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             update_status('Progressing...', frame_processor.NAME)
-            frame_processor.process_image(roop.globals.source_path, roop.globals.target_path, roop.globals.output_path)
+            frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
             release_resources()
         if is_image(roop.globals.target_path):
             update_status('Processing to image succeed!')
