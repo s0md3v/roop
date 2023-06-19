@@ -23,6 +23,7 @@ PREVIEW_MAX_WIDTH = 1200
 RECENT_DIRECTORY_SOURCE = None
 RECENT_DIRECTORY_TARGET = None
 RECENT_DIRECTORY_OUTPUT = None
+PREVIEW_DIRECTORY_OUTPUT = None
 
 preview_label = None
 preview_slider = None
@@ -96,7 +97,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
 
 
 def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
-    global preview_label, preview_slider
+    global preview_label, preview_slider, back_button, forward_button, save_button
 
     preview = ctk.CTkToplevel(parent)
     preview.withdraw()
@@ -108,9 +109,45 @@ def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
     preview_label = ctk.CTkLabel(preview, text=None)
     preview_label.pack(fill='both', expand=True)
 
-    preview_slider = ctk.CTkSlider(preview, from_=0, to=0, command=lambda frame_value: update_preview(frame_value))
+    preview_slider = ctk.CTkSlider(preview, from_=0, to=0, command=update_preview)
+    preview_slider.pack(fill='x')
+        
+    controls = ctk.CTkFrame(preview)
+    controls.pack(after=preview_slider, pady=4)
+
+    back_button = create_image_button(controls, 'back', preview_step_backward)
+    forward_button = create_image_button(controls, 'forward', preview_step_forward)
+    save_button = create_image_button(controls, 'save', preview_save)
 
     return preview
+
+
+def preview_step_backward():
+    preview_slider.set(preview_slider.get() - 1)
+    update_preview(preview_slider.get())
+
+
+def preview_step_forward():
+    preview_slider.set(preview_slider.get() + 1)
+    update_preview(preview_slider.get())
+
+
+def preview_save():
+    global PREVIEW_DIRECTORY_OUTPUT
+
+    preview_path = ctk.filedialog.asksaveasfilename(title='save preview output file', initialfile='output.png', initialdir=PREVIEW_DIRECTORY_OUTPUT)
+    if preview_path:
+        PREVIEW_DIRECTORY_OUTPUT = os.path.dirname(preview_path)
+        cv2.imwrite(preview_path, preview_frame)
+
+
+def create_image_button(parent: ctk.CTkBaseClass, icon: str, command: Callable) -> ctk.CTkButton:
+    light_image = Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), f'resources/{icon}_light.png'))
+    dark_image = Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), f'resources/{icon}_dark.png'))
+    image = ctk.CTkImage(light_image, dark_image)
+    button = ctk.CTkButton(parent, text=None, image=image, command=command, width=28, height=28)
+    button.pack(side='left', padx=2)
+    return button
 
 
 def update_status(text: str) -> None:
@@ -200,15 +237,22 @@ def toggle_preview() -> None:
 
 def init_preview() -> None:
     if is_image(roop.globals.target_path):
+        forward_button.pack_forget()
+        back_button.pack_forget()
         preview_slider.pack_forget()
     if is_video(roop.globals.target_path):
         video_frame_total = get_video_frame_total(roop.globals.target_path)
+        forward_button.configure(state='normal')
+        back_button.configure(state='normal')
         preview_slider.configure(to=video_frame_total)
-        preview_slider.pack(fill='x')
         preview_slider.set(0)
+        preview_slider.pack(after=preview_label, fill='x')
+        back_button.pack(before=save_button, side='left', padx=2)
+        forward_button.pack(before=save_button, side='left', padx=2)
 
 
 def update_preview(frame_number: int = 0) -> None:
+    global preview_frame
     if roop.globals.source_path and roop.globals.target_path:
         temp_frame = get_video_frame(roop.globals.target_path, frame_number)
         if predict_frame(temp_frame):
@@ -218,6 +262,7 @@ def update_preview(frame_number: int = 0) -> None:
                 get_one_face(cv2.imread(roop.globals.source_path)),
                 temp_frame
             )
+        preview_frame = temp_frame
         image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))
         image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
         image = ctk.CTkImage(image, size=image.size)
