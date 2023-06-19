@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 from roop.capturer import get_video_frame_total
 from roop.utilities import get_temp_directory_path
@@ -17,7 +18,7 @@ def is_resumable(target_path: str) -> bool:
 
 
 #  Checks if the temp directory with frames is completely processed (and can be deleted)
-def is_finished(target_path: [None, str]) -> bool:
+def is_finished(target_path: Union[None, str]) -> bool:
     return target_path is not None \
         and is_done(target_path) and processed_frames_count(target_path) == get_video_frame_total(target_path)
 
