@@ -6,6 +6,7 @@ import cv2
 from PIL import Image, ImageOps
 
 import roop.globals
+import roop.metadata
 from roop.face_analyser import get_one_face
 from roop.capturer import get_video_frame, get_video_frame_total
 from roop.predicter import predict_frame
@@ -48,7 +49,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     ctk.set_default_color_theme(resolve_relative_path('ui.json'))
     root = ctk.CTk()
     root.minsize(ROOT_WIDTH, ROOT_HEIGHT)
-    root.title('roop')
+    root.title(f'{roop.metadata.name} {roop.metadata.version}')
     root.configure()
     root.protocol('WM_DELETE_WINDOW', lambda: destroy())
 

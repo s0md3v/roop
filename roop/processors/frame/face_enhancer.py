@@ -6,6 +6,7 @@ import roop.globals
 import roop.processors.frame.core
 from roop.core import update_status
 from roop.face_analyser import get_one_face
+from roop.typing import Frame, Face
 from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video, read_image, write_image
 
 FACE_ENHANCER = None
@@ -38,7 +39,7 @@ def get_face_enhancer() -> Any:
     return FACE_ENHANCER
 
 
-def enhance_face(temp_frame: Any) -> Any:
+def enhance_face(temp_frame: Frame) -> Frame:
     with THREAD_SEMAPHORE:
         _, _, temp_frame = get_face_enhancer().enhance(
             temp_frame,
@@ -47,7 +48,7 @@ def enhance_face(temp_frame: Any) -> Any:
     return temp_frame
 
 
-def process_frame(source_face: Any, temp_frame: Any) -> Any:
+def process_frame(source_face: Face, temp_frame: Frame) -> Frame:
     target_face = get_one_face(temp_frame)
     if target_face:
         temp_frame = enhance_face(temp_frame)
