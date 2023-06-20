@@ -56,6 +56,7 @@ options:
                         execution provider
   --execution-threads EXECUTION_THREADS
                         number of execution threads
+  -v, --version         show program's version number and exit
 ```
 
 Looking for a CLI mode? Using the -s/--source argument will make the program in cli mode.
