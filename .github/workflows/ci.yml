@@ -13,7 +13,9 @@ jobs:
     with:
      python-version: 3.9
   - run: pip install flake8
-  - run: flake8 run.py core
+  - run: pip install mypy
+  - run: flake8 run.py roop
+  - run: mypy --config-file mypi.ini run.py roop
  test:
   runs-on: ubuntu-latest
   steps:
@@ -25,8 +27,7 @@ jobs:
     uses: actions/setup-python@v2
     with:
      python-version: 3.9
-  - run: pip install -r requirements.txt gdown
-  - run: gdown 13QpWFWJ37EB-nHrEOY64CEtQWY-tz7DZ
-  - run: ./run.py -f=.github/examples/face.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
-  - run: ffmpeg -i .github/examples/snapshot.mp4 -i .github/examples/output.mp4 -filter_complex "psnr" -f null -
+  - run: pip install -r requirements-ci.txt
+  - run: python run.py -s=.github/examples/source.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
+  - run: ffmpeg -i .github/examples/snapshot.mp4 -i .github/examples/output.mp4 -filter_complex psnr -f null -
 

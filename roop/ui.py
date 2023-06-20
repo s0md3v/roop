@@ -1,315 +1,225 @@
-import tkinter as tk
-from typing import Any, Callable, Tuple
-from PIL import Image, ImageTk
-import webbrowser
-from tkinter import filedialog
-from tkinter.filedialog import asksaveasfilename
-import threading
+import os
+import customtkinter as ctk
+from typing import Callable, Tuple
 
-from roop.utils import is_img
+import cv2
+from PIL import Image, ImageOps
 
-max_preview_size = 800
+import roop.globals
+import roop.metadata
+from roop.face_analyser import get_one_face
+from roop.capturer import get_video_frame, get_video_frame_total
+from roop.predicter import predict_frame
+from roop.processors.frame.core import get_frame_processors_modules
+from roop.utilities import is_image, is_video, resolve_relative_path
 
+ROOT = None
+ROOT_HEIGHT = 700
+ROOT_WIDTH = 600
 
-def create_preview(parent):
-    global preview_image_frame, preview_frame_slider, test_button
+PREVIEW = None
+PREVIEW_MAX_HEIGHT = 700
+PREVIEW_MAX_WIDTH = 1200
 
-    preview_window = tk.Toplevel(parent)
-    # Override close button
-    preview_window.protocol("WM_DELETE_WINDOW", hide_preview)
-    preview_window.withdraw()
-    preview_window.title("Preview")
-    preview_window.configure(bg="red")
-    preview_window.resizable(width=False, height=False)
+RECENT_DIRECTORY_SOURCE = None
+RECENT_DIRECTORY_TARGET = None
+RECENT_DIRECTORY_OUTPUT = None
 
-    frame = tk.Frame(preview_window, background="#2d3436")
-    frame.pack(fill='both', side='left', expand='True')
-    
-    # Preview image
-    preview_image_frame = tk.Label(frame)
-    preview_image_frame.pack(side='top')
-
-    # Bottom frame
-    buttons_frame = tk.Frame(frame, background="#2d3436")
-    buttons_frame.pack(fill='both', side='bottom')
-
-    current_frame = tk.IntVar()
-    preview_frame_slider = tk.Scale(
-        buttons_frame,
-        from_=0, 
-        to=0,
-        orient='horizontal',
-        variable=current_frame
-    )
-    preview_frame_slider.pack(fill='both', side='left', expand='True')
-
-    test_button = tk.Button(buttons_frame, text="Test", bg="#f1c40f", relief="flat", width=15, borderwidth=0, highlightthickness=0)
-    test_button.pack(side='right', fill='y')
-    return preview_window
+preview_label = None
+preview_slider = None
+source_label = None
+target_label = None
+status_label = None
 
 
-def show_preview():
-    preview.deiconify()
-    preview_visible.set(True)
+def init(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
+    global ROOT, PREVIEW
+
+    ROOT = create_root(start, destroy)
+    PREVIEW = create_preview(ROOT)
+
+    return ROOT
 
 
-def hide_preview():
+def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
+    global source_label, target_label, status_label
+
+    ctk.deactivate_automatic_dpi_awareness()
+    ctk.set_appearance_mode('system')
+    ctk.set_default_color_theme(resolve_relative_path('ui.json'))
+    root = ctk.CTk()
+    root.minsize(ROOT_WIDTH, ROOT_HEIGHT)
+    root.title(f'{roop.metadata.name} {roop.metadata.version}')
+    root.configure()
+    root.protocol('WM_DELETE_WINDOW', lambda: destroy())
+
+    source_label = ctk.CTkLabel(root, text=None)
+    source_label.place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.25)
+
+    target_label = ctk.CTkLabel(root, text=None)
+    target_label.place(relx=0.6, rely=0.1, relwidth=0.3, relheight=0.25)
+
+    source_button = ctk.CTkButton(root, text='Select a face', command=lambda: select_source_path())
+    source_button.place(relx=0.1, rely=0.4, relwidth=0.3, relheight=0.1)
+
+    target_button = ctk.CTkButton(root, text='Select a target', command=lambda: select_target_path())
+    target_button.place(relx=0.6, rely=0.4, relwidth=0.3, relheight=0.1)
+
+    keep_fps_value = ctk.BooleanVar(value=roop.globals.keep_fps)
+    keep_fps_checkbox = ctk.CTkSwitch(root, text='Keep fps', variable=keep_fps_value, command=lambda: setattr(roop.globals, 'keep_fps', not roop.globals.keep_fps))
+    keep_fps_checkbox.place(relx=0.1, rely=0.6)
+
+    keep_frames_value = ctk.BooleanVar(value=roop.globals.keep_frames)
+    keep_frames_switch = ctk.CTkSwitch(root, text='Keep frames', variable=keep_frames_value, command=lambda: setattr(roop.globals, 'keep_frames', keep_frames_value.get()))
+    keep_frames_switch.place(relx=0.1, rely=0.65)
+
+    keep_audio_value = ctk.BooleanVar(value=roop.globals.keep_audio)
+    keep_audio_switch = ctk.CTkSwitch(root, text='Keep audio', variable=keep_audio_value, command=lambda: setattr(roop.globals, 'keep_audio', keep_audio_value.get()))
+    keep_audio_switch.place(relx=0.6, rely=0.6)
+
+    many_faces_value = ctk.BooleanVar(value=roop.globals.many_faces)
+    many_faces_switch = ctk.CTkSwitch(root, text='Many faces', variable=many_faces_value, command=lambda: setattr(roop.globals, 'many_faces', many_faces_value.get()))
+    many_faces_switch.place(relx=0.6, rely=0.65)
+
+    start_button = ctk.CTkButton(root, text='Start', command=lambda: select_output_path(start))
+    start_button.place(relx=0.15, rely=0.75, relwidth=0.2, relheight=0.05)
+
+    stop_button = ctk.CTkButton(root, text='Destroy', command=lambda: destroy())
+    stop_button.place(relx=0.4, rely=0.75, relwidth=0.2, relheight=0.05)
+
+    preview_button = ctk.CTkButton(root, text='Preview', command=lambda: toggle_preview())
+    preview_button.place(relx=0.65, rely=0.75, relwidth=0.2, relheight=0.05)
+
+    status_label = ctk.CTkLabel(root, text=None, justify='center')
+    status_label.place(relx=0.1, rely=0.9, relwidth=0.8)
+
+    return root
+
+
+def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
+    global preview_label, preview_slider
+
+    preview = ctk.CTkToplevel(parent)
     preview.withdraw()
-    preview_visible.set(False)
+    preview.title('Preview')
+    preview.configure()
+    preview.protocol('WM_DELETE_WINDOW', lambda: toggle_preview())
+    preview.resizable(width=False, height=False)
+
+    preview_label = ctk.CTkLabel(preview, text=None)
+    preview_label.pack(fill='both', expand=True)
+
+    preview_slider = ctk.CTkSlider(preview, from_=0, to=0, command=lambda frame_value: update_preview(frame_value))
+
+    return preview
 
 
-def set_preview_handler(test_handler):
-    test_button.config(command = test_handler)
+def update_status(text: str) -> None:
+    status_label.configure(text=text)
+    ROOT.update()
 
 
-def init_slider(frames_count, change_handler):
-    preview_frame_slider.configure(to=frames_count, command=lambda value: change_handler(preview_frame_slider.get()))
-    preview_frame_slider.set(0)
+def select_source_path() -> None:
+    global RECENT_DIRECTORY_SOURCE
 
-
-def update_preview(frame):
-    img = Image.fromarray(frame)
-    width, height = img.size
-    aspect_ratio = 1
-    if width > height:
-        aspect_ratio = max_preview_size / width
+    PREVIEW.withdraw()
+    source_path = ctk.filedialog.askopenfilename(title='select an source image', initialdir=RECENT_DIRECTORY_SOURCE)
+    if is_image(source_path):
+        roop.globals.source_path = source_path
+        RECENT_DIRECTORY_SOURCE = os.path.dirname(roop.globals.source_path)
+        image = render_image_preview(roop.globals.source_path, (200, 200))
+        source_label.configure(image=image)
     else:
-        aspect_ratio = max_preview_size / height
-    img = img.resize(
-        (
-            int(width * aspect_ratio), 
-            int(height * aspect_ratio)
-        ), 
-        Image.ANTIALIAS
-    )
-    photo_img = ImageTk.PhotoImage(img)
-    preview_image_frame.configure(image=photo_img)
-    preview_image_frame.image = photo_img
+        roop.globals.source_path = None
+        source_label.configure(image=None)
 
 
-def select_face(select_face_handler: Callable[[str], None]):
-    if select_face_handler:
-        path = filedialog.askopenfilename(title="Select a face")
-        preview_face(path)
-        return select_face_handler(path)
-    return None
+def select_target_path() -> None:
+    global RECENT_DIRECTORY_TARGET
 
-
-def update_slider_handler(get_video_frame, video_path):
-    return lambda frame_number: update_preview(get_video_frame(video_path, frame_number))
-
-
-def test_preview(create_test_preview):
-    frame = create_test_preview(preview_frame_slider.get())
-    update_preview(frame)
-
-
-def update_slider(get_video_frame, create_test_preview, video_path, frames_amount):
-    init_slider(frames_amount, update_slider_handler(get_video_frame, video_path))
-    set_preview_handler(lambda: preview_thread(lambda: test_preview(create_test_preview)))
-
-
-def analyze_target(select_target_handler: Callable[[str], Tuple[int, Any]], target_path: tk.StringVar, frames_amount: tk.IntVar):    
-    path = filedialog.askopenfilename(title="Select a target")
-    target_path.set(path)
-    amount, frame = select_target_handler(path)
-    frames_amount.set(amount)
-    preview_target(frame)
-    update_preview(frame)
-
-
-def select_target(select_target_handler: Callable[[str], Tuple[int, Any]], target_path: tk.StringVar, frames_amount: tk.IntVar):
-    if select_target_handler:
-        analyze_target(select_target_handler, target_path, frames_amount)
-
-
-def save_file(save_file_handler: Callable[[str], None], target_path: str):
-    filename, ext = 'output.mp4', '.mp4'
-
-    if is_img(target_path):
-        filename, ext = 'output.png', '.png'
-
-    if save_file_handler:
-        return save_file_handler(asksaveasfilename(initialfile=filename, defaultextension=ext, filetypes=[("All Files","*.*"),("Videos","*.mp4")]))
-    return None
-
-
-def toggle_all_faces(toggle_all_faces_handler: Callable[[int], None], variable: tk.IntVar):
-    if toggle_all_faces_handler:
-        return lambda: toggle_all_faces_handler(variable.get())
-    return None
-
-
-def toggle_fps_limit(toggle_all_faces_handler: Callable[[int], None], variable: tk.IntVar):
-    if toggle_all_faces_handler:
-        return lambda: toggle_all_faces_handler(variable.get())
-    return None
-
-
-def toggle_keep_frames(toggle_keep_frames_handler: Callable[[int], None], variable: tk.IntVar):
-    if toggle_keep_frames_handler:
-        return lambda: toggle_keep_frames_handler(variable.get())
-    return None
-
-
-def create_button(parent, text, command):
-    return tk.Button(
-        parent, 
-        text=text, 
-        command=command,
-        bg="#f1c40f", 
-        relief="flat", 
-        borderwidth=0, 
-        highlightthickness=0
-    )
-
-
-def create_background_button(parent, text, command):
-    button = create_button(parent, text, command)
-    button.configure(
-        bg="#2d3436", 
-        fg="#74b9ff", 
-        highlightthickness=4, 
-        highlightbackground="#74b9ff", 
-        activebackground="#74b9ff", 
-        borderwidth=4
-    )
-    return button
-
-
-def create_check(parent, text, variable, command):
-    return tk.Checkbutton(
-        parent, 
-        anchor="w", 
-        relief="groove", 
-        activebackground="#2d3436", 
-        activeforeground="#74b9ff", 
-        selectcolor="black", 
-        text=text, 
-        fg="#dfe6e9", 
-        borderwidth=0, 
-        highlightthickness=0, 
-        bg="#2d3436", 
-        variable=variable, 
-        command=command
-    )
-
-
-def preview_thread(thread_function):
-    threading.Thread(target=thread_function).start()
-
-
-def open_preview_window(get_video_frame, target_path):
-    if preview_visible.get():
-        hide_preview()
+    PREVIEW.withdraw()
+    target_path = ctk.filedialog.askopenfilename(title='select an target image or video', initialdir=RECENT_DIRECTORY_TARGET)
+    if is_image(target_path):
+        roop.globals.target_path = target_path
+        RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
+        image = render_image_preview(roop.globals.target_path, (200, 200))
+        target_label.configure(image=image)
+    elif is_video(target_path):
+        roop.globals.target_path = target_path
+        RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
+        video_frame = render_video_preview(target_path, (200, 200))
+        target_label.configure(image=video_frame)
     else:
-        show_preview()
-        if target_path:
-            frame = get_video_frame(target_path)
-            update_preview(frame)
+        roop.globals.target_path = None
+        target_label.configure(image=None)
 
 
-def preview_face(path):
-    img = Image.open(path)
-    img = img.resize((180, 180), Image.ANTIALIAS)
-    photo_img = ImageTk.PhotoImage(img)
-    face_label.configure(image=photo_img)
-    face_label.image = photo_img
+def select_output_path(start: Callable[[], None]) -> None:
+    global RECENT_DIRECTORY_OUTPUT
+
+    if is_image(roop.globals.target_path):
+        output_path = ctk.filedialog.asksaveasfilename(title='save image output file', initialfile='output.png', initialdir=RECENT_DIRECTORY_OUTPUT)
+    elif is_video(roop.globals.target_path):
+        output_path = ctk.filedialog.asksaveasfilename(title='save video output file', initialfile='output.mp4', initialdir=RECENT_DIRECTORY_OUTPUT)
+    else:
+        output_path = None
+    if output_path:
+        roop.globals.output_path = output_path
+        RECENT_DIRECTORY_OUTPUT = os.path.dirname(roop.globals.output_path)
+        start()
 
 
-def preview_target(frame):
-    img = Image.fromarray(frame)
-    img = img.resize((180, 180), Image.ANTIALIAS)
-    photo_img = ImageTk.PhotoImage(img)
-    target_label.configure(image=photo_img)
-    target_label.image = photo_img
+def render_image_preview(image_path: str, size: Tuple[int, int]) -> ctk.CTkImage:
+    image = Image.open(image_path)
+    if size:
+        image = ImageOps.fit(image, size, Image.LANCZOS)
+    return ctk.CTkImage(image, size=image.size)
 
 
-def update_status_label(value):
-    status_label["text"] = value
-    window.update()
+def render_video_preview(video_path: str, size: Tuple[int, int], frame_number: int = 0) -> ctk.CTkImage:
+    capture = cv2.VideoCapture(video_path)
+    if frame_number:
+        capture.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+    has_frame, frame = capture.read()
+    if has_frame:
+        image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        if size:
+            image = ImageOps.fit(image, size, Image.LANCZOS)
+        return ctk.CTkImage(image, size=image.size)
+    capture.release()
+    cv2.destroyAllWindows()
 
 
-def init(
-    initial_values: dict,
-    select_face_handler: Callable[[str], None],
-    select_target_handler: Callable[[str], Tuple[int, Any]],
-    toggle_all_faces_handler: Callable[[int], None],
-    toggle_fps_limit_handler: Callable[[int], None],
-    toggle_keep_frames_handler: Callable[[int], None],
-    save_file_handler: Callable[[str], None],
-    start: Callable[[], None],
-    get_video_frame: Callable[[str, int], None],
-    create_test_preview: Callable[[int], Any],
-):
-    global window, preview, preview_visible, face_label, target_label, status_label
+def toggle_preview() -> None:
+    if PREVIEW.state() == 'normal':
+        PREVIEW.withdraw()
+    elif roop.globals.source_path and roop.globals.target_path:
+        init_preview()
+        update_preview()
+        PREVIEW.deiconify()
 
-    window = tk.Tk()
-    window.geometry("600x700")
-    window.title("roop")
-    window.configure(bg="#2d3436")
-    window.resizable(width=False, height=False)
 
-    preview_visible = tk.BooleanVar(window, False)
-    target_path = tk.StringVar()
-    frames_amount = tk.IntVar()
+def init_preview() -> None:
+    if is_image(roop.globals.target_path):
+        preview_slider.pack_forget()
+    if is_video(roop.globals.target_path):
+        video_frame_total = get_video_frame_total(roop.globals.target_path)
+        preview_slider.configure(to=video_frame_total)
+        preview_slider.pack(fill='x')
+        preview_slider.set(0)
 
-    # Preview window
-    preview = create_preview(window)
 
-    # Contact information
-    support_link = tk.Label(window, text="Donate to project <3", fg="#fd79a8", bg="#2d3436", cursor="hand2", font=("Arial", 8))
-    support_link.place(x=180,y=20,width=250,height=30)
-    support_link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/sponsors/s0md3v"))
-
-    left_frame = tk.Frame(window)
-    left_frame.place(x=60, y=100, width=180, height=180)
-    face_label = tk.Label(left_frame)
-    face_label.pack(fill='both', side='top', expand=True)
-
-    right_frame = tk.Frame(window)
-    right_frame.place(x=360, y=100, width=180, height=180)
-    target_label = tk.Label(right_frame)
-    target_label.pack(fill='both', side='top', expand=True)
-
-    # Select a face button
-    face_button = create_background_button(window, "Select a face", lambda: [
-        select_face(select_face_handler)
-    ])
-    face_button.place(x=60,y=320,width=180,height=80)
-
-    # Select a target button
-    target_button = create_background_button(window, "Select a target", lambda: [
-        select_target(select_target_handler, target_path, frames_amount),
-        update_slider(get_video_frame, create_test_preview, target_path.get(), frames_amount.get())
-    ])
-    target_button.place(x=360,y=320,width=180,height=80)
-
-    # All faces checkbox
-    all_faces = tk.IntVar(None, initial_values['all_faces'])
-    all_faces_checkbox = create_check(window, "Process all faces in frame", all_faces, toggle_all_faces(toggle_all_faces_handler, all_faces))
-    all_faces_checkbox.place(x=60,y=500,width=240,height=31)
-
-    # FPS limit checkbox
-    limit_fps = tk.IntVar(None, not initial_values['keep_fps'])
-    fps_checkbox = create_check(window, "Limit FPS to 30", limit_fps, toggle_fps_limit(toggle_fps_limit_handler, limit_fps))
-    fps_checkbox.place(x=60,y=475,width=240,height=31)
-
-    # Keep frames checkbox
-    keep_frames = tk.IntVar(None, initial_values['keep_frames'])
-    frames_checkbox = create_check(window, "Keep frames dir", keep_frames, toggle_keep_frames(toggle_keep_frames_handler, keep_frames))
-    frames_checkbox.place(x=60,y=450,width=240,height=31)
-
-    # Start button
-    start_button = create_button(window, "Start", lambda: [save_file(save_file_handler, target_path.get()), preview_thread(lambda: start(update_preview))])
-    start_button.place(x=170,y=560,width=120,height=49)
-
-    # Preview button
-    preview_button = create_button(window, "Preview", lambda: open_preview_window(get_video_frame, target_path.get()))
-    preview_button.place(x=310,y=560,width=120,height=49)
-
-    # Status label
-    status_label = tk.Label(window, width=580, justify="center", text="Status: waiting for input...", fg="#2ecc71", bg="#2d3436")
-    status_label.place(x=10,y=640,width=580,height=30)
-
-    return window
+def update_preview(frame_number: int = 0) -> None:
+    if roop.globals.source_path and roop.globals.target_path:
+        temp_frame = get_video_frame(roop.globals.target_path, frame_number)
+        if predict_frame(temp_frame):
+            quit()
+        for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
+            temp_frame = frame_processor.process_frame(
+                get_one_face(cv2.imread(roop.globals.source_path)),
+                temp_frame
+            )
+        image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))
+        image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
+        image = ctk.CTkImage(image, size=image.size)
+        preview_label.configure(image=image)

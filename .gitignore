@@ -1,3 +1,4 @@
 .idea
+models
+temp
 __pycache__
-*.onnx
