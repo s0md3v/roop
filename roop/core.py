@@ -18,6 +18,7 @@ import onnxruntime
 import tensorflow
 
 import roop.globals
+import roop.metadata
 import roop.ui as ui
 from roop.predicter import predict_image, predict_video
 from roop.processors.frame.core import get_frame_processors_modules
@@ -32,28 +33,29 @@ warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
 
 def parse_args() -> None:
     signal.signal(signal.SIGINT, lambda signal_number, frame: destroy())
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--source', help='select an source image', dest='source_path')
-    parser.add_argument('-t', '--target', help='select an target image or video', dest='target_path')
-    parser.add_argument('-o', '--output', help='select output file or directory', dest='output_path')
-    parser.add_argument('--frame-processor', help='pipeline of frame processors', dest='frame_processor', default=['face_swapper'], choices=['face_swapper', 'face_enhancer'], nargs='+')
-    parser.add_argument('--keep-fps', help='keep original fps', dest='keep_fps', action='store_true', default=False)
-    parser.add_argument('--keep-audio', help='keep original audio', dest='keep_audio', action='store_true', default=True)
-    parser.add_argument('--keep-frames', help='keep temporary frames', dest='keep_frames', action='store_true', default=False)
-    parser.add_argument('--many-faces', help='process every face', dest='many_faces', action='store_true', default=False)
-    parser.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264', choices=['libx264', 'libx265', 'libvpx-vp9'])
-    parser.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
-    parser.add_argument('--max-memory', help='maximum amount of RAM in GB', dest='max_memory', type=int, default=suggest_max_memory())
-    parser.add_argument('--execution-provider', help='execution provider', dest='execution_provider', default=['cpu'], choices=suggest_execution_providers(), nargs='+')
-    parser.add_argument('--execution-threads', help='number of execution threads', dest='execution_threads', type=int, default=suggest_execution_threads())
+    program = argparse.ArgumentParser()
+    program.add_argument('-s', '--source', help='select an source image', dest='source_path')
+    program.add_argument('-t', '--target', help='select an target image or video', dest='target_path')
+    program.add_argument('-o', '--output', help='select output file or directory', dest='output_path')
+    program.add_argument('--frame-processor', help='pipeline of frame processors', dest='frame_processor', default=['face_swapper'], choices=['face_swapper', 'face_enhancer'], nargs='+')
+    program.add_argument('--keep-fps', help='keep original fps', dest='keep_fps', action='store_true', default=False)
+    program.add_argument('--keep-audio', help='keep original audio', dest='keep_audio', action='store_true', default=True)
+    program.add_argument('--keep-frames', help='keep temporary frames', dest='keep_frames', action='store_true', default=False)
+    program.add_argument('--many-faces', help='process every face', dest='many_faces', action='store_true', default=False)
+    program.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264', choices=['libx264', 'libx265', 'libvpx-vp9'])
+    program.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18)
+    program.add_argument('--max-memory', help='maximum amount of RAM in GB', dest='max_memory', type=int, default=suggest_max_memory())
+    program.add_argument('--execution-provider', help='execution provider', dest='execution_provider', default=['cpu'], choices=suggest_execution_providers(), nargs='+')
+    program.add_argument('--execution-threads', help='number of execution threads', dest='execution_threads', type=int, default=suggest_execution_threads())
+    program.add_argument('-v', '--version', action='version', version=f'{roop.metadata.name} {roop.metadata.version}')
 
     # register deprecated args
-    parser.add_argument('-f', '--face', help=argparse.SUPPRESS, dest='source_path_deprecated')
-    parser.add_argument('--cpu-cores', help=argparse.SUPPRESS, dest='cpu_cores_deprecated', type=int)
-    parser.add_argument('--gpu-vendor', help=argparse.SUPPRESS, dest='gpu_vendor_deprecated')
-    parser.add_argument('--gpu-threads', help=argparse.SUPPRESS, dest='gpu_threads_deprecated', type=int)
+    program.add_argument('-f', '--face', help=argparse.SUPPRESS, dest='source_path_deprecated')
+    program.add_argument('--cpu-cores', help=argparse.SUPPRESS, dest='cpu_cores_deprecated', type=int)
+    program.add_argument('--gpu-vendor', help=argparse.SUPPRESS, dest='gpu_vendor_deprecated')
+    program.add_argument('--gpu-threads', help=argparse.SUPPRESS, dest='gpu_threads_deprecated', type=int)
 
-    args = parser.parse_args()
+    args = program.parse_args()
 
     roop.globals.source_path = args.source_path
     roop.globals.target_path = args.target_path
