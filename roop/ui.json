@@ -151,5 +151,8 @@
       "size": 12,
       "weight": "normal"
     }
+  },
+  "RoopDonate": {
+    "text_color": ["gray74", "gray60"]
   }
 }

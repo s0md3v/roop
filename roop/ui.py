@@ -1,7 +1,7 @@
 import os
+import webbrowser
 import customtkinter as ctk
 from typing import Callable, Tuple
-
 import cv2
 from PIL import Image, ImageOps
 
@@ -47,6 +47,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     ctk.deactivate_automatic_dpi_awareness()
     ctk.set_appearance_mode('system')
     ctk.set_default_color_theme(resolve_relative_path('ui.json'))
+
     root = ctk.CTk()
     root.minsize(ROOT_WIDTH, ROOT_HEIGHT)
     root.title(f'{roop.metadata.name} {roop.metadata.version}')
@@ -59,39 +60,44 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     target_label = ctk.CTkLabel(root, text=None)
     target_label.place(relx=0.6, rely=0.1, relwidth=0.3, relheight=0.25)
 
-    source_button = ctk.CTkButton(root, text='Select a face', command=lambda: select_source_path())
+    source_button = ctk.CTkButton(root, text='Select a face', cursor='hand2', command=lambda: select_source_path())
     source_button.place(relx=0.1, rely=0.4, relwidth=0.3, relheight=0.1)
 
-    target_button = ctk.CTkButton(root, text='Select a target', command=lambda: select_target_path())
+    target_button = ctk.CTkButton(root, text='Select a target', cursor='hand2', command=lambda: select_target_path())
     target_button.place(relx=0.6, rely=0.4, relwidth=0.3, relheight=0.1)
 
     keep_fps_value = ctk.BooleanVar(value=roop.globals.keep_fps)
-    keep_fps_checkbox = ctk.CTkSwitch(root, text='Keep fps', variable=keep_fps_value, command=lambda: setattr(roop.globals, 'keep_fps', not roop.globals.keep_fps))
+    keep_fps_checkbox = ctk.CTkSwitch(root, text='Keep fps', variable=keep_fps_value, cursor='hand2', command=lambda: setattr(roop.globals, 'keep_fps', not roop.globals.keep_fps))
     keep_fps_checkbox.place(relx=0.1, rely=0.6)
 
     keep_frames_value = ctk.BooleanVar(value=roop.globals.keep_frames)
-    keep_frames_switch = ctk.CTkSwitch(root, text='Keep frames', variable=keep_frames_value, command=lambda: setattr(roop.globals, 'keep_frames', keep_frames_value.get()))
+    keep_frames_switch = ctk.CTkSwitch(root, text='Keep frames', variable=keep_frames_value, cursor='hand2', command=lambda: setattr(roop.globals, 'keep_frames', keep_frames_value.get()))
     keep_frames_switch.place(relx=0.1, rely=0.65)
 
     keep_audio_value = ctk.BooleanVar(value=roop.globals.keep_audio)
-    keep_audio_switch = ctk.CTkSwitch(root, text='Keep audio', variable=keep_audio_value, command=lambda: setattr(roop.globals, 'keep_audio', keep_audio_value.get()))
+    keep_audio_switch = ctk.CTkSwitch(root, text='Keep audio', variable=keep_audio_value, cursor='hand2', command=lambda: setattr(roop.globals, 'keep_audio', keep_audio_value.get()))
     keep_audio_switch.place(relx=0.6, rely=0.6)
 
     many_faces_value = ctk.BooleanVar(value=roop.globals.many_faces)
-    many_faces_switch = ctk.CTkSwitch(root, text='Many faces', variable=many_faces_value, command=lambda: setattr(roop.globals, 'many_faces', many_faces_value.get()))
+    many_faces_switch = ctk.CTkSwitch(root, text='Many faces', variable=many_faces_value, cursor='hand2', command=lambda: setattr(roop.globals, 'many_faces', many_faces_value.get()))
     many_faces_switch.place(relx=0.6, rely=0.65)
 
-    start_button = ctk.CTkButton(root, text='Start', command=lambda: select_output_path(start))
+    start_button = ctk.CTkButton(root, text='Start', cursor='hand2', command=lambda: select_output_path(start))
     start_button.place(relx=0.15, rely=0.75, relwidth=0.2, relheight=0.05)
 
-    stop_button = ctk.CTkButton(root, text='Destroy', command=lambda: destroy())
+    stop_button = ctk.CTkButton(root, text='Destroy', cursor='hand2', command=lambda: destroy())
     stop_button.place(relx=0.4, rely=0.75, relwidth=0.2, relheight=0.05)
 
-    preview_button = ctk.CTkButton(root, text='Preview', command=lambda: toggle_preview())
+    preview_button = ctk.CTkButton(root, text='Preview', cursor='hand2', command=lambda: toggle_preview())
     preview_button.place(relx=0.65, rely=0.75, relwidth=0.2, relheight=0.05)
 
     status_label = ctk.CTkLabel(root, text=None, justify='center')
     status_label.place(relx=0.1, rely=0.9, relwidth=0.8)
+
+    donate_label = ctk.CTkLabel(root, text='Become a GitHub Sponsor', justify='center', cursor='hand2')
+    donate_label.place(relx=0.1, rely=0.95, relwidth=0.8)
+    donate_label.configure(text_color=ctk.ThemeManager.theme.get('RoopDonate').get('text_color'))
+    donate_label.bind('<Button>', lambda event: webbrowser.open('https://github.com/sponsors/s0md3v'))
 
     return root
 
