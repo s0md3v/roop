@@ -117,7 +117,7 @@ def suggest_execution_threads() -> int:
     if 'DmlExecutionProvider' in roop.globals.execution_providers:
         return 1
     if 'ROCMExecutionProvider' in roop.globals.execution_providers:
-        return 2
+        return 1
     return 8
 
 
