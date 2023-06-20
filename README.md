@@ -13,7 +13,7 @@ Users of this software are expected to use this software responsibly while abidi
 
 ## How do I install it?
 
-**Issues according installation will be closed without ceremony from now on, we cannot handle the amount of requests.**
+**Issues regarding installation will be closed from now on, we cannot handle the amount of requests.**
 
 There are two types of installations: basic and gpu-powered.
 
@@ -29,9 +29,7 @@ Executing `python run.py` command will launch this window:
 
 Choose a face (image with desired face) and the target image/video (image/video in which you want to replace the face) and click on `Start`. Open file explorer and navigate to the directory you select your output to be in. You will find a directory named `<video_title>` where you can see the frames being swapped in realtime. Once the processing is done, it will create the output file. That's it.
 
-Don't touch the FPS checkbox unless you know what you are doing.
-
-Additional command line arguments are given below:
+Additional command line arguments are given below. To learn out what they do, check [this guide](https://github.com/s0md3v/roop/wiki/Advanced-Options).
 
 ```
 options:
@@ -61,7 +59,7 @@ options:
   -v, --version         show program's version number and exit
 ```
 
-Looking for a CLI mode? Using the -s/--source argument will make the program in cli mode.
+Looking for a CLI mode? Using the -s/--source argument will make the run program in cli mode.
 
 ## Credits
 - [henryruhs](https://github.com/henryruhs): for being an irreplaceable contributor to the project
