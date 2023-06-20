@@ -7,6 +7,7 @@ import roop.globals
 import roop.processors.frame.core
 from roop.core import update_status
 from roop.face_analyser import get_one_face, get_many_faces
+from roop.typing import Face, Frame
 from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
 
 FACE_SWAPPER = None
@@ -43,11 +44,11 @@ def get_face_swapper() -> Any:
     return FACE_SWAPPER
 
 
-def swap_face(source_face: Any, target_face: Any, temp_frame: Any) -> Any:
+def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
     return get_face_swapper().get(temp_frame, target_face, source_face, paste_back=True)
 
 
-def process_frame(source_face: Any, temp_frame: Any) -> Any:
+def process_frame(source_face: Face, temp_frame: Frame) -> Frame:
     if roop.globals.many_faces:
         many_faces = get_many_faces(temp_frame)
         if many_faces:
