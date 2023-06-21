@@ -1,3 +1,4 @@
+import threading
 from typing import Any
 import insightface
 
@@ -5,14 +6,16 @@ import roop.globals
 from roop.typing import Frame
 
 FACE_ANALYSER = None
+THREAD_LOCK = threading.Lock()
 
 
 def get_face_analyser() -> Any:
     global FACE_ANALYSER
 
-    if FACE_ANALYSER is None:
-        FACE_ANALYSER = insightface.app.FaceAnalysis(name='buffalo_l', providers=roop.globals.execution_providers)
-        FACE_ANALYSER.prepare(ctx_id=0, det_size=(640, 640))
+    with THREAD_LOCK:
+        if FACE_ANALYSER is None:
+            FACE_ANALYSER = insightface.app.FaceAnalysis(name='buffalo_l', providers=roop.globals.execution_providers)
+            FACE_ANALYSER.prepare(ctx_id=0, det_size=(640, 640))
     return FACE_ANALYSER
 
 
