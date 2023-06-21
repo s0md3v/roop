@@ -72,6 +72,12 @@ def parse_args() -> None:
     roop.globals.execution_providers = decode_execution_providers(args.execution_provider)
     roop.globals.execution_threads = args.execution_threads
 
+    #for ENHANCER tumbler:
+    if 'face_enhancer' in args.frame_processor:
+        roop.globals.enhancer = True
+    else:
+        roop.globals.enhancer = False
+
     # translate deprecated args
     if args.source_path_deprecated:
         print('\033[33mArgument -f and --face are deprecated. Use -s and --source instead.\033[0m')

@@ -15,3 +15,4 @@ execution_providers: List[str] = []
 execution_threads = None
 headless = None
 log_level = 'error'
+enhancer = None

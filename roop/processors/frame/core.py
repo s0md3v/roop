@@ -6,8 +6,9 @@ from typing import Any, List, Callable
 from tqdm import tqdm
 
 import roop
+import roop.globals                   
 
-FRAME_PROCESSORS_MODULES: List[ModuleType] = []
+
 FRAME_PROCESSORS_INTERFACE = [
     'pre_check',
     'pre_start',
@@ -29,11 +30,14 @@ def load_frame_processor_module(frame_processor: str) -> Any:
 
 
 def get_frame_processors_modules(frame_processors: List[str]) -> List[ModuleType]:
-    global FRAME_PROCESSORS_MODULES
+    FRAME_PROCESSORS_MODULES: List[ModuleType] = []
 
     if not FRAME_PROCESSORS_MODULES:
         for frame_processor in frame_processors:
             frame_processor_module = load_frame_processor_module(frame_processor)
+            FRAME_PROCESSORS_MODULES.append(frame_processor_module)
+        if roop.globals.enhancer == True:
+            frame_processor_module = load_frame_processor_module('face_enhancer')
             FRAME_PROCESSORS_MODULES.append(frame_processor_module)
     return FRAME_PROCESSORS_MODULES
 
