@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Callable
 import cv2
 import threading
 import gfpgan
@@ -56,13 +56,13 @@ def process_frame(source_face: Face, temp_frame: Frame) -> Frame:
     return temp_frame
 
 
-def process_frames(source_path: str, temp_frame_paths: List[str], progress: Any = None) -> None:
+def process_frames(source_path: str, temp_frame_paths: List[str], update: Callable[[], None]) -> None:
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
         result = process_frame(None, temp_frame)
         cv2.imwrite(temp_frame_path, result)
-        if progress:
-            progress.update(1)
+        if update:
+            update()
 
 
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
