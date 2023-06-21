@@ -74,9 +74,9 @@ def parse_args() -> None:
 
     #for ENHANCER tumbler:
     if 'face_enhancer' in args.frame_processor:
-        roop.globals.enhancer = True
+        roop.globals.fp_ui['face_enhancer'] = True
     else:
-        roop.globals.enhancer = False
+        roop.globals.fp_ui['face_enhancer'] = False
 
     # translate deprecated args
     if args.source_path_deprecated:

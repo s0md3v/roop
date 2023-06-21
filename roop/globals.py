@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 source_path = None
 target_path = None
@@ -15,4 +15,4 @@ execution_providers: List[str] = []
 execution_threads = None
 headless = None
 log_level = 'error'
-enhancer = None
+fp_ui: Dict[str, bool] = {}

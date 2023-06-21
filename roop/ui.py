@@ -75,9 +75,10 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     keep_frames_switch.place(relx=0.1, rely=0.65)
 
     # for FRAME PROCESSOR ENHANCER tumbler:
-    enhancer_value = ctk.BooleanVar(value=roop.globals.enhancer)
-    enhancer_switch = ctk.CTkSwitch(root, text='Enhancer', variable=enhancer_value, command=lambda: setattr(roop.globals, 'enhancer', enhancer_value.get()))
+    enhancer_value = ctk.BooleanVar(value=roop.globals.fp_ui['face_enhancer'])
+    enhancer_switch = ctk.CTkSwitch(root, text='Face Enhancer', variable=enhancer_value, cursor='hand2', command=lambda: update_tumbler('face_enhancer',enhancer_value.get()))
     enhancer_switch.place(relx=0.1, rely=0.7)
+
     keep_audio_value = ctk.BooleanVar(value=roop.globals.keep_audio)
     keep_audio_switch = ctk.CTkSwitch(root, text='Keep audio', variable=keep_audio_value, cursor='hand2', command=lambda: setattr(roop.globals, 'keep_audio', keep_audio_value.get()))
     keep_audio_switch.place(relx=0.6, rely=0.6)
@@ -127,6 +128,10 @@ def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
 def update_status(text: str) -> None:
     status_label.configure(text=text)
     ROOT.update()
+
+
+def update_tumbler(var: str, value: bool) -> None:
+    roop.globals.fp_ui[var] = value
 
 
 def select_source_path() -> None:
