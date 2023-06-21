@@ -52,5 +52,5 @@ def process_video(source_path: str, frame_paths: list[str], process_frames: Call
     progress_bar_format = '{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}{postfix}]'
     total = len(frame_paths)
     with tqdm(total=total, desc='Processing', unit='frame', dynamic_ncols=True, bar_format=progress_bar_format) as progress:
-        progress.set_postfix({'execution_providers': roop.globals.execution_providers, 'threads': roop.globals.execution_threads, 'memory': roop.globals.max_memory})
+        progress.set_postfix({'execution_providers': roop.globals.execution_providers, 'execution_threads': roop.globals.execution_threads, 'max_memory': roop.globals.max_memory})
         multi_process_frame(source_path, frame_paths, process_frames, progress)
