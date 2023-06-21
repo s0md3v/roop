@@ -1,6 +1,6 @@
 import sys
 import importlib
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from types import ModuleType
 from typing import Any, List, Callable
 from tqdm import tqdm
@@ -44,7 +44,7 @@ def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_f
         for path in temp_frame_paths:
             future = executor.submit(process_frames, source_path, [path], progress)
             futures.append(future)
-        for future in futures:
+        for future in as_completed(futures):
             future.result()
 
 
