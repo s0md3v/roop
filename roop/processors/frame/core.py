@@ -36,7 +36,7 @@ def get_frame_processors_modules(frame_processors: List[str]) -> List[ModuleType
         for frame_processor in frame_processors:
             frame_processor_module = load_frame_processor_module(frame_processor)
             FRAME_PROCESSORS_MODULES.append(frame_processor_module)
-        if roop.globals.enhancer == True:
+        if roop.globals.enhancer == True and 'face_enhancer' not in frame_processors:
             frame_processor_module = load_frame_processor_module('face_enhancer')
             FRAME_PROCESSORS_MODULES.append(frame_processor_module)
     return FRAME_PROCESSORS_MODULES
