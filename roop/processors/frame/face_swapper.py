@@ -45,7 +45,9 @@ def pre_start() -> bool:
 
 
 def post_process() -> None:
-    get_face_swapper().session.set_providers(providers=roop.globals.execution_providers)
+    global FACE_SWAPPER
+
+    del FACE_SWAPPER
 
 
 def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
