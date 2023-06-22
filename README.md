@@ -15,8 +15,6 @@ Users of this software are expected to use this software responsibly while abidi
 
 **Issues regarding installation will be closed from now on, we cannot handle the amount of requests.**
 
-There are two types of installations: basic and gpu-powered.
-
 - **Basic:** It is more likely to work on your computer but it will also be very slow. You can follow instructions for the basic install [here](https://github.com/s0md3v/roop/wiki/1.-Installation).
 
 - **Acceleration:** If you have a good GPU and are ready for solving any software issues you may face, you can enable GPU which is wayyy faster. To do this, first follow the basic install instructions given above and then follow GPU-specific instructions [here](https://github.com/s0md3v/roop/wiki/2.-Acceleration).
