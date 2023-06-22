@@ -64,7 +64,8 @@ def create_queue(temp_frame_paths: List[str]) -> Queue[str]:
 def pick_queue(queue: Queue[str], queue_per_future: int) -> List[str]:
     queues = []
     for _ in range(queue_per_future):
-        queues.append(queue.get())
+        if not queue.empty():
+            queues.append(queue.get())
     return queues
 
 
