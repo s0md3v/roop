@@ -45,8 +45,9 @@ def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_f
     with ThreadPoolExecutor(max_workers=roop.globals.execution_threads) as executor:
         futures = []
         queue = create_queue(temp_frame_paths)
+        queue_per_future = len(temp_frame_paths) // roop.globals.execution_threads
         while not queue.empty():
-            future = executor.submit(process_frames, source_path, [queue.get()], update)
+            future = executor.submit(process_frames, source_path, pick_queue(queue, queue_per_future), update)
             futures.append(future)
         for future in as_completed(futures):
             future.result()
@@ -57,6 +58,13 @@ def create_queue(temp_frame_paths: List[str]) -> Queue[str]:
     for frame_path in temp_frame_paths:
         queue.put(frame_path)
     return queue
+
+
+def pick_queue(queue: Queue[str], queue_per_future: int) -> List[str]:
+    queues = []
+    for _ in range(queue_per_future):
+        queues.append(queue.get())
+    return queues
 
 
 def process_video(source_path: str, frame_paths: list[str], process_frames: Callable[[str, List[str], Any], None]) -> None:
