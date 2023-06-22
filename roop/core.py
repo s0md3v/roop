@@ -37,7 +37,7 @@ def parse_args() -> None:
     program.add_argument('-s', '--source', help='select an source image', dest='source_path')
     program.add_argument('-t', '--target', help='select an target image or video', dest='target_path')
     program.add_argument('-o', '--output', help='select output file or directory', dest='output_path')
-    program.add_argument('--frame-processor', help='pipeline of frame processors', dest='frame_processor', default=['face_swapper'], choices=['face_swapper', 'face_enhancer'], nargs='+')
+    program.add_argument('--frame-processor', help='pipeline of frame processors', dest='frame_processor', default=['face_swapper'], choices=suggest_frame_processors(), nargs='+')
     program.add_argument('--keep-fps', help='keep original fps', dest='keep_fps', action='store_true', default=False)
     program.add_argument('--keep-audio', help='keep original audio', dest='keep_audio', action='store_true', default=True)
     program.add_argument('--keep-frames', help='keep temporary frames', dest='keep_frames', action='store_true', default=False)
@@ -101,6 +101,10 @@ def encode_execution_providers(execution_providers: List[str]) -> List[str]:
 def decode_execution_providers(execution_providers: List[str]) -> List[str]:
     return [provider for provider, encoded_execution_provider in zip(onnxruntime.get_available_providers(), encode_execution_providers(onnxruntime.get_available_providers()))
             if any(execution_provider in encoded_execution_provider for execution_provider in execution_providers)]
+
+
+def suggest_frame_processors() -> List[str]:
+    return ['face_swapper', 'face_enhancer']
 
 
 def suggest_max_memory() -> int:
@@ -173,6 +177,7 @@ def start() -> None:
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             update_status('Progressing...', frame_processor.NAME)
             frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
+            frame_processor.post_process()
             release_resources()
         if is_image(roop.globals.target_path):
             update_status('Processing to image succeed!')
@@ -190,6 +195,7 @@ def start() -> None:
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         update_status('Progressing...', frame_processor.NAME)
         frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
+        frame_processor.post_process()
         release_resources()
     # handles fps
     if roop.globals.keep_fps:

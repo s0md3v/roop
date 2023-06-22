@@ -17,7 +17,8 @@ FRAME_PROCESSORS_INTERFACE = [
     'process_frame',
     'process_frames',
     'process_image',
-    'process_video'
+    'process_video',
+    'post_process'
 ]
 
 
