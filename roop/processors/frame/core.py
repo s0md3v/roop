@@ -52,8 +52,8 @@ def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_f
             future.result()
 
 
-def create_queue(temp_frame_paths: List[str]) -> Queue:
-    queue = Queue()
+def create_queue(temp_frame_paths: List[str]) -> Queue[str]:
+    queue: Queue[str] = Queue()
     for frame_path in temp_frame_paths:
         queue.put(frame_path)
     return queue
