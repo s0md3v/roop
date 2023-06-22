@@ -43,7 +43,7 @@ def pre_start() -> bool:
 def post_process() -> None:
     global FACE_ENHANCER
 
-    del FACE_ENHANCER
+    FACE_ENHANCER = None
 
 
 def enhance_face(temp_frame: Frame) -> Frame:
