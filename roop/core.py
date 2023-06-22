@@ -49,12 +49,6 @@ def parse_args() -> None:
     program.add_argument('--execution-threads', help='number of execution threads', dest='execution_threads', type=int, default=suggest_execution_threads())
     program.add_argument('-v', '--version', action='version', version=f'{roop.metadata.name} {roop.metadata.version}')
 
-    # register deprecated args
-    program.add_argument('-f', '--face', help=argparse.SUPPRESS, dest='source_path_deprecated')
-    program.add_argument('--cpu-cores', help=argparse.SUPPRESS, dest='cpu_cores_deprecated', type=int)
-    program.add_argument('--gpu-vendor', help=argparse.SUPPRESS, dest='gpu_vendor_deprecated')
-    program.add_argument('--gpu-threads', help=argparse.SUPPRESS, dest='gpu_threads_deprecated', type=int)
-
     args = program.parse_args()
 
     roop.globals.source_path = args.source_path
@@ -71,27 +65,6 @@ def parse_args() -> None:
     roop.globals.max_memory = args.max_memory
     roop.globals.execution_providers = decode_execution_providers(args.execution_provider)
     roop.globals.execution_threads = args.execution_threads
-
-    # translate deprecated args
-    if args.source_path_deprecated:
-        print('\033[33mArgument -f and --face are deprecated. Use -s and --source instead.\033[0m')
-        roop.globals.source_path = args.source_path_deprecated
-        roop.globals.output_path = normalize_output_path(args.source_path_deprecated, roop.globals.target_path, args.output_path)
-    if args.cpu_cores_deprecated:
-        print('\033[33mArgument --cpu-cores is deprecated. Use --execution-threads instead.\033[0m')
-        roop.globals.execution_threads = args.cpu_cores_deprecated
-    if args.gpu_vendor_deprecated == 'apple':
-        print('\033[33mArgument --gpu-vendor apple is deprecated. Use --execution-provider coreml instead.\033[0m')
-        roop.globals.execution_providers = decode_execution_providers(['coreml'])
-    if args.gpu_vendor_deprecated == 'nvidia':
-        print('\033[33mArgument --gpu-vendor nvidia is deprecated. Use --execution-provider cuda instead.\033[0m')
-        roop.globals.execution_providers = decode_execution_providers(['cuda'])
-    if args.gpu_vendor_deprecated == 'amd':
-        print('\033[33mArgument --gpu-vendor amd is deprecated. Use --execution-provider cuda instead.\033[0m')
-        roop.globals.execution_providers = decode_execution_providers(['rocm'])
-    if args.gpu_threads_deprecated:
-        print('\033[33mArgument --gpu-threads is deprecated. Use --execution-threads instead.\033[0m')
-        roop.globals.execution_threads = args.gpu_threads_deprecated
 
 
 def encode_execution_providers(execution_providers: List[str]) -> List[str]:
