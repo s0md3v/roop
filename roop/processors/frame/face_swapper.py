@@ -15,6 +15,16 @@ THREAD_LOCK = threading.Lock()
 NAME = 'ROOP.FACE-SWAPPER'
 
 
+def get_face_swapper() -> Any:
+    global FACE_SWAPPER
+
+    with THREAD_LOCK:
+        if FACE_SWAPPER is None:
+            model_path = resolve_relative_path('../models/inswapper_128.onnx')
+            FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=roop.globals.execution_providers)
+    return FACE_SWAPPER
+
+
 def pre_check() -> bool:
     download_directory_path = resolve_relative_path('../models')
     conditional_download(download_directory_path, ['https://huggingface.co/henryruhs/roop/resolve/main/inswapper_128.onnx'])
@@ -34,14 +44,8 @@ def pre_start() -> bool:
     return True
 
 
-def get_face_swapper() -> Any:
-    global FACE_SWAPPER
-
-    with THREAD_LOCK:
-        if FACE_SWAPPER is None:
-            model_path = resolve_relative_path('../models/inswapper_128.onnx')
-            FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=roop.globals.execution_providers)
-    return FACE_SWAPPER
+def post_process() -> None:
+    get_face_swapper().session.set_providers(providers=roop.globals.execution_providers)
 
 
 def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:

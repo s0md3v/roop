@@ -16,6 +16,17 @@ THREAD_LOCK = threading.Lock()
 NAME = 'ROOP.FACE-ENHANCER'
 
 
+def get_face_enhancer() -> Any:
+    global FACE_ENHANCER
+
+    with THREAD_LOCK:
+        if FACE_ENHANCER is None:
+            model_path = resolve_relative_path('../models/GFPGANv1.4.pth')
+            # todo: set models path https://github.com/TencentARC/GFPGAN/issues/399
+            FACE_ENHANCER = gfpgan.GFPGANer(model_path=model_path, upscale=1) # type: ignore[attr-defined]
+    return FACE_ENHANCER
+
+
 def pre_check() -> bool:
     download_directory_path = resolve_relative_path('../models')
     conditional_download(download_directory_path, ['https://huggingface.co/henryruhs/roop/resolve/main/GFPGANv1.4.pth'])
@@ -29,15 +40,8 @@ def pre_start() -> bool:
     return True
 
 
-def get_face_enhancer() -> Any:
-    global FACE_ENHANCER
-
-    with THREAD_LOCK:
-        if FACE_ENHANCER is None:
-            model_path = resolve_relative_path('../models/GFPGANv1.4.pth')
-            # todo: set models path https://github.com/TencentARC/GFPGAN/issues/399
-            FACE_ENHANCER = gfpgan.GFPGANer(model_path=model_path, upscale=1) # type: ignore[attr-defined]
-    return FACE_ENHANCER
+def post_process() -> None:
+    pass
 
 
 def enhance_face(temp_frame: Frame) -> Frame:
