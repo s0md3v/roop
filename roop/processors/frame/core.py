@@ -3,6 +3,7 @@ import sys
 import importlib
 import psutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from queue import Queue
 from types import ModuleType
 from typing import Any, List, Callable
 from tqdm import tqdm
@@ -43,11 +44,19 @@ def get_frame_processors_modules(frame_processors: List[str]) -> List[ModuleType
 def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None], update: Callable[[], None]) -> None:
     with ThreadPoolExecutor(max_workers=roop.globals.execution_threads) as executor:
         futures = []
-        for path in temp_frame_paths:
-            future = executor.submit(process_frames, source_path, [path], update)
+        queue = create_queue(temp_frame_paths)
+        while not queue.empty():
+            future = executor.submit(process_frames, source_path, [queue.get()], update)
             futures.append(future)
         for future in as_completed(futures):
             future.result()
+
+
+def create_queue(temp_frame_paths: List[str]) -> Queue:
+    queue = Queue()
+    for frame_path in temp_frame_paths:
+        queue.put(frame_path)
+    return queue
 
 
 def process_video(source_path: str, frame_paths: list[str], process_frames: Callable[[str, List[str], Any], None]) -> None:
