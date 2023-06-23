@@ -2,6 +2,8 @@ from typing import Any, List, Callable
 import cv2
 import insightface
 import threading
+import numpy as np
+from numpy.linalg import norm
 
 import roop.globals
 import roop.processors.frame.core
@@ -54,24 +56,38 @@ def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
     return get_face_swapper().get(temp_frame, target_face, source_face, paste_back=True)
 
 
-def process_frame(source_face: Face, temp_frame: Frame) -> Frame:
-    if roop.globals.many_faces:
+def is_similar(target_face: Face, found_face: Face) -> bool:
+    similarity = np.dot(target_face.embedding, found_face.embedding) / (norm(target_face.embedding) * norm(found_face.embedding))
+    if similarity > roop.globals.threshold_value:
+        return True
+    return False    
+
+
+def process_frame(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
+    if roop.globals.single_face_in_many_faces:
         many_faces = get_many_faces(temp_frame)
         if many_faces:
-            for target_face in many_faces:
-                temp_frame = swap_face(source_face, target_face, temp_frame)
+            for found_face in many_faces:
+                if is_similar(target_face, found_face):
+                    temp_frame = swap_face(source_face, found_face, temp_frame)
+    elif roop.globals.many_faces:
+        many_faces = get_many_faces(temp_frame)
+        if many_faces:
+            for found_face in many_faces:
+                temp_frame = swap_face(source_face, found_face, temp_frame)
     else:
-        target_face = get_one_face(temp_frame)
-        if target_face:
-            temp_frame = swap_face(source_face, target_face, temp_frame)
+        found_face = get_one_face(temp_frame)
+        if found_face:
+            temp_frame = swap_face(source_face, found_face, temp_frame)
     return temp_frame
 
 
-def process_frames(source_path: str, temp_frame_paths: List[str], update: Callable[[], None]) -> None:
+def process_frames(source_path: str, target_face_path: str, temp_frame_paths: List[str], update: Callable[[], None]) -> None:
     source_face = get_one_face(cv2.imread(source_path))
+    target_face = get_one_face(cv2.imread(target_face_path))
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
-        result = process_frame(source_face, temp_frame)
+        result = process_frame(source_face, target_face, temp_frame)
         cv2.imwrite(temp_frame_path, result)
         if update:
             update()
@@ -84,5 +100,5 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
     cv2.imwrite(output_path, result)
 
 
-def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
-    roop.processors.frame.core.process_video(source_path, temp_frame_paths, process_frames)
+def process_video(source_path: str, target_face_path: str, temp_frame_paths: List[str]) -> None:
+    roop.processors.frame.core.process_video(source_path, target_face_path, temp_frame_paths, process_frames)

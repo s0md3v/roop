@@ -37,6 +37,8 @@ def parse_args() -> None:
     program.add_argument('-s', '--source', help='select an source image', dest='source_path')
     program.add_argument('-t', '--target', help='select an target image or video', dest='target_path')
     program.add_argument('-o', '--output', help='select output file or directory', dest='output_path')
+    program.add_argument('--single-face-in-many-faces', help='use with --target-face', dest='single_face_in_many_faces', action='store_true', default=False)
+    program.add_argument('--target-face', help='select an target face image (better with the face from target image/video)', dest='target_face_path')
     program.add_argument('--frame-processor', help='frame processors (choices: face_swapper, face_enhancer, ...)', dest='frame_processor', default=['face_swapper'], nargs='+')
     program.add_argument('--keep-fps', help='keep original fps', dest='keep_fps', action='store_true', default=False)
     program.add_argument('--keep-audio', help='keep original audio', dest='keep_audio', action='store_true', default=True)
@@ -54,6 +56,8 @@ def parse_args() -> None:
     roop.globals.source_path = args.source_path
     roop.globals.target_path = args.target_path
     roop.globals.output_path = normalize_output_path(roop.globals.source_path, roop.globals.target_path, args.output_path)
+    roop.globals.target_face_path = args.target_face_path
+    roop.globals.single_face_in_many_faces = args.single_face_in_many_faces
     roop.globals.frame_processors = args.frame_processor
     roop.globals.headless = args.source_path or args.target_path or args.output_path
     roop.globals.keep_fps = args.keep_fps
@@ -165,7 +169,7 @@ def start() -> None:
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         update_status('Progressing...', frame_processor.NAME)
-        frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
+        frame_processor.process_video(roop.globals.source_path, roop.globals.target_face_path, temp_frame_paths)
         frame_processor.post_process()
         release_resources()
     # handles fps

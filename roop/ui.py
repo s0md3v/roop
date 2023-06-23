@@ -28,6 +28,7 @@ RECENT_DIRECTORY_OUTPUT = None
 preview_label = None
 preview_slider = None
 source_label = None
+target_face_label = None
 target_label = None
 status_label = None
 
@@ -42,7 +43,7 @@ def init(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
 
 
 def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
-    global source_label, target_label, status_label
+    global source_label, target_face_label, target_label, status_label
 
     ctk.deactivate_automatic_dpi_awareness()
     ctk.set_appearance_mode('system')
@@ -55,16 +56,22 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     root.protocol('WM_DELETE_WINDOW', lambda: destroy())
 
     source_label = ctk.CTkLabel(root, text=None)
-    source_label.place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.25)
+    source_label.place(relx=0.1, rely=0.1, relwidth=0.2, relheight=0.25)
+
+    target_face_label = ctk.CTkLabel(root, text=None)
+    target_face_label.place(relx=0.4, rely=0.1, relwidth=0.2, relheight=0.25)
 
     target_label = ctk.CTkLabel(root, text=None)
-    target_label.place(relx=0.6, rely=0.1, relwidth=0.3, relheight=0.25)
+    target_label.place(relx=0.7, rely=0.1, relwidth=0.2, relheight=0.25)
 
     source_button = ctk.CTkButton(root, text='Select a face', cursor='hand2', command=lambda: select_source_path())
-    source_button.place(relx=0.1, rely=0.4, relwidth=0.3, relheight=0.1)
+    source_button.place(relx=0.1, rely=0.4, relwidth=0.2, relheight=0.1)
+
+    target_face_button = ctk.CTkButton(root, text='Select a target face', cursor='hand2', command=lambda: select_target_face_path())
+    target_face_button.place(relx=0.4, rely=0.4, relwidth=0.2, relheight=0.1)
 
     target_button = ctk.CTkButton(root, text='Select a target', cursor='hand2', command=lambda: select_target_path())
-    target_button.place(relx=0.6, rely=0.4, relwidth=0.3, relheight=0.1)
+    target_button.place(relx=0.7, rely=0.4, relwidth=0.2, relheight=0.1)
 
     keep_fps_value = ctk.BooleanVar(value=roop.globals.keep_fps)
     keep_fps_checkbox = ctk.CTkSwitch(root, text='Keep fps', variable=keep_fps_value, cursor='hand2', command=lambda: setattr(roop.globals, 'keep_fps', not roop.globals.keep_fps))
@@ -76,11 +83,19 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
 
     keep_audio_value = ctk.BooleanVar(value=roop.globals.keep_audio)
     keep_audio_switch = ctk.CTkSwitch(root, text='Keep audio', variable=keep_audio_value, cursor='hand2', command=lambda: setattr(roop.globals, 'keep_audio', keep_audio_value.get()))
-    keep_audio_switch.place(relx=0.6, rely=0.6)
+    keep_audio_switch.place(relx=0.4, rely=0.6)
 
     many_faces_value = ctk.BooleanVar(value=roop.globals.many_faces)
     many_faces_switch = ctk.CTkSwitch(root, text='Many faces', variable=many_faces_value, cursor='hand2', command=lambda: setattr(roop.globals, 'many_faces', many_faces_value.get()))
-    many_faces_switch.place(relx=0.6, rely=0.65)
+    many_faces_switch.place(relx=0.4, rely=0.65)
+
+    single_face_in_many_faces_value = ctk.BooleanVar(value=roop.globals.single_face_in_many_faces)
+    single_face_in_many_faces_switch = ctk.CTkSwitch(root, text='Single face in many faces', variable=single_face_in_many_faces_value, cursor='hand2', command=lambda: setattr(roop.globals, 'single_face_in_many_faces', single_face_in_many_faces_value.get()))
+    single_face_in_many_faces_switch.place(relx=0.6, rely=0.6)
+
+    threshold_slider = ctk.CTkSlider(root, from_=0, to=1, command=lambda threshold_value: update_threshold(threshold_value))
+    threshold_slider.place(relx=0.6, rely=0.65, relwidth=0.3, relheight=0.025)
+    threshold_slider.set(roop.globals.threshold_value)
 
     start_button = ctk.CTkButton(root, text='Start', cursor='hand2', command=lambda: select_output_path(start))
     start_button.place(relx=0.15, rely=0.75, relwidth=0.2, relheight=0.05)
@@ -160,6 +175,21 @@ def select_target_path() -> None:
         target_label.configure(image=None)
 
 
+def select_target_face_path() -> None:
+    global RECENT_DIRECTORY_SOURCE
+
+    PREVIEW.withdraw()
+    target_face_path = ctk.filedialog.askopenfilename(title='select an target face image', initialdir=RECENT_DIRECTORY_SOURCE)
+    if is_image(target_face_path):
+        roop.globals.target_face_path = target_face_path
+        RECENT_DIRECTORY_SOURCE = os.path.dirname(roop.globals.target_face_path)
+        image = render_image_preview(roop.globals.target_face_path, (200, 200))
+        target_face_label.configure(image=image)
+    else:
+        roop.globals.target_face_path = None
+        target_face_label.configure(image=None)
+
+
 def select_output_path(start: Callable[[], None]) -> None:
     global RECENT_DIRECTORY_OUTPUT
 
@@ -196,6 +226,9 @@ def render_video_preview(video_path: str, size: Tuple[int, int], frame_number: i
     cv2.destroyAllWindows()
 
 
+def update_threshold(threshold: int = 0) -> None:
+    roop.globals.threshold_value = threshold
+
 def toggle_preview() -> None:
     if PREVIEW.state() == 'normal':
         PREVIEW.withdraw()
@@ -223,7 +256,8 @@ def update_preview(frame_number: int = 0) -> None:
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             temp_frame = frame_processor.process_frame(
                 get_one_face(cv2.imread(roop.globals.source_path)),
-                temp_frame
+                get_one_face(cv2.imread(roop.globals.target_face_path)),
+                temp_frame,
             )
         image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))
         image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
