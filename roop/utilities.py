@@ -108,11 +108,13 @@ def clean_temp(target_path: str) -> None:
 
 
 def has_image_extension(image_path: str) -> bool:
-    return image_path.lower().endswith(('png', 'jpg', 'jpeg'))
+    return image_path.lower().endswith(('png', 'jpg', 'jpeg', 'webp'))
 
 
 def is_image(image_path: str) -> bool:
     if image_path and os.path.isfile(image_path):
+        if image_path.lower().endswith(('png', 'jpg', 'jpeg', 'webp')):
+            return True
         mimetype, _ = mimetypes.guess_type(image_path)
         return bool(mimetype and mimetype.startswith('image/'))
     return False

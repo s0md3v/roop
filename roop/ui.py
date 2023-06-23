@@ -42,7 +42,7 @@ def init(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
 
 
 def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
-    global source_label, target_label, status_label
+    global source_label, target_label, status_label, file_override_switch
 
     ctk.deactivate_automatic_dpi_awareness()
     ctk.set_appearance_mode('system')
@@ -63,8 +63,11 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     source_button = ctk.CTkButton(root, text='Select a face', cursor='hand2', command=lambda: select_source_path())
     source_button.place(relx=0.1, rely=0.4, relwidth=0.3, relheight=0.1)
 
-    target_button = ctk.CTkButton(root, text='Select a target', cursor='hand2', command=lambda: select_target_path())
+    target_button = ctk.CTkButton(root, text='Select a target', cursor='hand2', command=lambda: [select_target_path(), update_dropdown()])
     target_button.place(relx=0.6, rely=0.4, relwidth=0.3, relheight=0.1)
+
+    # queue_label = ctk.CTkLabel(root, text="10 items in the queue", cursor='hand2')
+    # queue_label.place(relx=0.6, rely=0.5, relwidth=0.3)
 
     keep_fps_value = ctk.BooleanVar(value=roop.globals.keep_fps)
     keep_fps_checkbox = ctk.CTkSwitch(root, text='Keep fps', variable=keep_fps_value, cursor='hand2', command=lambda: setattr(roop.globals, 'keep_fps', not roop.globals.keep_fps))
@@ -76,11 +79,19 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
 
     keep_audio_value = ctk.BooleanVar(value=roop.globals.keep_audio)
     keep_audio_switch = ctk.CTkSwitch(root, text='Keep audio', variable=keep_audio_value, cursor='hand2', command=lambda: setattr(roop.globals, 'keep_audio', keep_audio_value.get()))
-    keep_audio_switch.place(relx=0.6, rely=0.6)
+    keep_audio_switch.place(relx=0.35, rely=0.6)
 
     many_faces_value = ctk.BooleanVar(value=roop.globals.many_faces)
     many_faces_switch = ctk.CTkSwitch(root, text='Many faces', variable=many_faces_value, cursor='hand2', command=lambda: setattr(roop.globals, 'many_faces', many_faces_value.get()))
-    many_faces_switch.place(relx=0.6, rely=0.65)
+    many_faces_switch.place(relx=0.35, rely=0.65)
+
+    keep_filenames_value = ctk.BooleanVar(value=roop.globals.keep_filenames)
+    keep_filenames_switch = ctk.CTkSwitch(root, text='Keep filenames', variable=keep_filenames_value, cursor='hand2', command=lambda: setattr(roop.globals, 'keep_filenames', keep_filenames_value.get()))
+    keep_filenames_switch.place(relx=0.6, rely=0.6)
+
+    file_override_value = ctk.BooleanVar(value=roop.globals.file_override)
+    file_override_switch = ctk.CTkSwitch(root, text='Override files', variable=file_override_value, cursor='hand2', command=lambda: setattr(roop.globals, 'file_override', file_override_value.get()))
+    file_override_switch.place(relx=0.6, rely=0.65)
 
     start_button = ctk.CTkButton(root, text='Start', cursor='hand2', command=lambda: select_output_path(start))
     start_button.place(relx=0.15, rely=0.75, relwidth=0.2, relheight=0.05)
@@ -103,7 +114,7 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
 
 
 def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
-    global preview_label, preview_slider
+    global preview_label, preview_slider, selected_preview_dropdown
 
     preview = ctk.CTkToplevel(parent)
     preview.withdraw()
@@ -113,7 +124,12 @@ def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
     preview.resizable(width=False, height=False)
 
     preview_label = ctk.CTkLabel(preview, text=None)
-    preview_label.pack(fill='both', expand=True)
+    preview_label.pack(fill='both', expand=True, ipady=5)
+
+    selected_preview_values = roop.globals.target_paths
+    selected_preview_variable = ctk.StringVar(value=roop.globals.selected_preview)
+    selected_preview_dropdown = ctk.CTkComboBox(preview, values=selected_preview_values, variable=selected_preview_variable, cursor='hand2', command=lambda variable: [setattr(roop.globals, 'selected_preview', variable), init_preview(), update_preview()])
+    selected_preview_dropdown.pack(side="left", ipadx=50)
 
     preview_slider = ctk.CTkSlider(preview, from_=0, to=0, command=lambda frame_value: update_preview(frame_value))
 
@@ -144,15 +160,17 @@ def select_target_path() -> None:
     global RECENT_DIRECTORY_TARGET
 
     PREVIEW.withdraw()
-    target_path = ctk.filedialog.askopenfilename(title='select an target image or video', initialdir=RECENT_DIRECTORY_TARGET)
+    target_paths = ctk.filedialog.askopenfilenames(title='select target images and/or videos', initialdir=RECENT_DIRECTORY_TARGET)
+    roop.globals.target_paths = target_paths
+    target_path = target_paths[0]
     if is_image(target_path):
         roop.globals.target_path = target_path
-        RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
+        RECENT_DIRECTORY_TARGET = roop.globals.target_path if roop.globals.keep_filenames else os.path.dirname(roop.globals.target_path)
         image = render_image_preview(roop.globals.target_path, (200, 200))
         target_label.configure(image=image)
     elif is_video(target_path):
         roop.globals.target_path = target_path
-        RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
+        RECENT_DIRECTORY_TARGET = roop.globals.target_path if roop.globals.keep_filenames else os.path.dirname(roop.globals.target_path)
         video_frame = render_video_preview(target_path, (200, 200))
         target_label.configure(image=video_frame)
     else:
@@ -162,18 +180,15 @@ def select_target_path() -> None:
 
 def select_output_path(start: Callable[[], None]) -> None:
     global RECENT_DIRECTORY_OUTPUT
-
-    if is_image(roop.globals.target_path):
-        output_path = ctk.filedialog.asksaveasfilename(title='save image output file', defaultextension='.png', initialfile='output.png', initialdir=RECENT_DIRECTORY_OUTPUT)
-    elif is_video(roop.globals.target_path):
-        output_path = ctk.filedialog.asksaveasfilename(title='save video output file', defaultextension='.mp4', initialfile='output.mp4', initialdir=RECENT_DIRECTORY_OUTPUT)
+    if roop.globals.keep_filenames:
+        output_path = ctk.filedialog.askdirectory(title='save output', initialdir=RECENT_DIRECTORY_OUTPUT)
     else:
-        output_path = None
-    if output_path:
-        roop.globals.output_path = output_path
-        RECENT_DIRECTORY_OUTPUT = os.path.dirname(roop.globals.output_path)
-        start()
+        output_path = ctk.filedialog.asksaveasfilename(title='save output file', initialfile='output', initialdir=RECENT_DIRECTORY_OUTPUT)
 
+    roop.globals.output_path = output_path
+    RECENT_DIRECTORY_OUTPUT = roop.globals.output_path if roop.globals.keep_filenames else os.path.dirname(roop.globals.output_path)
+    start()
+        
 
 def render_image_preview(image_path: str, size: Tuple[int, int]) -> ctk.CTkImage:
     image = Image.open(image_path)
@@ -200,24 +215,28 @@ def toggle_preview() -> None:
     if PREVIEW.state() == 'normal':
         PREVIEW.withdraw()
     elif roop.globals.source_path and roop.globals.target_path:
+        roop.globals.selected_preview = roop.globals.target_path
         init_preview()
         update_preview()
         PREVIEW.deiconify()
 
 
 def init_preview() -> None:
-    if is_image(roop.globals.target_path):
+    if is_image(roop.globals.selected_preview):
         preview_slider.pack_forget()
-    if is_video(roop.globals.target_path):
-        video_frame_total = get_video_frame_total(roop.globals.target_path)
+    if is_video(roop.globals.selected_preview):
+        video_frame_total = get_video_frame_total(roop.globals.selected_preview)
         preview_slider.configure(to=video_frame_total)
         preview_slider.pack(fill='x')
         preview_slider.set(0)
 
+def update_dropdown():
+    selected_preview_dropdown.configure(values=roop.globals.target_paths)
+    selected_preview_dropdown.set(roop.globals.target_paths[0])
 
 def update_preview(frame_number: int = 0) -> None:
     if roop.globals.source_path and roop.globals.target_path:
-        temp_frame = get_video_frame(roop.globals.target_path, frame_number)
+        temp_frame = get_video_frame(roop.globals.selected_preview, frame_number)
         if predict_frame(temp_frame):
             quit()
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):

@@ -35,12 +35,13 @@ def parse_args() -> None:
     signal.signal(signal.SIGINT, lambda signal_number, frame: destroy())
     program = argparse.ArgumentParser()
     program.add_argument('-s', '--source', help='select an source image', dest='source_path')
-    program.add_argument('-t', '--target', help='select an target image or video', dest='target_path')
+    program.add_argument('-t', '--target', help='select an target image or video', dest='target_paths')
     program.add_argument('-o', '--output', help='select output file or directory', dest='output_path')
     program.add_argument('--frame-processor', help='pipeline of frame processors', dest='frame_processor', default=['face_swapper'], choices=['face_swapper', 'face_enhancer'], nargs='+')
     program.add_argument('--keep-fps', help='keep original fps', dest='keep_fps', action='store_true', default=False)
     program.add_argument('--keep-audio', help='keep original audio', dest='keep_audio', action='store_true', default=True)
     program.add_argument('--keep-frames', help='keep temporary frames', dest='keep_frames', action='store_true', default=False)
+    program.add_argument('--keep-filenames', help='keep original filenames', dest='keep_filenames', action='store_true', default=False)
     program.add_argument('--many-faces', help='process every face', dest='many_faces', action='store_true', default=False)
     program.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264', choices=['libx264', 'libx265', 'libvpx-vp9'])
     program.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18, choices=range(52), metavar='[0-51]')
@@ -58,13 +59,14 @@ def parse_args() -> None:
     args = program.parse_args()
 
     roop.globals.source_path = args.source_path
-    roop.globals.target_path = args.target_path
-    roop.globals.output_path = normalize_output_path(roop.globals.source_path, roop.globals.target_path, args.output_path)
+    roop.globals.target_paths = args.target_paths
+    roop.globals.output_path = normalize_output_path(roop.globals.source_path, roop.globals.target_paths, args.output_path)
     roop.globals.frame_processors = args.frame_processor
-    roop.globals.headless = args.source_path or args.target_path or args.output_path
+    roop.globals.headless = args.source_path or args.target_paths or args.output_path
     roop.globals.keep_fps = args.keep_fps
     roop.globals.keep_audio = args.keep_audio
     roop.globals.keep_frames = args.keep_frames
+    roop.globals.keep_filenames = args.keep_filenames
     roop.globals.many_faces = args.many_faces
     roop.globals.video_encoder = args.video_encoder
     roop.globals.video_quality = args.video_quality
@@ -160,61 +162,118 @@ def update_status(message: str, scope: str = 'ROOP.CORE') -> None:
     if not roop.globals.headless:
         ui.update_status(message)
 
+def create_filename(index):
+    file_number = str(index + 1).zfill(3)
+    if roop.globals.keep_filenames:
+        file_name, _ = os.path.splitext(os.path.basename(roop.globals.target_path))
+        output_name = file_name + "_roop"
+    else:
+        file_name, _ = os.path.splitext(os.path.basename(roop.globals.output_path))
+        output_name = file_name
+        roop.globals.output_path = os.path.dirname(roop.globals.output_path)
+
+    if is_image(roop.globals.target_path):
+        if roop.globals.file_override:
+            return f"{output_name}_{file_number}.png" if len(roop.globals.target_paths) > 1 else f"{output_name}.png"
+        if not os.path.exists(os.path.join(roop.globals.output_path, f"{output_name}.png")):
+            return f"{output_name}.png"
+        while True:
+            new_output_name = f"{output_name}_{file_number}.png"
+            if not os.path.exists(os.path.join(roop.globals.output_path, output_name)):
+                return new_output_name
+            file_number = int(file_number)
+            file_number +- 1
+            file_number = str(file_number).zfill(3)
+    elif is_video(roop.globals.target_path):
+        if roop.globals.file_override:
+            return f"{output_name}_{file_number}.mp4" if len(roop.globals.target_paths) > 1 else f"{output_name}.mp4"
+        if not os.path.exists(os.path.join(roop.globals.output_path, f"{output_name}.mp4")):
+            return f"{output_name}.mp4"
+        while True:
+            new_output_name = f"{output_name}_{file_number}.mp4"
+            if not os.path.exists(os.path.join(roop.globals.output_path, new_output_name)):
+                return new_output_name
+            file_number = int(file_number)
+            file_number += 1
+            file_number = str(file_number).zfill(3)
+
 
 def start() -> None:
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         if not frame_processor.pre_start():
             return
-    # process image to image
-    if has_image_extension(roop.globals.target_path):
-        if predict_image(roop.globals.target_path):
+
+    if isinstance(roop.globals.target_paths, str):
+        roop.globals.target_paths = [roop.globals.target_paths]   
+
+    for index, target_path in enumerate(roop.globals.target_paths):
+        roop.globals.target_path = target_path
+        output_path = roop.globals.output_path
+
+        # create the output filename and make sure roop.globals.output_path is just path without filename
+        output_name = create_filename(index)
+
+        if is_image(roop.globals.target_path):
+            roop.globals.output_path = os.path.join(roop.globals.output_path, output_name)
+        elif is_video(roop.globals.target_path):
+            roop.globals.output_path = os.path.join(roop.globals.output_path, output_name)
+
+        # process image to image
+        if has_image_extension(roop.globals.target_path):
+            if predict_image(roop.globals.target_path):
+                destroy()
+            image = ui.render_image_preview(roop.globals.target_path, (200, 200))
+            ui.target_label.configure(image=image)
+            shutil.copy2(roop.globals.target_path, roop.globals.output_path)
+            for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
+                update_status('Progressing...', frame_processor.NAME)
+                frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
+                release_resources()
+            if is_image(roop.globals.target_path):
+                update_status('Processing to image succeed!')
+            else:
+                update_status('Processing to image failed!')
+            roop.globals.output_path = output_path
+            continue
+        # process image to videos
+        if predict_video(roop.globals.target_path):
             destroy()
-        shutil.copy2(roop.globals.target_path, roop.globals.output_path)
+        video_frame = ui.render_video_preview(roop.globals.target_path, (200, 200))
+        ui.target_label.configure(image=video_frame)
+        update_status('Creating temp resources...')
+        create_temp(roop.globals.target_path)
+        update_status('Extracting frames...')
+        extract_frames(roop.globals.target_path)
+        temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             update_status('Progressing...', frame_processor.NAME)
-            frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
+            frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
             release_resources()
-        if is_image(roop.globals.target_path):
-            update_status('Processing to image succeed!')
-        else:
-            update_status('Processing to image failed!')
-        return
-    # process image to videos
-    if predict_video(roop.globals.target_path):
-        destroy()
-    update_status('Creating temp resources...')
-    create_temp(roop.globals.target_path)
-    update_status('Extracting frames...')
-    extract_frames(roop.globals.target_path)
-    temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
-    for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-        update_status('Progressing...', frame_processor.NAME)
-        frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
-        release_resources()
-    # handles fps
-    if roop.globals.keep_fps:
-        update_status('Detecting fps...')
-        fps = detect_fps(roop.globals.target_path)
-        update_status(f'Creating video with {fps} fps...')
-        create_video(roop.globals.target_path, fps)
-    else:
-        update_status('Creating video with 30.0 fps...')
-        create_video(roop.globals.target_path)
-    # handle audio
-    if roop.globals.keep_audio:
+        # handles fps
         if roop.globals.keep_fps:
-            update_status('Restoring audio...')
+            update_status('Detecting fps...')
+            fps = detect_fps(roop.globals.target_path)
+            update_status(f'Creating video with {fps} fps...')
+            create_video(roop.globals.target_path, fps)
         else:
-            update_status('Restoring audio might cause issues as fps are not kept...')
-        restore_audio(roop.globals.target_path, roop.globals.output_path)
-    else:
-        move_temp(roop.globals.target_path, roop.globals.output_path)
-    # clean and validate
-    clean_temp(roop.globals.target_path)
-    if is_video(roop.globals.target_path):
-        update_status('Processing to video succeed!')
-    else:
-        update_status('Processing to video failed!')
+            update_status('Creating video with 30.0 fps...')
+            create_video(roop.globals.target_path)
+        # handle audio
+        if roop.globals.keep_audio:
+            if roop.globals.keep_fps:
+                update_status('Restoring audio...')
+            else:
+                update_status('Restoring audio might cause issues as fps are not kept...')
+            restore_audio(roop.globals.target_path, roop.globals.output_path)
+        else:
+            move_temp(roop.globals.target_path, roop.globals.output_path)
+        # clean and validate
+        clean_temp(roop.globals.target_path)
+        if is_video(roop.globals.target_path):
+            update_status('Processing to video succeed!')
+        else:
+            update_status('Processing to video failed!')
+        roop.globals.output_path = output_path
 
 
 def destroy() -> None:
