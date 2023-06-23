@@ -153,6 +153,6 @@
     }
   },
   "RoopDonate": {
-    "text_color": ["#fd79a8", "#fd79a8"]
+    "text_color": ["#3a7ebf", "gray60"]
   }
 }
