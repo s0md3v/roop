@@ -4,6 +4,7 @@ import threading
 import gfpgan
 
 import roop.globals
+import roop.mbiocv2 as mb2
 import roop.processors.frame.core
 from roop.core import update_status
 from roop.face_analyser import get_one_face
@@ -58,17 +59,17 @@ def process_frame(source_face: Face, temp_frame: Frame) -> Frame:
 
 def process_frames(source_path: str, temp_frame_paths: List[str], progress: Any = None) -> None:
     for temp_frame_path in temp_frame_paths:
-        temp_frame = cv2.imread(temp_frame_path)
+        temp_frame = mb2.imread(temp_frame_path)
         result = process_frame(None, temp_frame)
-        cv2.imwrite(temp_frame_path, result)
+        mb2.imwrite(temp_frame_path, result)
         if progress:
             progress.update(1)
 
 
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
-    target_frame = cv2.imread(target_path)
+    target_frame = mb2.imread(target_path)
     result = process_frame(None, target_frame)
-    cv2.imwrite(output_path, result)
+    mb2.imwrite(output_path, result)
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:

@@ -4,6 +4,7 @@ import insightface
 import threading
 
 import roop.globals
+import roop.mbiocv2 as mb2
 import roop.processors.frame.core
 from roop.core import update_status
 from roop.face_analyser import get_one_face, get_many_faces
@@ -25,7 +26,7 @@ def pre_start() -> bool:
     if not is_image(roop.globals.source_path):
         update_status('Select an image for source path.', NAME)
         return False
-    elif not get_one_face(cv2.imread(roop.globals.source_path)):
+    elif not get_one_face(mb2.imread(roop.globals.source_path)):
         update_status('No face in source path detected.', NAME)
         return False
     if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
@@ -62,12 +63,12 @@ def process_frame(source_face: Face, temp_frame: Frame) -> Frame:
 
 
 def process_frames(source_path: str, temp_frame_paths: List[str], progress: Any = None) -> None:
-    source_face = get_one_face(cv2.imread(source_path))
+    source_face = get_one_face(mb2.imread(source_path))
     for temp_frame_path in temp_frame_paths:
-        temp_frame = cv2.imread(temp_frame_path)
+        temp_frame = mb2.imread(temp_frame_path)
         try:
             result = process_frame(source_face, temp_frame)
-            cv2.imwrite(temp_frame_path, result)
+            mb2.imwrite(temp_frame_path, result)
         except Exception as exception:
             print(exception)
             pass
@@ -76,10 +77,10 @@ def process_frames(source_path: str, temp_frame_paths: List[str], progress: Any 
 
 
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
-    source_face = get_one_face(cv2.imread(source_path))
-    target_frame = cv2.imread(target_path)
+    source_face = get_one_face(mb2.imread(source_path))
+    target_frame = mb2.imread(target_path)
     result = process_frame(source_face, target_frame)
-    cv2.imwrite(output_path, result)
+    mb2.imwrite(output_path, result)
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:

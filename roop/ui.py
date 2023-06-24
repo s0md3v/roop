@@ -6,6 +6,7 @@ import cv2
 from PIL import Image, ImageOps
 
 import roop.globals
+import roop.mbiocv2 as mb2
 import roop.metadata
 from roop.face_analyser import get_one_face
 from roop.capturer import get_video_frame, get_video_frame_total
@@ -222,7 +223,7 @@ def update_preview(frame_number: int = 0) -> None:
             quit()
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             temp_frame = frame_processor.process_frame(
-                get_one_face(cv2.imread(roop.globals.source_path)),
+                get_one_face(mb2.imread(roop.globals.source_path)),
                 temp_frame
             )
         image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))
