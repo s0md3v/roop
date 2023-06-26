@@ -15,7 +15,7 @@ jobs:
   - run: pip install flake8
   - run: pip install mypy
   - run: flake8 run.py roop
-  - run: mypy --config-file mypi.ini run.py roop
+  - run: mypy run.py roop
  test:
   runs-on: ubuntu-latest
   steps:
