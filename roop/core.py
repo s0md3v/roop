@@ -13,7 +13,6 @@ import platform
 import signal
 import shutil
 import argparse
-import torch
 import onnxruntime
 import tensorflow
 
@@ -23,9 +22,6 @@ import roop.ui as ui
 from roop.predicter import predict_image, predict_video
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, normalize_output_path
-
-if 'ROCMExecutionProvider' in roop.globals.execution_providers:
-    del torch
 
 warnings.filterwarnings('ignore', category=FutureWarning, module='insightface')
 warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
@@ -115,11 +111,6 @@ def limit_resources() -> None:
             resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))
 
 
-def release_resources() -> None:
-    if 'CUDAExecutionProvider' in roop.globals.execution_providers:
-        torch.cuda.empty_cache()
-
-
 def pre_check() -> bool:
     if sys.version_info < (3, 9):
         update_status('Python version is not supported - please upgrade to 3.9 or higher.')
@@ -149,7 +140,6 @@ def start() -> None:
             update_status('Progressing...', frame_processor.NAME)
             frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
             frame_processor.post_process()
-            release_resources()
         if is_image(roop.globals.target_path):
             update_status('Processing to image succeed!')
         else:
@@ -167,7 +157,6 @@ def start() -> None:
         update_status('Progressing...', frame_processor.NAME)
         frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
         frame_processor.post_process()
-        release_resources()
     # handles fps
     if roop.globals.keep_fps:
         update_status('Detecting fps...')
