@@ -38,10 +38,10 @@ def parse_args() -> None:
     program.add_argument('-t', '--target', help='select an target image or video', dest='target_path')
     program.add_argument('-o', '--output', help='select output file or directory', dest='output_path')
     program.add_argument('--frame-processor', help='frame processors (choices: face_swapper, face_enhancer, ...)', dest='frame_processor', default=['face_swapper'], nargs='+')
-    program.add_argument('--keep-fps', help='keep original fps', dest='keep_fps', action='store_true', default=False)
-    program.add_argument('--keep-audio', help='keep original audio', dest='keep_audio', action='store_true', default=True)
-    program.add_argument('--keep-frames', help='keep temporary frames', dest='keep_frames', action='store_true', default=False)
-    program.add_argument('--many-faces', help='process every face', dest='many_faces', action='store_true', default=False)
+    program.add_argument('--keep-fps', help='keep target fps', dest='keep_fps', action='store_true')
+    program.add_argument('--keep-frames', help='keep temporary frames', dest='keep_frames', action='store_true')
+    program.add_argument('--skip-audio', help='skip target audio', dest='skip_audio', action='store_true')
+    program.add_argument('--many-faces', help='process every face', dest='many_faces', action='store_true')
     program.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264', choices=['libx264', 'libx265', 'libvpx-vp9'])
     program.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18, choices=range(52), metavar='[0-51]')
     program.add_argument('--max-memory', help='maximum amount of RAM in GB', dest='max_memory', type=int, default=suggest_max_memory())
@@ -57,8 +57,8 @@ def parse_args() -> None:
     roop.globals.frame_processors = args.frame_processor
     roop.globals.headless = args.source_path or args.target_path or args.output_path
     roop.globals.keep_fps = args.keep_fps
-    roop.globals.keep_audio = args.keep_audio
     roop.globals.keep_frames = args.keep_frames
+    roop.globals.skip_audio = args.skip_audio
     roop.globals.many_faces = args.many_faces
     roop.globals.video_encoder = args.video_encoder
     roop.globals.video_quality = args.video_quality
@@ -178,14 +178,15 @@ def start() -> None:
         update_status('Creating video with 30.0 fps...')
         create_video(roop.globals.target_path)
     # handle audio
-    if roop.globals.keep_audio:
+    if roop.globals.skip_audio:
+        move_temp(roop.globals.target_path, roop.globals.output_path)
+        update_status('Skipping audio...')
+    else:
         if roop.globals.keep_fps:
             update_status('Restoring audio...')
         else:
             update_status('Restoring audio might cause issues as fps are not kept...')
         restore_audio(roop.globals.target_path, roop.globals.output_path)
-    else:
-        move_temp(roop.globals.target_path, roop.globals.output_path)
     # clean and validate
     clean_temp(roop.globals.target_path)
     if is_video(roop.globals.target_path):
