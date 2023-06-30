@@ -40,6 +40,7 @@ options:
   --keep-frames                                            keep temporary frames
   --skip-audio                                             skip target audio
   --many-faces                                             process every face
+  --face-position FACE_POSITION                            position of the target face
   --video-encoder {libx264,libx265,libvpx-vp9}             adjust output video encoder
   --video-quality [0-51]                                   adjust output video quality
   --max-memory MAX_MEMORY                                  maximum amount of RAM in GB

@@ -31,6 +31,8 @@ source_label = None
 target_label = None
 status_label = None
 
+reference_face = None
+
 
 def init(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
     global ROOT, PREVIEW
@@ -216,13 +218,19 @@ def init_preview() -> None:
 
 
 def update_preview(frame_number: int = 0) -> None:
+    global reference_face
+
     if roop.globals.source_path and roop.globals.target_path:
         temp_frame = get_video_frame(roop.globals.target_path, frame_number)
         if predict_frame(temp_frame):
             quit()
+        source_face = get_one_face(cv2.imread(roop.globals.source_path))
+        if not reference_face:
+            reference_face = get_one_face(temp_frame, roop.globals.face_position)
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             temp_frame = frame_processor.process_frame(
-                get_one_face(cv2.imread(roop.globals.source_path)),
+                source_face,
+                reference_face,
                 temp_frame
             )
         image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))

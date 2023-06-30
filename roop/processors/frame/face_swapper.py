@@ -6,13 +6,15 @@ import threading
 import roop.globals
 import roop.processors.frame.core
 from roop.core import update_status
-from roop.face_analyser import get_one_face, get_many_faces
+from roop.face_analyser import get_one_face, get_many_faces, find_similar_face
 from roop.typing import Face, Frame
 from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
 NAME = 'ROOP.FACE-SWAPPER'
+
+reference_face = None
 
 
 def get_face_swapper() -> Any:
@@ -45,42 +47,51 @@ def pre_start() -> bool:
 
 
 def post_process() -> None:
-    global FACE_SWAPPER
+    global FACE_SWAPPER, reference_face
 
     FACE_SWAPPER = None
+    reference_face = None
 
 
 def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
     return get_face_swapper().get(temp_frame, target_face, source_face, paste_back=True)
 
 
-def process_frame(source_face: Face, temp_frame: Frame) -> Frame:
+def process_frame(source_face: Face, reference_face: Face, temp_frame: Frame) -> Frame:
     if roop.globals.many_faces:
         many_faces = get_many_faces(temp_frame)
         if many_faces:
             for target_face in many_faces:
                 temp_frame = swap_face(source_face, target_face, temp_frame)
     else:
-        target_face = get_one_face(temp_frame)
+        target_face = find_similar_face(temp_frame, reference_face)
         if target_face:
             temp_frame = swap_face(source_face, target_face, temp_frame)
     return temp_frame
 
 
 def process_frames(source_path: str, temp_frame_paths: List[str], update: Callable[[], None]) -> None:
+    global reference_face
+
     source_face = get_one_face(cv2.imread(source_path))
+    if not reference_face:
+        reference_face = get_one_face(cv2.imread(temp_frame_paths[0]),  roop.globals.face_position)
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
-        result = process_frame(source_face, temp_frame)
+        result = process_frame(source_face, reference_face, temp_frame)
         cv2.imwrite(temp_frame_path, result)
         if update:
             update()
 
 
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
+    global reference_face
+
     source_face = get_one_face(cv2.imread(source_path))
     target_frame = cv2.imread(target_path)
-    result = process_frame(source_face, target_frame)
+    if not reference_face:
+        reference_face = get_one_face(cv2.imread(target_frame),  roop.globals.face_position)
+    result = process_frame(source_face, reference_face, target_frame)
     cv2.imwrite(output_path, result)
 
 
