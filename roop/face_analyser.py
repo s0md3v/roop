@@ -1,9 +1,9 @@
 import threading
-from typing import Any
+from typing import Any, Optional, List
 import insightface
 
 import roop.globals
-from roop.typing import Frame
+from roop.typing import Frame, Face
 
 FACE_ANALYSER = None
 THREAD_LOCK = threading.Lock()
@@ -19,15 +19,15 @@ def get_face_analyser() -> Any:
     return FACE_ANALYSER
 
 
-def get_one_face(frame: Frame) -> Any:
-    face = get_face_analyser().get(frame)
+def get_one_face(frame: Frame) -> Optional[Face]:
+    faces = get_many_faces(frame)
     try:
-        return min(face, key=lambda x: x.bbox[0])
+        return faces[0]
     except ValueError:
         return None
 
 
-def get_many_faces(frame: Frame) -> Any:
+def get_many_faces(frame: Frame) -> Optional[List[Face]]:
     try:
         return get_face_analyser().get(frame)
     except IndexError:
