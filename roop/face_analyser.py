@@ -31,9 +31,10 @@ def get_one_face(frame: Frame, position: int = 0) -> Optional[Face]:
 
 
 def get_many_faces(frame: Frame) -> Optional[List[Face]]:
-    if frame:
+    try:
         return get_face_analyser().get(frame)
-    return None
+    except ValueError:
+        return None
 
 
 def find_similar_face(frame: Frame, reference_face: Face) -> Optional[Face]:
