@@ -30,10 +30,12 @@ def clear_face_analyser() -> Any:
 
 def get_one_face(frame: Frame, position: int = 0) -> Optional[Face]:
     faces = get_many_faces(frame)
-    try:
-        return faces[position]
-    except IndexError:
-        return faces[-1]
+    if faces:
+        try:
+            return faces[position]
+        except IndexError:
+            return faces[-1]
+    return None
 
 
 def get_many_faces(frame: Frame) -> Optional[List[Face]]:
