@@ -22,6 +22,12 @@ def get_face_analyser() -> Any:
     return FACE_ANALYSER
 
 
+def clear_face_analyser() -> Any:
+    global FACE_ANALYSER
+
+    FACE_ANALYSER = None
+
+
 def get_one_face(frame: Frame, position: int = 0) -> Optional[Face]:
     faces = get_many_faces(frame)
     try:

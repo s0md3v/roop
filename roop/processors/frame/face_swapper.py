@@ -7,14 +7,13 @@ import roop.globals
 import roop.processors.frame.core
 from roop.core import update_status
 from roop.face_analyser import get_one_face, get_many_faces, find_similar_face
+from roop.face_reference import get_face_reference, set_face_reference, clear_face_reference
 from roop.typing import Face, Frame
 from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
 NAME = 'ROOP.FACE-SWAPPER'
-
-reference_face = None
 
 
 def get_face_swapper() -> Any:
@@ -25,6 +24,12 @@ def get_face_swapper() -> Any:
             model_path = resolve_relative_path('../models/inswapper_128.onnx')
             FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=roop.globals.execution_providers)
     return FACE_SWAPPER
+
+
+def clear_face_swapper() -> None:
+    global FACE_SWAPPER
+
+    FACE_SWAPPER = None
 
 
 def pre_check() -> bool:
@@ -47,10 +52,8 @@ def pre_start() -> bool:
 
 
 def post_process() -> None:
-    global FACE_SWAPPER, reference_face
-
-    FACE_SWAPPER = None
-    reference_face = None
+    clear_face_swapper()
+    clear_face_reference()
 
 
 def swap_face(source_face: Face, target_face: Face, temp_frame: Frame) -> Frame:
@@ -71,11 +74,12 @@ def process_frame(source_face: Face, reference_face: Face, temp_frame: Frame) ->
 
 
 def process_frames(source_path: str, temp_frame_paths: List[str], update: Callable[[], None]) -> None:
-    global reference_face
-
     source_face = get_one_face(cv2.imread(source_path))
-    if not reference_face:
-        reference_face = get_one_face(cv2.imread(temp_frame_paths[0]),  roop.globals.face_position)
+    if not get_face_reference():
+        reference_face = get_one_face(cv2.imread(temp_frame_paths[0]), roop.globals.face_position)
+        set_face_reference(reference_face)
+    else:
+        reference_face = get_face_reference()
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
         result = process_frame(source_face, reference_face, temp_frame)
@@ -85,12 +89,9 @@ def process_frames(source_path: str, temp_frame_paths: List[str], update: Callab
 
 
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
-    global reference_face
-
     source_face = get_one_face(cv2.imread(source_path))
     target_frame = cv2.imread(target_path)
-    if not reference_face:
-        reference_face = get_one_face(cv2.imread(target_frame),  roop.globals.face_position)
+    reference_face = get_one_face(target_frame, roop.globals.face_position)
     result = process_frame(source_face, reference_face, target_frame)
     cv2.imwrite(output_path, result)
 
