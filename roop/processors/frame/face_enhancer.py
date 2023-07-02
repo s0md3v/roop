@@ -35,6 +35,12 @@ def get_device() -> str:
     return 'cpu'
 
 
+def clear_face_enhancer() -> None:
+    global FACE_ENHANCER
+
+    FACE_ENHANCER = None
+
+
 def pre_check() -> bool:
     download_directory_path = resolve_relative_path('../models')
     conditional_download(download_directory_path, ['https://huggingface.co/henryruhs/roop/resolve/main/GFPGANv1.4.pth'])
@@ -49,9 +55,7 @@ def pre_start() -> bool:
 
 
 def post_process() -> None:
-    global FACE_ENHANCER
-
-    FACE_ENHANCER = None
+    clear_face_enhancer()
 
 
 def enhance_face(temp_frame: Frame) -> Frame:

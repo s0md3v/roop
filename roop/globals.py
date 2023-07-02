@@ -8,6 +8,7 @@ keep_fps = None
 keep_frames = None
 skip_audio = None
 many_faces = None
+face_position = None
 video_encoder = None
 video_quality = None
 max_memory = None

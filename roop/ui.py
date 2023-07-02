@@ -9,6 +9,7 @@ import roop.globals
 import roop.metadata
 from roop.face_analyser import get_one_face
 from roop.capturer import get_video_frame, get_video_frame_total
+from roop.face_reference import get_face_reference, set_face_reference, clear_face_reference
 from roop.predicter import predict_frame
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import is_image, is_video, resolve_relative_path
@@ -144,6 +145,7 @@ def select_target_path() -> None:
     global RECENT_DIRECTORY_TARGET
 
     PREVIEW.withdraw()
+    clear_face_reference()
     target_path = ctk.filedialog.askopenfilename(title='select an target image or video', initialdir=RECENT_DIRECTORY_TARGET)
     if is_image(target_path):
         roop.globals.target_path = target_path
@@ -199,6 +201,7 @@ def render_video_preview(video_path: str, size: Tuple[int, int], frame_number: i
 def toggle_preview() -> None:
     if PREVIEW.state() == 'normal':
         PREVIEW.withdraw()
+        clear_face_reference()
     elif roop.globals.source_path and roop.globals.target_path:
         init_preview()
         update_preview()
@@ -220,9 +223,16 @@ def update_preview(frame_number: int = 0) -> None:
         temp_frame = get_video_frame(roop.globals.target_path, frame_number)
         if predict_frame(temp_frame):
             quit()
+        source_face = get_one_face(cv2.imread(roop.globals.source_path))
+        if not get_face_reference():
+            reference_face = get_one_face(temp_frame, roop.globals.face_position)
+            set_face_reference(reference_face)
+        else:
+            reference_face = get_face_reference()
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             temp_frame = frame_processor.process_frame(
-                get_one_face(cv2.imread(roop.globals.source_path)),
+                source_face,
+                reference_face,
                 temp_frame
             )
         image = Image.fromarray(cv2.cvtColor(temp_frame, cv2.COLOR_BGR2RGB))
