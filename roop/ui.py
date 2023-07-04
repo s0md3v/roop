@@ -1,4 +1,5 @@
 import os
+import sys
 import webbrowser
 import customtkinter as ctk
 from typing import Callable, Tuple
@@ -222,7 +223,7 @@ def update_preview(frame_number: int = 0) -> None:
     if roop.globals.source_path and roop.globals.target_path:
         temp_frame = get_video_frame(roop.globals.target_path, frame_number)
         if predict_frame(temp_frame):
-            quit()
+            sys.exit()
         source_face = get_one_face(cv2.imread(roop.globals.source_path))
         if not get_face_reference():
             reference_face = get_one_face(temp_frame, roop.globals.face_position)

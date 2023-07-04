@@ -1,4 +1,5 @@
 import os
+import sys
 import importlib
 import psutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -28,7 +29,7 @@ def load_frame_processor_module(frame_processor: str) -> Any:
             if not hasattr(frame_processor_module, method_name):
                 raise NotImplementedError
     except (ImportError, NotImplementedError):
-        quit(f'Frame processor {frame_processor} crashed.')
+        sys.exit(f'Frame processor {frame_processor} crashed.')
     return frame_processor_module
 
 
