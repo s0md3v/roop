@@ -40,7 +40,7 @@ options:
   --keep-audio                                             keep original audio
   --keep-frames                                            keep temporary frames
   --many-faces                                             process every face
-  --video-encoder {libx264,libx265,libvpx-vp9}             adjust output video encoder
+  --video-encoder {libx264,libx265,libvpx-vp9,h264_nvenc,hevc_nvenc}   adjust output video encoder
   --video-quality [0-51]                                   adjust output video quality
   --max-memory MAX_MEMORY                                  maximum amount of RAM in GB
   --execution-provider {cpu} [{cpu} ...]                   available execution provider (choices: cpu, ...)
