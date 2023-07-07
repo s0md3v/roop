@@ -6,7 +6,7 @@ import threading
 import roop.globals
 import roop.processors.frame.core
 from roop.core import update_status
-from roop.face_analyser import get_one_face, get_many_faces
+from roop.face_analyser import get_one_face, get_target_face, get_many_faces
 from roop.typing import Face, Frame
 from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
 
@@ -61,7 +61,10 @@ def process_frame(source_face: Face, temp_frame: Frame) -> Frame:
             for target_face in many_faces:
                 temp_frame = swap_face(source_face, target_face, temp_frame)
     else:
-        target_face = get_one_face(temp_frame)
+        if roop.globals.target_face is None:
+            target_face = get_one_face(temp_frame)
+        else:
+            target_face = get_target_face(temp_frame)
         if target_face:
             temp_frame = swap_face(source_face, target_face, temp_frame)
     return temp_frame

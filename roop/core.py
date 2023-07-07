@@ -16,6 +16,7 @@ import argparse
 import torch
 import onnxruntime
 import tensorflow
+import cv2
 
 import roop.globals
 import roop.metadata
@@ -23,6 +24,7 @@ import roop.ui as ui
 from roop.predicter import predict_image, predict_video
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, normalize_output_path
+from roop.face_analyser import get_one_face
 
 if 'ROCMExecutionProvider' in roop.globals.execution_providers:
     del torch
@@ -136,10 +138,24 @@ def update_status(message: str, scope: str = 'ROOP.CORE') -> None:
         ui.update_status(message)
 
 
+def process_target_face() -> None:
+    if roop.globals.target_face_path is None or roop.globals.many_faces:
+        roop.globals.target_face = None
+    else:
+        update_status('Target face selected. Processing...')
+        roop.globals.target_face = get_one_face(cv2.imread(roop.globals.target_face_path))
+        if roop.globals.target_face is None:
+            update_status('Failed to find face. Falling back to no target face')
+        else:
+            update_status('Successfully found target face')
+
+
 def start() -> None:
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         if not frame_processor.pre_start():
             return
+    # process target face
+    process_target_face()
     # process image to image
     if has_image_extension(roop.globals.target_path):
         if predict_image(roop.globals.target_path):

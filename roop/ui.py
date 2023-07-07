@@ -28,6 +28,7 @@ RECENT_DIRECTORY_OUTPUT = None
 preview_label = None
 preview_slider = None
 source_label = None
+target_face_label = None
 target_label = None
 status_label = None
 
@@ -42,7 +43,7 @@ def init(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
 
 
 def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
-    global source_label, target_label, status_label
+    global source_label, target_face_label, target_label, status_label
 
     ctk.deactivate_automatic_dpi_awareness()
     ctk.set_appearance_mode('system')
@@ -55,16 +56,22 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     root.protocol('WM_DELETE_WINDOW', lambda: destroy())
 
     source_label = ctk.CTkLabel(root, text=None)
-    source_label.place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.25)
+    source_label.place(relx=0.1, rely=0.1, relwidth=0.23, relheight=0.25)
+
+    target_face_label = ctk.CTkLabel(root, text=None)
+    target_face_label.place(relx=0.38, rely=0.1, relwidth=0.23, relheight=0.25)
 
     target_label = ctk.CTkLabel(root, text=None)
-    target_label.place(relx=0.6, rely=0.1, relwidth=0.3, relheight=0.25)
+    target_label.place(relx=0.66, rely=0.1, relwidth=0.23, relheight=0.25)
 
     source_button = ctk.CTkButton(root, text='Select a face', cursor='hand2', command=lambda: select_source_path())
-    source_button.place(relx=0.1, rely=0.4, relwidth=0.3, relheight=0.1)
+    source_button.place(relx=0.1, rely=0.4, relwidth=0.23, relheight=0.1)
+
+    target_face_button = ctk.CTkButton(root, text='Select a target face', cursor='hand2', command=lambda: select_target_face_path())
+    target_face_button.place(relx=0.38, rely=0.4, relwidth=0.23, relheight=0.1)
 
     target_button = ctk.CTkButton(root, text='Select a target', cursor='hand2', command=lambda: select_target_path())
-    target_button.place(relx=0.6, rely=0.4, relwidth=0.3, relheight=0.1)
+    target_button.place(relx=0.66, rely=0.4, relwidth=0.23, relheight=0.1)
 
     keep_fps_value = ctk.BooleanVar(value=roop.globals.keep_fps)
     keep_fps_checkbox = ctk.CTkSwitch(root, text='Keep fps', variable=keep_fps_value, cursor='hand2', command=lambda: setattr(roop.globals, 'keep_fps', not roop.globals.keep_fps))
@@ -138,6 +145,21 @@ def select_source_path() -> None:
     else:
         roop.globals.source_path = None
         source_label.configure(image=None)
+
+
+def select_target_face_path() -> None:
+    global RECENT_DIRECTORY_SOURCE
+
+    PREVIEW.withdraw()
+    target_face_path = ctk.filedialog.askopenfilename(title='select a target image', initialdir=RECENT_DIRECTORY_SOURCE)
+    if is_image(target_face_path):
+        roop.globals.target_face_path = target_face_path
+        RECENT_DIRECTORY_SOURCE = os.path.dirname(target_face_path)
+        image = render_image_preview(target_face_path, (200, 200))
+        target_face_label.configure(image=image)
+    else:
+        roop.globals.target_face_path = None
+        target_face_label.configure(image=None)
 
 
 def select_target_path() -> None:

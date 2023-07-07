@@ -1,6 +1,7 @@
 import threading
 from typing import Any
 import insightface
+import numpy
 
 import roop.globals
 from roop.typing import Frame
@@ -23,6 +24,15 @@ def get_one_face(frame: Frame) -> Any:
     face = get_face_analyser().get(frame)
     try:
         return min(face, key=lambda x: x.bbox[0])
+    except ValueError:
+        return None
+    
+    
+def get_target_face(frame: Frame) -> Any:
+    face = get_face_analyser().get(frame)
+    try:
+        target_embedding = roop.globals.target_face.embedding
+        return max(face, key=lambda x: numpy.dot(target_embedding, x.embedding) / (numpy.linalg.norm(target_embedding) * numpy.linalg.norm(x.embedding)))
     except ValueError:
         return None
 

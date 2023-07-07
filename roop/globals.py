@@ -1,6 +1,8 @@
 from typing import List
 
 source_path = None
+target_face_path = None
+target_face = None
 target_path = None
 output_path = None
 frame_processors: List[str] = []
