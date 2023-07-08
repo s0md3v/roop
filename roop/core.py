@@ -42,7 +42,9 @@ def parse_args() -> None:
     program.add_argument('--keep-frames', help='keep temporary frames', dest='keep_frames', action='store_true')
     program.add_argument('--skip-audio', help='skip target audio', dest='skip_audio', action='store_true')
     program.add_argument('--many-faces', help='process every face', dest='many_faces', action='store_true')
-    program.add_argument('--face-position', help='position of the target face', dest='face_position', type=int, default=0)
+    program.add_argument('--reference-face-position', help='position of the reference face', dest='reference_face_position', type=int, default=0)
+    program.add_argument('--reference-frame-number', help='number of the reference frame', dest='reference_frame_number', type=int, default=0)
+    program.add_argument('--similar-face-distance', help='face distance used for recognition', dest='similar_face_distance', type=float, default=0.85)
     program.add_argument('--video-encoder', help='adjust output video encoder', dest='video_encoder', default='libx264', choices=['libx264', 'libx265', 'libvpx-vp9'])
     program.add_argument('--video-quality', help='adjust output video quality', dest='video_quality', type=int, default=18, choices=range(52), metavar='[0-51]')
     program.add_argument('--max-memory', help='maximum amount of RAM in GB', dest='max_memory', type=int, default=suggest_max_memory())
@@ -61,7 +63,9 @@ def parse_args() -> None:
     roop.globals.keep_frames = args.keep_frames
     roop.globals.skip_audio = args.skip_audio
     roop.globals.many_faces = args.many_faces
-    roop.globals.face_position = args.face_position
+    roop.globals.reference_face_position = args.reference_face_position
+    roop.globals.reference_frame_number = args.reference_frame_number
+    roop.globals.similar_face_distance = args.similar_face_distance
     roop.globals.video_encoder = args.video_encoder
     roop.globals.video_quality = args.video_quality
     roop.globals.max_memory = args.max_memory

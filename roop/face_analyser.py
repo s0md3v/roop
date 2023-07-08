@@ -9,8 +9,6 @@ from roop.typing import Frame, Face
 FACE_ANALYSER = None
 THREAD_LOCK = threading.Lock()
 
-MAX_DISTANCE = 0.85
-
 
 def get_face_analyser() -> Any:
     global FACE_ANALYSER
@@ -49,6 +47,6 @@ def find_similar_face(frame: Frame, reference_face: Face) -> Optional[Face]:
     faces = get_many_faces(frame)
     for face in faces:
         distance = numpy.sum(numpy.square(face.normed_embedding - reference_face.normed_embedding))
-        if distance < MAX_DISTANCE:
+        if distance < roop.globals.similar_face_distance:
             return face
     return None
