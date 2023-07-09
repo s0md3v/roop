@@ -75,12 +75,7 @@ def process_frame(source_face: Face, reference_face: Face, temp_frame: Frame) ->
 
 def process_frames(source_path: str, temp_frame_paths: List[str], update: Callable[[], None]) -> None:
     source_face = get_one_face(cv2.imread(source_path))
-    if not get_face_reference():
-        reference_frame = cv2.imread(temp_frame_paths[roop.globals.reference_frame_number])
-        reference_face = get_one_face(reference_frame, roop.globals.reference_face_position)
-        set_face_reference(reference_face)
-    else:
-        reference_face = get_face_reference()
+    reference_face = get_face_reference()
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
         result = process_frame(source_face, reference_face, temp_frame)
@@ -98,4 +93,7 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
+    reference_frame = cv2.imread(temp_frame_paths[roop.globals.reference_frame_number])
+    reference_face = get_one_face(reference_frame, roop.globals.reference_face_position)
+    set_face_reference(reference_face)
     roop.processors.frame.core.process_video(source_path, temp_frame_paths, process_frames)
