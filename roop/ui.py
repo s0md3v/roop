@@ -58,9 +58,13 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
 
     source_label = ctk.CTkLabel(root, text=None)
     source_label.place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.25)
+    if roop.globals.source_path:
+        select_source_path(roop.globals.source_path)
 
     target_label = ctk.CTkLabel(root, text=None)
     target_label.place(relx=0.6, rely=0.1, relwidth=0.3, relheight=0.25)
+    if roop.globals.target_path:
+        select_target_path(roop.globals.target_path)
 
     source_button = ctk.CTkButton(root, text='Select a face', cursor='hand2', command=lambda: select_source_path())
     source_button.place(relx=0.1, rely=0.4, relwidth=0.3, relheight=0.1)
@@ -127,11 +131,13 @@ def update_status(text: str) -> None:
     ROOT.update()
 
 
-def select_source_path() -> None:
+def select_source_path(source_path: str = None) -> None:
     global RECENT_DIRECTORY_SOURCE
 
-    PREVIEW.withdraw()
-    source_path = ctk.filedialog.askopenfilename(title='select an source image', initialdir=RECENT_DIRECTORY_SOURCE)
+    if PREVIEW:
+        PREVIEW.withdraw()
+    if source_path is None:
+        source_path = ctk.filedialog.askopenfilename(title='select an source image', initialdir=RECENT_DIRECTORY_SOURCE)
     if is_image(source_path):
         roop.globals.source_path = source_path
         RECENT_DIRECTORY_SOURCE = os.path.dirname(roop.globals.source_path)
@@ -142,12 +148,14 @@ def select_source_path() -> None:
         source_label.configure(image=None)
 
 
-def select_target_path() -> None:
+def select_target_path(target_path: str = None) -> None:
     global RECENT_DIRECTORY_TARGET
 
-    PREVIEW.withdraw()
+    if PREVIEW:
+        PREVIEW.withdraw()
     clear_face_reference()
-    target_path = ctk.filedialog.askopenfilename(title='select an target image or video', initialdir=RECENT_DIRECTORY_TARGET)
+    if target_path is None:
+        target_path = ctk.filedialog.askopenfilename(title='select an target image or video', initialdir=RECENT_DIRECTORY_TARGET)
     if is_image(target_path):
         roop.globals.target_path = target_path
         RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
