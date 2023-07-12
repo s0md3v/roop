@@ -2,7 +2,7 @@ import os
 import sys
 import webbrowser
 import customtkinter as ctk
-from typing import Callable, Tuple
+from typing import Callable, Tuple, Optional
 import cv2
 from PIL import Image, ImageOps
 
@@ -131,7 +131,7 @@ def update_status(text: str) -> None:
     ROOT.update()
 
 
-def select_source_path(source_path: str = None) -> None:
+def select_source_path(source_path: Optional[str] = None) -> None:
     global RECENT_DIRECTORY_SOURCE
 
     if PREVIEW:
@@ -148,7 +148,7 @@ def select_source_path(source_path: str = None) -> None:
         source_label.configure(image=None)
 
 
-def select_target_path(target_path: str = None) -> None:
+def select_target_path(target_path: Optional[str] = None) -> None:
     global RECENT_DIRECTORY_TARGET
 
     if PREVIEW:
