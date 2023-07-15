@@ -1,7 +1,7 @@
 from typing import Any, List, Callable
 import cv2
 import threading
-import gfpgan
+from gfpgan.utils import GFPGANer
 
 import roop.globals
 import roop.processors.frame.core
@@ -23,7 +23,7 @@ def get_face_enhancer() -> Any:
         if FACE_ENHANCER is None:
             model_path = resolve_relative_path('../models/GFPGANv1.4.pth')
             # todo: set models path https://github.com/TencentARC/GFPGAN/issues/399
-            FACE_ENHANCER = gfpgan.GFPGANer(model_path=model_path, upscale=1, device=get_device()) # type: ignore[attr-defined]
+            FACE_ENHANCER = GFPGANer(model_path=model_path, upscale=1, device=get_device())
     return FACE_ENHANCER
 
 
