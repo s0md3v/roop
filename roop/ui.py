@@ -11,7 +11,7 @@ import roop.metadata
 from roop.face_analyser import get_one_face
 from roop.capturer import get_video_frame, get_video_frame_total
 from roop.face_reference import get_face_reference, set_face_reference, clear_face_reference
-from roop.predicter import predict_frame
+from roop.predictor import predict_frame, clear_predictor
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import is_image, is_video, resolve_relative_path
 
@@ -212,6 +212,7 @@ def render_video_preview(video_path: str, size: Tuple[int, int], frame_number: i
 def toggle_preview() -> None:
     if PREVIEW.state() == 'normal':
         PREVIEW.withdraw()
+        clear_predictor()
     elif roop.globals.source_path and roop.globals.target_path:
         init_preview()
         update_preview(roop.globals.reference_frame_number)
@@ -252,12 +253,10 @@ def update_preview(frame_number: int = 0) -> None:
         preview_label.configure(image=image)
 
 
-def update_face_reference(delta: int) -> None:
-    global preview_slider
-
+def update_face_reference(step: int) -> None:
     clear_face_reference()
     reference_frame_number = preview_slider.get()
-    roop.globals.reference_face_position += delta  # type: ignore
+    roop.globals.reference_face_position += step  # type: ignore
     roop.globals.reference_frame_number = reference_frame_number
     update_preview(reference_frame_number)
 
