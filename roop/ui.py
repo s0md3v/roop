@@ -123,6 +123,8 @@ def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
 
     preview_slider = ctk.CTkSlider(preview, from_=0, to=0, command=lambda frame_value: update_preview(frame_value))
 
+    preview.bind('<Up>', lambda event: update_face_reference(1))
+    preview.bind('<Down>', lambda event: update_face_reference(-1))
     return preview
 
 
@@ -210,7 +212,6 @@ def render_video_preview(video_path: str, size: Tuple[int, int], frame_number: i
 def toggle_preview() -> None:
     if PREVIEW.state() == 'normal':
         PREVIEW.withdraw()
-        clear_face_reference()
     elif roop.globals.source_path and roop.globals.target_path:
         init_preview()
         update_preview(roop.globals.reference_frame_number)
@@ -234,7 +235,8 @@ def update_preview(frame_number: int = 0) -> None:
             sys.exit()
         source_face = get_one_face(cv2.imread(roop.globals.source_path))
         if not get_face_reference():
-            reference_face = get_one_face(temp_frame, roop.globals.reference_face_position)
+            reference_frame = get_video_frame(roop.globals.target_path, roop.globals.reference_frame_number)
+            reference_face = get_one_face(reference_frame, roop.globals.reference_face_position)
             set_face_reference(reference_face)
         else:
             reference_face = get_face_reference()
@@ -248,3 +250,14 @@ def update_preview(frame_number: int = 0) -> None:
         image = ImageOps.contain(image, (PREVIEW_MAX_WIDTH, PREVIEW_MAX_HEIGHT), Image.LANCZOS)
         image = ctk.CTkImage(image, size=image.size)
         preview_label.configure(image=image)
+
+
+def update_face_reference(delta: int) -> None:
+    global preview_slider
+
+    clear_face_reference()
+    reference_frame_number = preview_slider.get()
+    roop.globals.reference_face_position += delta  # type: ignore
+    roop.globals.reference_frame_number = reference_frame_number
+    update_preview(reference_frame_number)
+
