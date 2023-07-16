@@ -156,6 +156,7 @@ def start() -> None:
             frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
             frame_processor.post_process()
             release_resources()
+        # validate
         if is_image(roop.globals.target_path):
             update_status('Processing to image succeed!')
         else:
@@ -176,12 +177,12 @@ def start() -> None:
         release_resources()
     # handles fps
     if roop.globals.keep_fps:
-        update_status('Detecting fps...')
+        update_status('Detecting FPS...')
         fps = detect_fps(roop.globals.target_path)
-        update_status(f'Creating video with {fps} fps...')
+        update_status(f'Creating video with {fps} FPS...')
         create_video(roop.globals.target_path, fps)
     else:
-        update_status('Creating video with 30.0 fps...')
+        update_status('Creating video with 30 FPS...')
         create_video(roop.globals.target_path)
     # handle audio
     if roop.globals.skip_audio:
