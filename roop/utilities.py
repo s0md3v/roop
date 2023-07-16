@@ -39,19 +39,19 @@ def detect_fps(target_path: str) -> float:
         return numerator / denominator
     except Exception:
         pass
-    return 30.0
+    return 30
 
 
-def extract_frames(target_path: str) -> None:
+def extract_frames(target_path: str, fps: float = 30) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
     command = ['-i', target_path, '-pix_fmt', 'rgb24']
     if not roop.globals.keep_fps:
-        command.extend(['-vf', 'fps=30'])
+        command.extend(['-vf', 'fps=' + str(fps)])
     command.extend([os.path.join(temp_directory_path, '%04d.png')])
     run_ffmpeg(command)
 
 
-def create_video(target_path: str, fps: float = 30.0) -> None:
+def create_video(target_path: str, fps: float = 30) -> None:
     temp_output_path = get_temp_output_path(target_path)
     temp_directory_path = get_temp_directory_path(target_path)
     run_ffmpeg(['-r', str(fps), '-i', os.path.join(temp_directory_path, '%04d.png'), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-vf', 'colorspace=bt709:iall=bt601-6-625:fast=1', '-y', temp_output_path])
