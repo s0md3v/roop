@@ -125,6 +125,8 @@ def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
 
     preview.bind('<Up>', lambda event: update_face_reference(1))
     preview.bind('<Down>', lambda event: update_face_reference(-1))
+    preview.bind('<Right>', lambda event: update_frame(10))
+    preview.bind('<Left>', lambda event: update_frame(-10))
     return preview
 
 
@@ -253,10 +255,15 @@ def update_preview(frame_number: int = 0) -> None:
         preview_label.configure(image=image)
 
 
-def update_face_reference(step: int) -> None:
+def update_face_reference(steps: int) -> None:
     clear_face_reference()
     reference_frame_number = preview_slider.get()
-    roop.globals.reference_face_position += step  # type: ignore
+    roop.globals.reference_face_position += steps  # type: ignore
     roop.globals.reference_frame_number = reference_frame_number
     update_preview(reference_frame_number)
 
+
+def update_frame(steps: int) -> None:
+    frame_number = preview_slider.get() + steps
+    preview_slider.set(frame_number)
+    update_preview(preview_slider.get())
