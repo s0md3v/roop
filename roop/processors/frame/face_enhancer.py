@@ -6,7 +6,7 @@ from gfpgan.utils import GFPGANer
 import roop.globals
 import roop.processors.frame.core
 from roop.core import update_status
-from roop.face_analyser import get_one_face
+from roop.face_analyser import get_many_faces
 from roop.typing import Frame, Face
 from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
 
@@ -58,19 +58,22 @@ def post_process() -> None:
     clear_face_enhancer()
 
 
-def enhance_face(temp_frame: Frame) -> Frame:
+def enhance_face(target_face: Face, temp_frame: Frame) -> Frame:
+    start_x, start_y, end_x, end_y = map(int, target_face['bbox'])
     with THREAD_SEMAPHORE:
-        _, _, temp_frame = get_face_enhancer().enhance(
-            temp_frame,
+        _, _, temp_face = get_face_enhancer().enhance(
+            temp_frame[start_y:end_y, start_x:end_x],
             paste_back=True
         )
+    temp_frame[start_y:end_y, start_x:end_x] = temp_face
     return temp_frame
 
 
 def process_frame(source_face: Face, reference_face: Face, temp_frame: Frame) -> Frame:
-    target_face = get_one_face(temp_frame)
-    if target_face:
-        temp_frame = enhance_face(temp_frame)
+    many_faces = get_many_faces(temp_frame)
+    if many_faces:
+        for target_face in many_faces:
+            temp_frame = enhance_face(target_face, temp_frame)
     return temp_frame
 
 
