@@ -4,6 +4,9 @@ That's it, that's the software. You can watch some demos [here](https://drive.go
 
 ![demo-gif](demo.gif)
 
+
+<a href="https://colab.research.google.com/drive/1tsgwwOvFxQ-kEh1KzMBCR-g6mtM15QDG?usp=sharing"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
+
 ## Installation
 > Do not create any issues regarding installation problems. I am only responsible for issues in this program, use google for help.
 
@@ -17,7 +20,7 @@ pip install -r requirements.txt
 ```
 4. Download [this file](https://1drv.ms/u/s!AsHA3Xbnj6uAgxhb_tmQ7egHACOR?e=CPoThO) and keep it in **roop** directory
 
-### GPU Accleration (Optional)
+### GPU Acceleration (Optional)
 If you have a good enough GPU, you can use it to speed-up the face-swapping process by running `run.py` with `--gpu` flag.
 If you plan on doing it, you will need to install the appropriate `onnxruntime-*` package as follows:
 
@@ -59,6 +62,8 @@ Additional command line arguments are given below:
 ```
 
 Looking for a CLI mode? Using the -f/--face argument will make the program in cli mode.
+
+
 
 ## Future plans
 - [ ] Replace a selective face throughout the video
