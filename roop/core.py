@@ -15,6 +15,8 @@ import shutil
 import argparse
 import torch
 import onnxruntime
+if not 'CUDAExecutionProvider' in onnxruntime.get_available_providers():
+    del torch
 import tensorflow
 
 import roop.globals
@@ -23,9 +25,6 @@ import roop.ui as ui
 from roop.predictor import predict_image, predict_video
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, normalize_output_path
-
-if 'ROCMExecutionProvider' in roop.globals.execution_providers:
-    del torch
 
 warnings.filterwarnings('ignore', category=FutureWarning, module='insightface')
 warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
@@ -85,7 +84,7 @@ def decode_execution_providers(execution_providers: List[str]) -> List[str]:
 def suggest_max_memory() -> int:
     if platform.system().lower() == 'darwin':
         return 4
-    return 16
+    return 8
 
 
 def suggest_execution_providers() -> List[str]:
@@ -93,11 +92,9 @@ def suggest_execution_providers() -> List[str]:
 
 
 def suggest_execution_threads() -> int:
-    if 'DmlExecutionProvider' in roop.globals.execution_providers:
-        return 1
-    if 'ROCMExecutionProvider' in roop.globals.execution_providers:
-        return 1
-    return 8
+    if 'CUDAExecutionProvider' in onnxruntime.get_available_providers():
+        return 8
+    return 1
 
 
 def limit_resources() -> None:
