@@ -20,9 +20,10 @@ def get_face_analyser() -> Any:
 
 
 def get_one_face(frame: Frame) -> Any:
-    face = get_face_analyser().get(frame)
+    faces = get_face_analyser().get(frame)
     try:
-        return min(face, key=lambda x: x.bbox[0])
+        # Pick the largest face (x2 - x1) * (y2 - y1)
+        return max(faces, key=lambda x: (x.bbox[2] - x.bbox[0]) * (x.bbox[3] - x.bbox[1]))
     except ValueError:
         return None
 
