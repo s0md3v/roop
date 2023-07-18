@@ -44,11 +44,7 @@ def detect_fps(target_path: str) -> float:
 
 def extract_frames(target_path: str, fps: float = 30) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
-    command = ['-i', target_path, '-pix_fmt', 'rgb24']
-    if not roop.globals.keep_fps:
-        command.extend(['-vf', 'fps=' + str(fps)])
-    command.extend([os.path.join(temp_directory_path, '%04d.png')])
-    run_ffmpeg(command)
+    run_ffmpeg(['-i', target_path, '-pix_fmt', 'rgb24', '-vf', 'fps=' + str(fps), os.path.join(temp_directory_path, '%04d.png')])
 
 
 def create_video(target_path: str, fps: float = 30) -> None:

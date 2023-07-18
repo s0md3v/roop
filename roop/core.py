@@ -148,12 +148,13 @@ def start() -> None:
         if predict_image(roop.globals.target_path):
             destroy()
         shutil.copy2(roop.globals.target_path, roop.globals.output_path)
+        # process frame
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
             update_status('Progressing...', frame_processor.NAME)
             frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
             frame_processor.post_process()
             release_resources()
-        # validate
+        # validate image
         if is_image(roop.globals.target_path):
             update_status('Processing to image succeed!')
         else:
@@ -164,17 +165,23 @@ def start() -> None:
         destroy()
     update_status('Creating temp resources...')
     create_temp(roop.globals.target_path)
-    update_status('Extracting frames...')
-    extract_frames(roop.globals.target_path)
+    # extract frames
+    if roop.globals.keep_fps:
+        fps = detect_fps(roop.globals.target_path)
+        update_status(f'Extracting frames with {fps} FPS...')
+        extract_frames(roop.globals.target_path, fps)
+    else:
+        update_status('Extracting frames with 30 FPS...')
+        extract_frames(roop.globals.target_path)
+    # process frame
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         update_status('Progressing...', frame_processor.NAME)
         frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
         frame_processor.post_process()
         release_resources()
-    # handles fps
+    # create video
     if roop.globals.keep_fps:
-        update_status('Detecting FPS...')
         fps = detect_fps(roop.globals.target_path)
         update_status(f'Creating video with {fps} FPS...')
         create_video(roop.globals.target_path, fps)
@@ -191,8 +198,9 @@ def start() -> None:
         else:
             update_status('Restoring audio might cause issues as fps are not kept...')
         restore_audio(roop.globals.target_path, roop.globals.output_path)
-    # clean and validate
+    # clean temp
     clean_temp(roop.globals.target_path)
+    # validate video
     if is_video(roop.globals.target_path):
         update_status('Processing to video succeed!')
     else:
