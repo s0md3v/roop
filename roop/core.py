@@ -215,7 +215,8 @@ def run() -> None:
         start()
     elif roop.globals.gradio_ui:
         demo = gradio_ui.init(start, destroy)
-        demo.launch()
+        demo.queue()
+        demo.launch(share=True)
     else:
         window = ui.init(start, destroy)
         window.mainloop()
