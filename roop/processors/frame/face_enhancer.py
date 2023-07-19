@@ -1,12 +1,12 @@
 from typing import Any, List, Callable
 import cv2
 import threading
-import gfpgan
+from gfpgan.utils import GFPGANer
 
 import roop.globals
 import roop.processors.frame.core
 from roop.core import update_status
-from roop.face_analyser import get_one_face
+from roop.face_analyser import get_many_faces
 from roop.typing import Frame, Face
 from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
 
@@ -22,9 +22,23 @@ def get_face_enhancer() -> Any:
     with THREAD_LOCK:
         if FACE_ENHANCER is None:
             model_path = resolve_relative_path('../models/GFPGANv1.4.pth')
-            # todo: set models path https://github.com/TencentARC/GFPGAN/issues/399
-            FACE_ENHANCER = gfpgan.GFPGANer(model_path=model_path, upscale=1) # type: ignore[attr-defined]
+            # todo: set models path -> https://github.com/TencentARC/GFPGAN/issues/399
+            FACE_ENHANCER = GFPGANer(model_path=model_path, upscale=1, device=get_device())
     return FACE_ENHANCER
+
+
+def get_device() -> str:
+    if 'CUDAExecutionProvider' in roop.globals.execution_providers:
+        return 'cuda'
+    if 'CoreMLExecutionProvider' in roop.globals.execution_providers:
+        return 'mps'
+    return 'cpu'
+
+
+def clear_face_enhancer() -> None:
+    global FACE_ENHANCER
+
+    FACE_ENHANCER = None
 
 
 def pre_check() -> bool:
@@ -41,31 +55,32 @@ def pre_start() -> bool:
 
 
 def post_process() -> None:
-    global FACE_ENHANCER
-
-    FACE_ENHANCER = None
+    clear_face_enhancer()
 
 
-def enhance_face(temp_frame: Frame) -> Frame:
+def enhance_face(target_face: Face, temp_frame: Frame) -> Frame:
+    start_x, start_y, end_x, end_y = map(int, target_face['bbox'])
     with THREAD_SEMAPHORE:
-        _, _, temp_frame = get_face_enhancer().enhance(
-            temp_frame,
+        _, _, temp_face = get_face_enhancer().enhance(
+            temp_frame[start_y:end_y, start_x:end_x],
             paste_back=True
         )
+    temp_frame[start_y:end_y, start_x:end_x] = temp_face
     return temp_frame
 
 
-def process_frame(source_face: Face, temp_frame: Frame) -> Frame:
-    target_face = get_one_face(temp_frame)
-    if target_face:
-        temp_frame = enhance_face(temp_frame)
+def process_frame(source_face: Face, reference_face: Face, temp_frame: Frame) -> Frame:
+    many_faces = get_many_faces(temp_frame)
+    if many_faces:
+        for target_face in many_faces:
+            temp_frame = enhance_face(target_face, temp_frame)
     return temp_frame
 
 
 def process_frames(source_path: str, temp_frame_paths: List[str], update: Callable[[], None]) -> None:
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
-        result = process_frame(None, temp_frame)
+        result = process_frame(None, None, temp_frame)
         cv2.imwrite(temp_frame_path, result)
         if update:
             update()
@@ -73,7 +88,7 @@ def process_frames(source_path: str, temp_frame_paths: List[str], update: Callab
 
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
     target_frame = cv2.imread(target_path)
-    result = process_frame(None, target_frame)
+    result = process_frame(None, None, target_frame)
     cv2.imwrite(output_path, result)
 
 

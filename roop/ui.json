@@ -152,6 +152,9 @@
       "weight": "normal"
     }
   },
+  "RoopDropArea": {
+    "fg_color": ["gray90", "gray13"]
+  },
   "RoopDonate": {
     "text_color": ["#3a7ebf", "gray60"]
   }
