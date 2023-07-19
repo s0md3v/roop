@@ -2,6 +2,7 @@ import os
 import sys
 import webbrowser
 import customtkinter as ctk
+from tkinterdnd2 import TkinterDnD, DND_ALL
 from typing import Callable, Tuple, Optional
 import cv2
 from PIL import Image, ImageOps
@@ -34,6 +35,13 @@ target_label = None
 status_label = None
 
 
+# todo: remove by native support -> https://github.com/TomSchimansky/CustomTkinter/issues/934
+class CTk(ctk.CTk, TkinterDnD.DnDWrapper):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.TkdndVersion = TkinterDnD._require(self)
+
+
 def init(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.CTk:
     global ROOT, PREVIEW
 
@@ -50,19 +58,23 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     ctk.set_appearance_mode('system')
     ctk.set_default_color_theme(resolve_relative_path('ui.json'))
 
-    root = ctk.CTk()
+    root = CTk()
     root.minsize(ROOT_WIDTH, ROOT_HEIGHT)
     root.title(f'{roop.metadata.name} {roop.metadata.version}')
     root.configure()
     root.protocol('WM_DELETE_WINDOW', lambda: destroy())
 
-    source_label = ctk.CTkLabel(root, text=None)
+    source_label = ctk.CTkLabel(root, text=None, fg_color=ctk.ThemeManager.theme.get('RoopDropArea').get('fg_color'))
     source_label.place(relx=0.1, rely=0.1, relwidth=0.3, relheight=0.25)
+    source_label.drop_target_register(DND_ALL)
+    source_label.dnd_bind('<<Drop>>', lambda event: select_source_path(event.data))
     if roop.globals.source_path:
         select_source_path(roop.globals.source_path)
 
-    target_label = ctk.CTkLabel(root, text=None)
+    target_label = ctk.CTkLabel(root, text=None, fg_color=ctk.ThemeManager.theme.get('RoopDropArea').get('fg_color'))
     target_label.place(relx=0.6, rely=0.1, relwidth=0.3, relheight=0.25)
+    target_label.drop_target_register(DND_ALL)
+    target_label.dnd_bind('<<Drop>>', lambda event: select_target_path(event.data))
     if roop.globals.target_path:
         select_target_path(roop.globals.target_path)
 

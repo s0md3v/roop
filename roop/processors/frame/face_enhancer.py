@@ -22,7 +22,7 @@ def get_face_enhancer() -> Any:
     with THREAD_LOCK:
         if FACE_ENHANCER is None:
             model_path = resolve_relative_path('../models/GFPGANv1.4.pth')
-            # todo: set models path https://github.com/TencentARC/GFPGAN/issues/399
+            # todo: set models path -> https://github.com/TencentARC/GFPGAN/issues/399
             FACE_ENHANCER = GFPGANer(model_path=model_path, upscale=1, device=get_device())
     return FACE_ENHANCER
 
