@@ -41,4 +41,5 @@ What version of Roop are you using?
 
 - [ ] 1.0.0
 - [ ] 1.1.0
+- [ ] 1.2.0
 - [ ] next
