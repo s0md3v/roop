@@ -3,7 +3,7 @@ import sys
 import webbrowser
 import customtkinter as ctk
 from tkinterdnd2 import TkinterDnD, DND_ALL
-from typing import Callable, Tuple, Optional
+from typing import Any, Callable, Tuple, Optional
 import cv2
 from PIL import Image, ImageOps
 
@@ -37,7 +37,7 @@ status_label = None
 
 # todo: remove by native support -> https://github.com/TomSchimansky/CustomTkinter/issues/934
 class CTk(ctk.CTk, TkinterDnD.DnDWrapper):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.TkdndVersion = TkinterDnD._require(self)
 
