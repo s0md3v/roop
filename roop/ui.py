@@ -37,6 +37,8 @@ preview_slider = None
 source_label = None
 target_label = None
 status_label = None
+video_quality_display = None
+video_quality_value = None
 
 
 # todo: remove by native support -> https://github.com/TomSchimansky/CustomTkinter/issues/934
@@ -143,11 +145,16 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     )
     many_faces_switch.place(relx=0.6, rely=0.65)
 
-    # Add a slider for video quality
     video_quality_label = ctk.CTkLabel(root, text="Quality", justify="center")
-    video_quality_label.place(relx=0.1, rely=0.5, relwidth=0.3, relheight=0.1)
+    video_quality_label.place(relx=0.1, rely=0.7)
 
-    video_quality_value = ctk.IntVar(value=25)  # Set a default value for video quality
+    video_quality_value = ctk.IntVar(value=10)  # Set a default value for video quality
+
+    video_quality_display = ctk.CTkLabel(
+        root, textvariable=video_quality_value, justify="center"
+    )
+    video_quality_display.place(relx=0.2, rely=0.7)
+
     video_quality_slider = ctk.CTkSlider(
         root,
         from_=0,
@@ -155,22 +162,23 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
         variable=video_quality_value,
         cursor="hand2",
     )
-    video_quality_slider.place(relx=0.4, rely=0.5, relwidth=0.9, relheight=0.01)
+    video_quality_slider.place(relx=0.09, rely=0.75, relwidth=0.8, relheight=0.03)
+    video_quality_slider.bind("<<Value>>", update_video_quality_value)
 
     start_button = ctk.CTkButton(
         root, text="Start", cursor="hand2", command=lambda: select_output_path(start)
     )
-    start_button.place(relx=0.15, rely=0.75, relwidth=0.2, relheight=0.05)
+    start_button.place(relx=0.15, rely=0.83, relwidth=0.2, relheight=0.05)
 
     stop_button = ctk.CTkButton(
         root, text="Destroy", cursor="hand2", command=lambda: destroy()
     )
-    stop_button.place(relx=0.4, rely=0.75, relwidth=0.2, relheight=0.05)
+    stop_button.place(relx=0.4, rely=0.83, relwidth=0.2, relheight=0.05)
 
     preview_button = ctk.CTkButton(
         root, text="Preview", cursor="hand2", command=lambda: toggle_preview()
     )
-    preview_button.place(relx=0.65, rely=0.75, relwidth=0.2, relheight=0.05)
+    preview_button.place(relx=0.65, rely=0.83, relwidth=0.2, relheight=0.05)
 
     status_label = ctk.CTkLabel(root, text=None, justify="center")
     status_label.place(relx=0.1, rely=0.9, relwidth=0.8)
@@ -187,6 +195,34 @@ def create_root(start: Callable[[], None], destroy: Callable[[], None]) -> ctk.C
     )
 
     return root
+
+
+def update_video_quality_value() -> None:
+    video_quality = video_quality_value.get()
+    video_quality_display.configure(text=str(video_quality))
+    setattr(roop.globals, "video_quality", video_quality)
+    ROOT.update()
+
+
+def show_alert_box(title: str, message: str) -> None:
+    alert_window = ctk.CTkToplevel()
+    alert_window.title(title)
+
+    alert_width = 300
+    alert_height = 100
+    alert_window.geometry(f"{alert_width}x{alert_height}")
+
+    root_x = (ROOT_WIDTH - alert_width) // 2
+    root_y = (ROOT_HEIGHT - alert_height) // 2
+    alert_window.geometry(f"+{root_x}+{root_y}")
+
+    alert_window.minsize(alert_width, alert_height)
+
+    alert_label = ctk.CTkLabel(alert_window, text=message)
+    alert_label.pack(expand=True)
+
+    ok_button = ctk.CTkButton(alert_window, text="OK", command=alert_window.destroy)
+    ok_button.pack(pady=10)
 
 
 def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
@@ -282,6 +318,14 @@ def select_output_path(start: Callable[[], None]) -> None:
         roop.globals.output_path = output_path
         RECENT_DIRECTORY_OUTPUT = os.path.dirname(roop.globals.output_path)
         start()
+    else:
+        # Check if source and target paths are provided
+        if not roop.globals.source_path:
+            show_alert_box("Missing Input", "Please select an input image.")
+            return
+        if not roop.globals.target_path:
+            show_alert_box("Missing Target", "Please select a target image or video.")
+            return
 
 
 def render_image_preview(image_path: str, size: Tuple[int, int]) -> ctk.CTkImage:
