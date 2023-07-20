@@ -60,12 +60,14 @@ def post_process() -> None:
 
 def enhance_face(target_face: Face, temp_frame: Frame) -> Frame:
     start_x, start_y, end_x, end_y = map(int, target_face['bbox'])
-    with THREAD_SEMAPHORE:
-        _, _, temp_face = get_face_enhancer().enhance(
-            temp_frame[start_y:end_y, start_x:end_x],
-            paste_back=True
-        )
-    temp_frame[start_y:end_y, start_x:end_x] = temp_face
+    temp_face = temp_frame[start_y:end_y, start_x:end_x]
+    if temp_face.size:
+        with THREAD_SEMAPHORE:
+            _, _, temp_face = get_face_enhancer().enhance(
+                temp_face,
+                paste_back=True
+            )
+        temp_frame[start_y:end_y, start_x:end_x] = temp_face
     return temp_frame
 
 
