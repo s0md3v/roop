@@ -39,7 +39,7 @@ def get_one_face(frame: Frame, position: int = 0) -> Optional[Face]:
 def get_many_faces(frame: Frame) -> Optional[List[Face]]:
     try:
         return get_face_analyser().get(frame)
-    except ValueError:
+    except (AttributeError, ValueError):
         return None
 
 
