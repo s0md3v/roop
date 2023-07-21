@@ -18,9 +18,10 @@ def render() -> None:
 
 def update() -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
     roop.globals.output_path = normalize_output_path(roop.globals.source_path, roop.globals.target_path, '.')
-    start()
-    if has_image_extension(roop.globals.output_path):
-        return gradio.update(value=roop.globals.output_path, visible=True), gradio.update(value=None, visible=False)
-    if has_video_extension(roop.globals.output_path):
-        return gradio.update(value=None, visible=False), gradio.update(value=roop.globals.output_path, visible=True)
+    if roop.globals.output_path:
+        start()
+        if has_image_extension(roop.globals.output_path):
+            return gradio.update(value=roop.globals.output_path, visible=True), gradio.update(value=None, visible=False)
+        if has_video_extension(roop.globals.output_path):
+            return gradio.update(value=None, visible=False), gradio.update(value=roop.globals.output_path, visible=True)
     return gradio.update(value=None, visible=False), gradio.update(value=None, visible=False)

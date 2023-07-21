@@ -15,8 +15,8 @@ def render() -> None:
             file_types=['.png', '.jpg', '.jpeg', '.webp', '.mp4'],
             label='target_path'
         )
-        target_image = gradio.Image(label='target_image', interactive=False, height=200, width=200, visible=False)
-        target_video = gradio.Video(label='target_video', interactive=False, height=200, width=200, visible=False)
+        target_image = gradio.Image(label='target_image', interactive=False, height=200, visible=False)
+        target_video = gradio.Video(label='target_video', interactive=False, height=200, visible=False)
         target_file.change(update, inputs=target_file, outputs=[target_image, target_video])
 
 
@@ -27,4 +27,5 @@ def update(file: IO[Any]) -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
     if file and is_video(file.name):
         roop.globals.target_path = file.name  # type: ignore
         return gradio.update(value=None, visible=False), gradio.update(value=file.name, visible=True)
+    roop.globals.target_path = None
     return gradio.update(value=None, visible=False), gradio.update(value=None, visible=False)
