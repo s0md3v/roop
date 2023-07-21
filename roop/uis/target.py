@@ -5,7 +5,7 @@ import gradio
 import roop.globals
 from roop.utilities import is_image, is_video
 
-NAME = 'ROOP.TARGET_SELECTOR'
+NAME = 'ROOP.UIS.TARGET'
 
 
 def render() -> None:
@@ -15,8 +15,8 @@ def render() -> None:
             file_types=['.png', '.jpg', '.jpeg', '.webp', '.mp4'],
             label='target_path'
         )
-        target_image = gradio.Image(label='target_image', interactive=False, height=200, visible=False)
-        target_video = gradio.Video(label='target_video', interactive=False, height=200, visible=False)
+        target_image = gradio.Image(label='target_image', interactive=False, height=200, width=200, visible=False)
+        target_video = gradio.Video(label='target_video', interactive=False, height=200, width=200, visible=False)
         target_file.change(update, inputs=target_file, outputs=[target_image, target_video])
 
 

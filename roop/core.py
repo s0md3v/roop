@@ -215,4 +215,4 @@ def run() -> None:
     else:
         from roop.uis.core import init as init_ui
 
-        init_ui(start)
+        init_ui()

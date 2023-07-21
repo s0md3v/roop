@@ -13,7 +13,7 @@ from roop.utilities import conditional_download, resolve_relative_path, is_image
 FACE_ENHANCER = None
 THREAD_SEMAPHORE = threading.Semaphore()
 THREAD_LOCK = threading.Lock()
-NAME = 'ROOP.FACE-ENHANCER'
+NAME = 'ROOP.PROCESSORS.FRAME.FACE_ENHANCER'
 
 
 def get_face_enhancer() -> Any:

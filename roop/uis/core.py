@@ -1,13 +1,10 @@
-from typing import Callable
-
 import gradio
-from roop.uis import control_panel, source_selector, target_selector
+from roop.uis import source, target, output
 
 
-def init(start: Callable[[], None]) -> None:
+def init() -> None:
     with gradio.Blocks() as ui:
-        control_panel.render(start)
-        source_selector.render()
-        target_selector.render()
-
+        source.render()
+        target.render()
+        output.render()
     ui.launch()

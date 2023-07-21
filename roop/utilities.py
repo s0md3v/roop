@@ -119,6 +119,10 @@ def has_image_extension(image_path: str) -> bool:
     return image_path.lower().endswith(('png', 'jpg', 'jpeg', 'webp'))
 
 
+def has_video_extension(video_path: str) -> bool:
+    return video_path.lower().endswith(('mp4'))
+
+
 def is_image(image_path: str) -> bool:
     if image_path and os.path.isfile(image_path):
         mimetype, _ = mimetypes.guess_type(image_path)

@@ -4,7 +4,7 @@ import gradio
 import roop.globals
 from roop.utilities import is_image
 
-NAME = 'ROOP.SOURCE_SELECTOR'
+NAME = 'ROOP.UIS.SOURCE'
 
 
 def render() -> None:
@@ -14,7 +14,7 @@ def render() -> None:
             file_types=['.png', '.jpg', '.jpeg', '.webp'],
             label='source_path'
         )
-        source_image = gradio.Image(label='source_image', height=200, visible=False)
+        source_image = gradio.Image(label='source_image', height=200, width=200, visible=False)
         source_file.change(update, inputs=source_file, outputs=source_image)
 
 
