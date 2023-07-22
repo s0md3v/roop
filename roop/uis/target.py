@@ -10,13 +10,26 @@ NAME = 'ROOP.UIS.TARGET'
 
 def render() -> None:
     with gradio.Row():
+        is_target_image = is_image(roop.globals.target_path)
+        is_target_video = is_video(roop.globals.target_path)
         target_file = gradio.File(
             file_count='single',
             file_types=['.png', '.jpg', '.jpeg', '.webp', '.mp4'],
-            label='target_path'
+            label='target_path',
+            value=roop.globals.target_path if is_target_image or is_target_video else None
         )
-        target_image = gradio.Image(label='target_image', interactive=False, height=200, visible=False)
-        target_video = gradio.Video(label='target_video', interactive=False, height=200, visible=False)
+        target_image = gradio.Image(
+            label='target_image',
+            height=200,
+            value=target_file.value['name'] if is_target_image else None,
+            visible=is_target_image
+        )
+        target_video = gradio.Video(
+            label='target_video',
+            height=200,
+            value=target_file.value['name'] if is_target_video else None,
+            visible=is_target_video
+        )
         target_file.change(update, inputs=target_file, outputs=[target_image, target_video])
 
 

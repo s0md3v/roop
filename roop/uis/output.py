@@ -13,7 +13,7 @@ def render() -> None:
         start_button = gradio.Button('Start')
         output_image = gradio.Image(label='output_image', interactive=False, visible=False)
         output_video = gradio.Video(label='output_video', interactive=False, visible=False)
-        start_button.click(update, inputs=[], outputs=[output_image, output_video])
+        start_button.click(update, outputs=[output_image, output_video])
 
 
 def update() -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
