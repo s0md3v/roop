@@ -11,8 +11,8 @@ NAME = 'ROOP.UIS.OUTPUT'
 def render() -> None:
     with gradio.Column():
         start_button = gradio.Button('Start')
-        output_image = gradio.Image(label='output_image', interactive=False, visible=False)
-        output_video = gradio.Video(label='output_video', interactive=False, visible=False)
+        output_image = gradio.Image(label='output_image', visible=False)
+        output_video = gradio.Video(label='output_video', visible=False)
         start_button.click(update, outputs=[output_image, output_video])
 
 
