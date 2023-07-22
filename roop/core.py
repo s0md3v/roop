@@ -151,7 +151,7 @@ def start() -> None:
     # process image to videos
     if predict_video(roop.globals.target_path):
         destroy()
-    update_status('Creating temp resources...')
+    update_status('Creating temporary resources...')
     create_temp(roop.globals.target_path)
     # extract frames
     if roop.globals.keep_fps:
@@ -163,10 +163,14 @@ def start() -> None:
         extract_frames(roop.globals.target_path)
     # process frame
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
-    for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-        update_status('Progressing...', frame_processor.NAME)
-        frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
-        frame_processor.post_process()
+    if temp_frame_paths:
+        for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
+            update_status('Progressing...', frame_processor.NAME)
+            frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
+            frame_processor.post_process()
+    else:
+        update_status('Frames not found...')
+        return
     # create video
     if roop.globals.keep_fps:
         fps = detect_fps(roop.globals.target_path)
@@ -186,6 +190,7 @@ def start() -> None:
             update_status('Restoring audio might cause issues as fps are not kept...')
         restore_audio(roop.globals.target_path, roop.globals.output_path)
     # clean temp
+    update_status('Cleaning temporary resources...')
     clean_temp(roop.globals.target_path)
     # validate video
     if is_video(roop.globals.target_path):
