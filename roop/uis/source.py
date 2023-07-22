@@ -1,6 +1,5 @@
 from typing import Any, Optional, IO
 import gradio
-import tempfile
 
 import roop.globals
 from roop.utilities import is_image
@@ -9,7 +8,7 @@ NAME = 'ROOP.UIS.SOURCE'
 
 
 def render() -> None:
-    with gradio.Row():
+    with gradio.Column():
         is_source_image = is_image(roop.globals.source_path)
         source_file = gradio.File(
             file_count='single',
@@ -19,8 +18,8 @@ def render() -> None:
         )
         source_image = gradio.Image(
             label='source_image',
-            height=200,
             value=source_file.value['name'] if is_source_image else None,
+            height=200,
             visible=is_source_image
         )
         source_file.change(update, inputs=source_file, outputs=source_image)

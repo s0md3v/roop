@@ -1,5 +1,4 @@
 from typing import Any, Optional, IO
-
 import gradio
 
 import roop.globals
@@ -9,7 +8,7 @@ NAME = 'ROOP.UIS.TARGET'
 
 
 def render() -> None:
-    with gradio.Row():
+    with gradio.Column():
         is_target_image = is_image(roop.globals.target_path)
         is_target_video = is_video(roop.globals.target_path)
         target_file = gradio.File(
@@ -20,14 +19,14 @@ def render() -> None:
         )
         target_image = gradio.Image(
             label='target_image',
-            height=200,
             value=target_file.value['name'] if is_target_image else None,
+            height=200,
             visible=is_target_image
         )
         target_video = gradio.Video(
             label='target_video',
-            height=200,
             value=target_file.value['name'] if is_target_video else None,
+            height=200,
             visible=is_target_video
         )
         target_file.change(update, inputs=target_file, outputs=[target_image, target_video])
