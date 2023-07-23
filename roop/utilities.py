@@ -12,8 +12,8 @@ from tqdm import tqdm
 
 import roop.globals
 
-TEMP_FILE = 'temp.mp4'
 TEMP_DIRECTORY = 'temp'
+TEMP_VIDEO_FILE = 'temp.mp4'
 
 # monkey patch ssl for mac
 if platform.system().lower() == 'darwin':
@@ -44,13 +44,13 @@ def detect_fps(target_path: str) -> float:
 
 def extract_frames(target_path: str, fps: float = 30) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
-    run_ffmpeg(['-i', target_path, '-pix_fmt', 'rgb24', '-vf', 'fps=' + str(fps), os.path.join(temp_directory_path, '%04d.png')])
+    run_ffmpeg(['-i', target_path, '-q:v', str(roop.globals.temp_frame_quality), '-pix_fmt', 'rgb24', '-vf', 'fps=' + str(fps), os.path.join(temp_directory_path, '%04d.' + roop.globals.temp_frame_format)])
 
 
 def create_video(target_path: str, fps: float = 30) -> None:
     temp_output_path = get_temp_output_path(target_path)
     temp_directory_path = get_temp_directory_path(target_path)
-    run_ffmpeg(['-r', str(fps), '-i', os.path.join(temp_directory_path, '%04d.png'), '-c:v', roop.globals.video_encoder, '-crf', str(roop.globals.video_quality), '-pix_fmt', 'yuv420p', '-vf', 'colorspace=bt709:iall=bt601-6-625:fast=1', '-y', temp_output_path])
+    run_ffmpeg(['-r', str(fps), '-i', os.path.join(temp_directory_path, '%04d.' + roop.globals.temp_frame_format), '-c:v', roop.globals.output_video_encoder, '-crf', str(roop.globals.output_video_quality), '-pix_fmt', 'yuv420p', '-vf', 'colorspace=bt709:iall=bt601-6-625:fast=1', '-y', temp_output_path])
 
 
 def restore_audio(target_path: str, output_path: str) -> None:
@@ -62,7 +62,7 @@ def restore_audio(target_path: str, output_path: str) -> None:
 
 def get_temp_frame_paths(target_path: str) -> List[str]:
     temp_directory_path = get_temp_directory_path(target_path)
-    return glob.glob((os.path.join(glob.escape(temp_directory_path), '*.png')))
+    return glob.glob((os.path.join(glob.escape(temp_directory_path), '*.' + roop.globals.temp_frame_format)))
 
 
 def get_temp_directory_path(target_path: str) -> str:
@@ -73,7 +73,7 @@ def get_temp_directory_path(target_path: str) -> str:
 
 def get_temp_output_path(target_path: str) -> str:
     temp_directory_path = get_temp_directory_path(target_path)
-    return os.path.join(temp_directory_path, TEMP_FILE)
+    return os.path.join(temp_directory_path, TEMP_VIDEO_FILE)
 
 
 def normalize_output_path(source_path: str, target_path: str, output_path: str) -> Optional[str]:
