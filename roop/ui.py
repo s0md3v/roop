@@ -139,6 +139,11 @@ def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
     return preview
 
 
+def reset_preview() -> None:
+    roop.globals.reference_frame_number = 0
+    preview_slider.set(0)
+
+
 def update_status(text: str) -> None:
     status_label.configure(text=text)
     ROOT.update()
@@ -160,7 +165,6 @@ def select_source_path(source_path: Optional[str] = None) -> None:
         roop.globals.source_path = None
         source_label.configure(image=None)
 
-
 def select_target_path(target_path: Optional[str] = None) -> None:
     global RECENT_DIRECTORY_TARGET
 
@@ -177,8 +181,7 @@ def select_target_path(target_path: Optional[str] = None) -> None:
     elif is_video(target_path):
         roop.globals.target_path = target_path  # type: ignore
         RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
-        roop.globals.reference_frame_number = 0
-        preview_slider.set(0)
+        reset_preview()
         video_frame = render_video_preview(target_path, (200, 200))
         target_label.configure(image=video_frame)
     else:
