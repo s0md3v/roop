@@ -140,8 +140,9 @@ def create_preview(parent: ctk.CTkToplevel) -> ctk.CTkToplevel:
 
 
 def update_status(text: str) -> None:
-    status_label.configure(text=text)
-    ROOT.update()
+    if status_label is not None:
+        status_label.configure(text=text)
+        ROOT.update()
 
 
 def select_source_path(source_path: Optional[str] = None) -> None:
