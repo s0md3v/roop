@@ -23,13 +23,17 @@ It is more likely to work on your computer, but will be quite slow. Follow instr
 
 If you own a capable GPU and are prepared to address any software problems, you have the option to activate such acceleration, which offers significantly enhanced speed. Once you finished the basic installation, you can follow the instructions for the acceleration installation [here](https://github.com/s0md3v/roop/wiki/2.-Acceleration).
 
-## How do I use it?
+## How to use?
+
+### UI
 
 Executing `python run.py` command will launch this window:
 
 ![gui-demo](gui-demo.png)
 
 Choose a face (image with desired face) and the target image/video (image/video in which you want to replace the face) and click on `Start`. Open file explorer and navigate to the directory you select your output to be in. You will find a directory named `<video_title>` where you can see the frames being swapped in realtime. Once the processing is done, it will create the output file. That's it.
+
+## CLI
 
 Additional command line arguments are given below. To learn out what they do, check the guide [here](https://github.com/s0md3v/roop/wiki/Advanced-Options).
 
