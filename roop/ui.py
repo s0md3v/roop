@@ -177,6 +177,7 @@ def select_target_path(target_path: Optional[str] = None) -> None:
     elif is_video(target_path):
         roop.globals.target_path = target_path  # type: ignore
         RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
+        preview_slider.set(0)
         video_frame = render_video_preview(target_path, (200, 200))
         target_label.configure(image=video_frame)
     else:
