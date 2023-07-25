@@ -34,10 +34,10 @@ def render() -> None:
 
 def update(file: IO[Any]) -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
     if file and is_image(file.name):
-        roop.globals.target_path = file.name  # type: ignore
+        roop.globals.target_path = file.name
         return gradio.update(value=file.name, visible=True), gradio.update(value=None, visible=False)
     if file and is_video(file.name):
-        roop.globals.target_path = file.name  # type: ignore
+        roop.globals.target_path = file.name
         return gradio.update(value=None, visible=False), gradio.update(value=file.name, visible=True)
     roop.globals.target_path = None
     return gradio.update(value=None, visible=False), gradio.update(value=None, visible=False)

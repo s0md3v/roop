@@ -37,7 +37,7 @@ def render() -> None:
 
 def update(file: IO[Any]) -> Optional[dict[Any, Any]]:
     if file and is_image(file.name):
-        roop.globals.source_path = file.name  # type: ignore
+        roop.globals.source_path = file.name
         return gradio.update(value=file.name, visible=True)
     roop.globals.source_path = None
     return gradio.update(value=None, visible=False)
