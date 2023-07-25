@@ -11,48 +11,26 @@ from roop.face_reference import get_face_reference, set_face_reference
 from roop.predictor import predict_frame
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.typing import Frame
-from roop.uis.source import get_source_file
 from roop.utilities import is_video
 
 NAME = 'ROOP.UIS.PREVIEW'
-PREVIEW_IMAGE = None
-PREVIEW_SLIDER = None
 
 
 def render() -> None:
     with gradio.Column():
         is_target_video = is_video(roop.globals.target_path)
-        preview_image = get_preview_image()
-        if is_target_video:
-            preview_slider = get_preview_slider()
-            preview_slider.change(update_preview_image, inputs=preview_slider, outputs=preview_image, show_progress=False)
-        # get_source_file().change(update_preview_image, inputs=preview_slider, outputs=preview_image, show_progress=False)
-        # get_source_file().clear(clear, outputs=preview_image, show_progress=False)
-
-
-def get_preview_image() -> gradio.Image:
-    global PREVIEW_IMAGE
-
-    if PREVIEW_IMAGE is None:
-        is_target_video = is_video(roop.globals.target_path)
-        PREVIEW_IMAGE = gradio.Image(
+        preview_image = gradio.Image(
             label='preview_image',
             value=normalize_preview_frame(get_preview_frame(roop.globals.reference_frame_number)) if is_target_video else None
         )
-    return PREVIEW_IMAGE
-
-
-def get_preview_slider() -> gradio.Slider:
-    global PREVIEW_SLIDER
-
-    if PREVIEW_SLIDER is None:
-        video_frame_total = get_video_frame_total(roop.globals.target_path)
-        PREVIEW_SLIDER = gradio.Slider(
-            label='preview_slider',
-            value=roop.globals.reference_frame_number,
-            maximum=video_frame_total
-        )
-    return PREVIEW_SLIDER
+        if is_target_video:
+            video_frame_total = get_video_frame_total(roop.globals.target_path)
+            preview_slider = gradio.Slider(
+                label='preview_slider',
+                value=roop.globals.reference_frame_number,
+                maximum=video_frame_total
+            )
+            preview_slider.change(update_preview_image, inputs=preview_slider, outputs=preview_image, show_progress=False)
 
 
 def update_preview_image(frame_number: int = 0) -> Optional[dict[Any, Any]]:

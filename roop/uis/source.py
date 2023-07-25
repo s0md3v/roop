@@ -5,27 +5,17 @@ import roop.globals
 from roop.utilities import is_image
 
 NAME = 'ROOP.UIS.SOURCE'
-SOURCE_FILE = None
-
-
-def get_source_file() -> gradio.File:
-    global SOURCE_FILE
-
-    if SOURCE_FILE is None:
-        is_source_image = is_image(roop.globals.source_path)
-        SOURCE_FILE = gradio.File(
-            file_count='single',
-            file_types=['.png', '.jpg', '.jpeg', '.webp'],
-            label='source_path',
-            value=roop.globals.source_path if is_source_image else None
-        )
-    return SOURCE_FILE
 
 
 def render() -> None:
     with gradio.Column():
         is_source_image = is_image(roop.globals.source_path)
-        source_file = get_source_file()
+        source_file = gradio.File(
+            file_count='single',
+            file_types=['.png', '.jpg', '.jpeg', '.webp'],
+            label='source_path',
+            value=roop.globals.source_path if is_source_image else None
+        )
         source_image = gradio.Image(
             label='source_image',
             value=source_file.value['name'] if is_source_image else None,
