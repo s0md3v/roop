@@ -52,9 +52,9 @@ options:
   --reference-frame-number REFERENCE_FRAME_NUMBER                            number of the reference frame
   --similar-face-distance SIMILAR_FACE_DISTANCE                              face distance used for recognition
   --temp-frame-format {jpg,png}                                              image format used for frame extraction
-  --temp-frame-quality [1-100]                                               image quality used for frame extraction
+  --temp-frame-quality [0-100]                                               image quality used for frame extraction
   --output-video-encoder {libx264,libx265,libvpx-vp9,h264_nvenc,hevc_nvenc}  encoder used for the output video
-  --output-video-quality [1-100]                                             quality used for the output video
+  --output-video-quality [0-100]                                             quality used for the output video
   --max-memory MAX_MEMORY                                                    maximum amount of RAM in GB
   --execution-provider {cpu} [{cpu} ...]                                     available execution provider (choices: cpu, ...)
   --execution-threads EXECUTION_THREADS                                      number of execution threads
