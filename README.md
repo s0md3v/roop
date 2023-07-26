@@ -13,6 +13,9 @@ The developers of this software are aware of its possible unethical applications
 
 Users of this software are expected to use this software responsibly while abiding the local law. If face of a real person is being used, users are suggested to get consent from the concerned person and clearly mention that it is a deepfake when posting content online. Developers of this software will not be responsible for actions of end-users.
 
+### Licence/Commercial Use Disclaimer
+Roop uses a lot of third party libraries as well pre-trained models. The users should keep in mind that these third party components have their own license and terms.
+
 ## How to install?
 
 ### Basic
