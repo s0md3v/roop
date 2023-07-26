@@ -75,7 +75,10 @@ def process_frame(source_face: Face, reference_face: Face, temp_frame: Frame) ->
 
 def process_frames(source_path: str, temp_frame_paths: List[str], update: Callable[[], None]) -> None:
     source_face = get_one_face(cv2.imread(source_path))
-    reference_face = get_face_reference()
+    if roop.globals.many_faces:
+        reference_face = None
+    else:
+        reference_face = get_face_reference()
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
         result = process_frame(source_face, reference_face, temp_frame)
@@ -87,7 +90,10 @@ def process_frames(source_path: str, temp_frame_paths: List[str], update: Callab
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
     source_face = get_one_face(cv2.imread(source_path))
     target_frame = cv2.imread(target_path)
-    reference_face = get_one_face(target_frame, roop.globals.reference_face_position)
+    if roop.globals.many_faces:
+        reference_face = None
+    else:
+        reference_face = get_one_face(target_frame, roop.globals.reference_face_position)
     result = process_frame(source_face, reference_face, target_frame)
     cv2.imwrite(output_path, result)
 
