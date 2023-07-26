@@ -213,6 +213,6 @@ def run() -> None:
     if roop.globals.headless:
         start()
     else:
-        from roop.uis.core import init as init_ui
+        import roop.uis.core as ui
 
-        init_ui()
+        ui.init()

@@ -1,5 +1,5 @@
-from typing import Any, Optional
-
+from time import sleep
+from typing import Any, Dict, Tuple
 import cv2
 import gradio
 
@@ -11,6 +11,7 @@ from roop.face_reference import get_face_reference, set_face_reference
 from roop.predictor import predict_frame
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.typing import Frame
+from roop.uis import core as ui
 from roop.utilities import is_video
 
 NAME = 'ROOP.UIS.PREVIEW'
@@ -30,14 +31,23 @@ def render() -> None:
                 value=roop.globals.reference_frame_number,
                 maximum=video_frame_total
             )
-            preview_slider.change(update_preview_image, inputs=preview_slider, outputs=preview_image, show_progress=False)
+            preview_slider.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider], show_progress=False)
+
+        source_file = ui.get_component('source_file')
+        target_file = ui.get_component('target_file')
+        if source_file:
+            source_file.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider])
+        if target_file:
+            target_file.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider])
 
 
-def update_preview_image(frame_number: int = 0) -> Optional[dict[Any, Any]]:
-    preview_frame = get_preview_frame(frame_number)
-    if preview_frame.any():
-        return gradio.update(value=normalize_preview_frame(preview_frame))
-    return gradio.update(value=None)
+def update(frame_number: int = 0) -> Tuple[Dict[Any, Any], Dict[Any, Any]]:
+    sleep(0.1)
+    if roop.globals.source_path and roop.globals.target_path:
+        preview_frame = get_preview_frame(frame_number)
+        if preview_frame.any():
+            return gradio.update(value=normalize_preview_frame(preview_frame), visible=True), gradio.update(value=frame_number, visible=True)
+    return gradio.update(value=None, visible=False), gradio.update(value=frame_number, visible=False)
 
 
 def get_preview_frame(frame_number: int = 0) -> Frame:

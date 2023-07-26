@@ -1,7 +1,9 @@
-from typing import Any, Optional, IO
+from typing import Any, Dict, IO, Tuple
 import gradio
 
 import roop.globals
+from roop.face_reference import clear_face_reference
+from roop.uis import core as ui
 from roop.utilities import is_image, is_video
 
 NAME = 'ROOP.UIS.TARGET'
@@ -17,6 +19,7 @@ def render() -> None:
             label='target_path',
             value=roop.globals.target_path if is_target_image or is_target_video else None
         )
+        ui.register_component('target_file', target_file)
         target_image = gradio.Image(
             label='target_image',
             value=target_file.value['name'] if is_target_image else None,
@@ -32,7 +35,7 @@ def render() -> None:
         target_file.change(update, inputs=target_file, outputs=[target_image, target_video])
 
 
-def update(file: IO[Any]) -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
+def update(file: IO[Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     if file and is_image(file.name):
         roop.globals.target_path = file.name
         return gradio.update(value=file.name, visible=True), gradio.update(value=None, visible=False)
@@ -40,4 +43,5 @@ def update(file: IO[Any]) -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
         roop.globals.target_path = file.name
         return gradio.update(value=None, visible=False), gradio.update(value=file.name, visible=True)
     roop.globals.target_path = None
+    clear_face_reference()
     return gradio.update(value=None, visible=False), gradio.update(value=None, visible=False)

@@ -1,4 +1,4 @@
-from typing import IO, Optional, Any
+from typing import Any, Dict, Tuple
 import gradio
 
 import roop.globals
@@ -16,7 +16,7 @@ def render() -> None:
         start_button.click(update, outputs=[output_image, output_video])
 
 
-def update() -> Optional[tuple[dict[str, Any], dict[str, Any]]]:
+def update() -> Tuple[Dict[str, Any], Dict[str, Any]]:
     roop.globals.output_path = normalize_output_path(roop.globals.source_path, roop.globals.target_path, '.')
     if roop.globals.output_path:
         start()
