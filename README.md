@@ -66,6 +66,15 @@ options:
 
 Using the `-s/--source`, `-t/--target` and `-o/--output` argument will run the program in headless mode.
 
+## Run it on Colab
+
+You can run the ROOP Face-Swap on Colab as well, Click the link, Upload your images and videos and in one click you can easily swap faces without any issues.
+
+![colab](https://3.bp.blogspot.com/-apoBeWFycKQ/XhKB8fEprwI/AAAAAAAACM4/Sl76yzNSNYwlShIBrheDAum8L9qRtWNdgCLcBGAsYHQ/s1600/colab.png
+)
+
+[Click here to visit the ROOP Colab File](https://colab.research.google.com/drive/11luB-78FmWdpdGwAvjigJge4bJo8pkKM?usp=sharing)
+
 ## Credits
 
 - [henryruhs](https://github.com/henryruhs): for being an irreplaceable contributor to the project
