@@ -126,8 +126,8 @@ def update_status(message: str, scope: str = 'ROOP.CORE') -> None:
 
 
 def start() -> None:
-    for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-        if not frame_processor.pre_start():
+    for frame_processor_module in get_frame_processors_modules(roop.globals.frame_processors):
+        if not frame_processor_module.pre_start():
             return
     # process image to image
     if has_image_extension(roop.globals.target_path):
@@ -135,10 +135,10 @@ def start() -> None:
             destroy()
         shutil.copy2(roop.globals.target_path, roop.globals.output_path)
         # process frame
-        for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-            update_status('Progressing...', frame_processor.NAME)
-            frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
-            frame_processor.post_process()
+        for frame_processor_module in get_frame_processors_modules(roop.globals.frame_processors):
+            update_status('Progressing...', frame_processor_module.NAME)
+            frame_processor_module.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
+            frame_processor_module.post_process()
         # validate image
         if is_image(roop.globals.target_path):
             update_status('Processing to image succeed!')
@@ -161,10 +161,10 @@ def start() -> None:
     # process frame
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     if temp_frame_paths:
-        for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-            update_status('Progressing...', frame_processor.NAME)
-            frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
-            frame_processor.post_process()
+        for frame_processor_module in get_frame_processors_modules(roop.globals.frame_processors):
+            update_status('Progressing...', frame_processor_module.NAME)
+            frame_processor_module.process_video(roop.globals.source_path, temp_frame_paths)
+            frame_processor_module.post_process()
     else:
         update_status('Frames not found...')
         return

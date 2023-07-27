@@ -9,7 +9,7 @@ from roop.core import destroy
 from roop.face_analyser import get_one_face
 from roop.face_reference import get_face_reference, set_face_reference
 from roop.predictor import predict_frame
-from roop.processors.frame.core import get_frame_processors_modules
+from roop.processors.frame.core import get_frame_processors_modules, load_frame_processor_module
 from roop.typing import Frame
 from roop.uis import core as ui
 from roop.utilities import is_video, is_image
@@ -21,7 +21,6 @@ def render() -> None:
     with gradio.Box():
         preview_image_args: Dict[str, Any] = {
             'label': 'preview_image',
-            'height': 400,
             'visible': False
         }
         preview_slider_args: Dict[str, Any] = {
@@ -47,10 +46,13 @@ def render() -> None:
         preview_slider.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider], show_progress=False)
         source_file = ui.get_component('source_file')
         target_file = ui.get_component('target_file')
+        frame_processors_checkbox_group = ui.get_component('frame_processors_checkbox_group')
         if source_file:
             source_file.change(update, outputs=[preview_image, preview_slider])
         if target_file:
             target_file.change(update, outputs=[preview_image, preview_slider])
+        if frame_processors_checkbox_group:
+            frame_processors_checkbox_group.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider])
 
 
 def update(frame_number: int = 0) -> Tuple[Dict[Any, Any], Dict[Any, Any]]:
@@ -76,9 +78,9 @@ def get_preview_frame(temp_frame: Frame) -> Frame:
         reference_face = get_one_face(reference_frame, roop.globals.reference_face_position)
         set_face_reference(reference_face)
     reference_face = get_face_reference() if not roop.globals.many_faces else None
-    for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-        if frame_processor.pre_start():
-            temp_frame = frame_processor.process_frame(
+    for frame_processor_module in get_frame_processors_modules(roop.globals.frame_processors):
+        if frame_processor_module.pre_start():
+            temp_frame = frame_processor_module.process_frame(
                 source_face,
                 reference_face,
                 temp_frame

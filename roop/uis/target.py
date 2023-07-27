@@ -10,7 +10,7 @@ NAME = 'ROOP.UIS.TARGET'
 
 
 def render() -> None:
-    with gradio.Column():
+    with gradio.Box():
         is_target_image = is_image(roop.globals.target_path)
         is_target_video = is_video(roop.globals.target_path)
         target_file = gradio.File(
@@ -23,19 +23,18 @@ def render() -> None:
         target_image = gradio.Image(
             label='target_image',
             value=target_file.value['name'] if is_target_image else None,
-            height=200,
             visible=is_target_image
         )
         target_video = gradio.Video(
             label='target_video',
             value=target_file.value['name'] if is_target_video else None,
-            height=200,
             visible=is_target_video
         )
         target_file.change(update, inputs=target_file, outputs=[target_image, target_video])
 
 
 def update(file: IO[Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    clear_face_reference()
     if file and is_image(file.name):
         roop.globals.target_path = file.name
         return gradio.update(value=file.name, visible=True), gradio.update(value=None, visible=False)
@@ -43,5 +42,4 @@ def update(file: IO[Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         roop.globals.target_path = file.name
         return gradio.update(value=None, visible=False), gradio.update(value=file.name, visible=True)
     roop.globals.target_path = None
-    clear_face_reference()
     return gradio.update(value=None, visible=False), gradio.update(value=None, visible=False)

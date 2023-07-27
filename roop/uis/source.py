@@ -10,7 +10,7 @@ NAME = 'ROOP.UIS.SOURCE'
 
 
 def render() -> None:
-    with gradio.Column():
+    with gradio.Box():
         is_source_image = is_image(roop.globals.source_path)
         source_file = gradio.File(
             file_count='single',
@@ -22,7 +22,6 @@ def render() -> None:
         source_image = gradio.Image(
             label='source_image',
             value=source_file.value['name'] if is_source_image else None,
-            height=200,
             visible=is_source_image
         )
         source_file.change(update, inputs=source_file, outputs=source_image)

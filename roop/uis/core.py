@@ -11,7 +11,7 @@ def init() -> None:
     with gradio.Blocks(theme=get_theme()) as ui:
         with gradio.Row():
             settings.render()
-            with gradio.Row():
+            with gradio.Column():
                 source.render()
                 target.render()
             preview.render()

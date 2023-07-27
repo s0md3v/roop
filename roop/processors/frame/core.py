@@ -45,6 +45,12 @@ def get_frame_processors_modules(frame_processors: List[str]) -> List[ModuleType
     return FRAME_PROCESSORS_MODULES
 
 
+def clear_frame_processors_modules() -> None:
+    global FRAME_PROCESSORS_MODULES
+
+    FRAME_PROCESSORS_MODULES = []
+
+
 def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None], update: Callable[[], None]) -> None:
     with ThreadPoolExecutor(max_workers=roop.globals.execution_threads) as executor:
         futures = []
