@@ -152,7 +152,7 @@ def select_source_path(source_path: Optional[str] = None) -> None:
     if source_path is None:
         source_path = ctk.filedialog.askopenfilename(title='select an source image', initialdir=RECENT_DIRECTORY_SOURCE)
     if is_image(source_path):
-        roop.globals.source_path = source_path  # type: ignore
+        roop.globals.source_path = source_path
         RECENT_DIRECTORY_SOURCE = os.path.dirname(roop.globals.source_path)
         image = render_image_preview(roop.globals.source_path, (200, 200))
         source_label.configure(image=image)
@@ -170,12 +170,12 @@ def select_target_path(target_path: Optional[str] = None) -> None:
     if target_path is None:
         target_path = ctk.filedialog.askopenfilename(title='select an target image or video', initialdir=RECENT_DIRECTORY_TARGET)
     if is_image(target_path):
-        roop.globals.target_path = target_path  # type: ignore
+        roop.globals.target_path = target_path
         RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
         image = render_image_preview(roop.globals.target_path, (200, 200))
         target_label.configure(image=image)
     elif is_video(target_path):
-        roop.globals.target_path = target_path  # type: ignore
+        roop.globals.target_path = target_path
         RECENT_DIRECTORY_TARGET = os.path.dirname(roop.globals.target_path)
         video_frame = render_video_preview(target_path, (200, 200))
         target_label.configure(image=video_frame)
@@ -273,8 +273,8 @@ def update_preview(frame_number: int = 0) -> None:
 
 def update_face_reference(steps: int) -> None:
     clear_face_reference()
-    reference_frame_number = preview_slider.get()
-    roop.globals.reference_face_position += steps  # type: ignore
+    reference_frame_number = int(preview_slider.get())
+    roop.globals.reference_face_position += steps
     roop.globals.reference_frame_number = reference_frame_number
     update_preview(reference_frame_number)
 
