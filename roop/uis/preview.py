@@ -19,37 +19,39 @@ NAME = 'ROOP.UIS.PREVIEW'
 
 def render() -> None:
     with gradio.Column():
-        is_target_image = is_image(roop.globals.target_path)
-        is_target_video = is_video(roop.globals.target_path)
-        if is_target_image:
+        preview_image_args: Dict[str, Any] = {
+            'label': 'preview_image',
+            'height': 400,
+            'visible': False
+        }
+        preview_slider_args: Dict[str, Any] = {
+            'label': 'preview_slider',
+            'visible': False
+        }
+        if is_image(roop.globals.target_path):
             temp_frame = cv2.imread(roop.globals.target_path)
-        if is_target_video:
-            video_frame_total = get_video_frame_total(roop.globals.target_path)
+            preview_image_args['value'] = normalize_preview_frame(get_preview_frame(temp_frame))
+            preview_image_args['visible'] = True
+        if is_video(roop.globals.target_path):
             temp_frame = get_video_frame(roop.globals.target_path, roop.globals.reference_frame_number)
-        preview_frame = get_preview_frame(temp_frame)
-        preview_image = gradio.Image(
-            label='preview_image',
-            value=normalize_preview_frame(preview_frame),
-            height=400,
-            visible=is_target_image or is_target_video
-        )
-        preview_slider = gradio.Slider(
-            label='preview_slider',
-            value=roop.globals.reference_frame_number if is_target_video else 0,
-            maximum=video_frame_total if is_target_video else 1,
-            visible=is_target_video
-        )
+            preview_image_args['value'] = normalize_preview_frame(get_preview_frame(temp_frame))
+            preview_image_args['visible'] = True
+            preview_slider_args['value'] = roop.globals.reference_frame_number
+            preview_slider_args['maximum'] = get_video_frame_total(roop.globals.target_path)
+            preview_slider_args['visible'] = True
+        preview_image = gradio.Image(**preview_image_args)
+        preview_slider = gradio.Slider(**preview_slider_args)
         preview_slider.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider], show_progress=False)
         source_file = ui.get_component('source_file')
         target_file = ui.get_component('target_file')
         if source_file:
-            source_file.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider])
+            source_file.change(update, outputs=[preview_image, preview_slider])
         if target_file:
-            target_file.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider])
+            target_file.change(update, outputs=[preview_image, preview_slider])
 
 
 def update(frame_number: int = 0) -> Tuple[Dict[Any, Any], Dict[Any, Any]]:
-    sleep(0.1)
+    sleep(0.5)
     if is_image(roop.globals.target_path):
         temp_frame = cv2.imread(roop.globals.target_path)
         preview_frame = get_preview_frame(temp_frame)
