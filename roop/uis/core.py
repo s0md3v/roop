@@ -10,12 +10,15 @@ COMPONENTS: Dict[ComponentName, Component] = {}
 def init() -> None:
     with gradio.Blocks(theme=get_theme()) as ui:
         with gradio.Row():
-            settings.render()
-            with gradio.Column():
+            with gradio.Column(scale=1):
+                settings.render()
+            with gradio.Column(scale=1):
                 source.render()
                 target.render()
-            preview.render()
-        output.render()
+            with gradio.Column(scale=2):
+                preview.render()
+        with gradio.Row():
+            output.render()
     ui.launch()
 
 
