@@ -189,10 +189,10 @@ def select_output_path(start: Callable[[], None]) -> None:
     global RECENT_DIRECTORY_OUTPUT
 
     if is_image(roop.globals.target_path):
-        suggested_output_file_name = f'{Path(test).stem}-result.png'
+        suggested_output_file_name = f'{Path(roop.globals.target_path).stem}-result.png'
         output_path = ctk.filedialog.asksaveasfilename(title='save image output file', defaultextension='.png', initialfile='output.png', initialdir=RECENT_DIRECTORY_OUTPUT)
     elif is_video(roop.globals.target_path):
-        suggested_output_file_name = f'{Path(test).stem}-result.mp4'
+        suggested_output_file_name = f'{Path(roop.globals.target_path).stem}-result.mp4'
         output_path = ctk.filedialog.asksaveasfilename(title='save video output file', defaultextension='.mp4', initialfile='output.mp4', initialdir=RECENT_DIRECTORY_OUTPUT)
     else:
         output_path = None
