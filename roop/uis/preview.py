@@ -74,11 +74,12 @@ def get_preview_frame(temp_frame: Frame) -> Frame:
         set_face_reference(reference_face)
     reference_face = get_face_reference() if not roop.globals.many_faces else None
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-        temp_frame = frame_processor.process_frame(
-            source_face,
-            reference_face,
-            temp_frame
-        )
+        if frame_processor.pre_start():
+            temp_frame = frame_processor.process_frame(
+                source_face,
+                reference_face,
+                temp_frame
+            )
     return temp_frame
 
 
