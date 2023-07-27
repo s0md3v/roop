@@ -1,7 +1,7 @@
 from typing import Dict
 import gradio
 
-from roop.uis import source, target, preview, output
+from roop.uis import source, target, preview, settings, output
 from roop.uis.typing import Component, ComponentName
 
 COMPONENTS: Dict[ComponentName, Component] = {}
@@ -10,9 +10,11 @@ COMPONENTS: Dict[ComponentName, Component] = {}
 def init() -> None:
     with gradio.Blocks(theme=get_theme()) as ui:
         with gradio.Row():
-            source.render()
-            target.render()
-        preview.render()
+            settings.render()
+            with gradio.Row():
+                source.render()
+                target.render()
+            preview.render()
         output.render()
     ui.launch()
 

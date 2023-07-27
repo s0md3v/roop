@@ -10,10 +10,13 @@ NAME = 'ROOP.UIS.OUTPUT'
 
 def render() -> None:
     with gradio.Column():
-        start_button = gradio.Button('Start')
+        with gradio.Row():
+            start_button = gradio.Button('Start')
+            clear_button = gradio.Button('Clear')
         output_image = gradio.Image(label='output_image', visible=False)
         output_video = gradio.Video(label='output_video', visible=False)
         start_button.click(update, outputs=[output_image, output_video])
+        clear_button.click(clear, outputs=[output_image, output_video])
 
 
 def update() -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -24,4 +27,8 @@ def update() -> Tuple[Dict[str, Any], Dict[str, Any]]:
             return gradio.update(value=roop.globals.output_path, visible=True), gradio.update(value=None, visible=False)
         if has_video_extension(roop.globals.output_path):
             return gradio.update(value=None, visible=False), gradio.update(value=roop.globals.output_path, visible=True)
+    return gradio.update(value=None, visible=False), gradio.update(value=None, visible=False)
+
+
+def clear() -> Tuple[Dict[str, Any], Dict[str, Any]]:
     return gradio.update(value=None, visible=False), gradio.update(value=None, visible=False)

@@ -18,7 +18,7 @@ NAME = 'ROOP.UIS.PREVIEW'
 
 
 def render() -> None:
-    with gradio.Column():
+    with gradio.Box():
         preview_image_args: Dict[str, Any] = {
             'label': 'preview_image',
             'height': 400,
@@ -26,6 +26,7 @@ def render() -> None:
         }
         preview_slider_args: Dict[str, Any] = {
             'label': 'preview_slider',
+            'step': 1,
             'visible': False
         }
         if is_image(roop.globals.target_path):
