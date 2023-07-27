@@ -48,7 +48,7 @@ def render() -> None:
         target_file = ui.get_component('target_file')
         frame_processors_checkbox_group = ui.get_component('frame_processors_checkbox_group')
         if source_file:
-            source_file.change(update, outputs=[preview_image, preview_slider])
+            source_file.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider])
         if target_file:
             target_file.change(update, outputs=[preview_image, preview_slider])
         if frame_processors_checkbox_group:
