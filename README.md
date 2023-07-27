@@ -1,6 +1,6 @@
 Take a video and replace the face in it with a face of your choice. You only need one image of the desired face. No dataset, no training.
 
-You can watch some demos [here](https://drive.google.com/drive/folders/1KHv8n_rd3Lcr2v7jBq1yPSTWM554Gq8e?usp=sharing).
+You can watch some demos [here](https://drive.google.com/drive/folders/1KHv8n_rd3Lcr2v7jBq1yPSTWM554Gq8e).
 A Stable Diffusion extension is also available, [here](https://github.com/s0md3v/sd-webui-roop).
 
 ![demo-gif](demo.gif)
@@ -38,7 +38,7 @@ Choose a face (image with desired face) and the target image/video (image/video 
 
 ## CLI
 
-Additional command line arguments are given below. To learn out what they do, check the guide [here](https://github.com/s0md3v/roop/wiki/Advanced-Options).
+Additional command line arguments are given below. To learn out what they do, check the guide [here](https://github.com/s0md3v/roop/wiki/3.-Advanced-Options).
 
 ```
 options:
@@ -69,6 +69,6 @@ Using the `-s/--source`, `-t/--target` and `-o/--output` argument will run the p
 ## Credits
 
 - [henryruhs](https://github.com/henryruhs): for being an irreplaceable contributor to the project
-- [ffmpeg](https://ffmpeg.org/): for making video related operations easy
+- [ffmpeg](https://ffmpeg.org): for making video related operations easy
 - [deepinsight](https://github.com/deepinsight): for their [insightface](https://github.com/deepinsight/insightface) project which provided a well-made library and models.
 - and all developers behind libraries used in this project.
