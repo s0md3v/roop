@@ -147,3 +147,8 @@ def conditional_download(download_directory_path: str, urls: List[str]) -> None:
 
 def resolve_relative_path(path: str) -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), path))
+
+def normalize_output_path(file_path: str) -> str:
+    file_name = Path(file_path).stem
+    file_extension = pathlib.Path(file_path).suffix
+    return f'{file_name}-result{file_extension}'
