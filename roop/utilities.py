@@ -150,5 +150,5 @@ def resolve_relative_path(path: str) -> str:
 
 def normalize_output_path(file_path: str) -> str:
     file_name = Path(file_path).stem
-    file_extension = pathlib.Path(file_path).suffix
+    file_extension = Path(file_path).suffix
     return f'{file_name}-result{file_extension}'
