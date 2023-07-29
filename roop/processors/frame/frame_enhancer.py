@@ -9,20 +9,19 @@ import roop.processors.frame.core
 from roop.typing import Frame, Face
 from roop.utilities import conditional_download, resolve_relative_path
 
-BACKGROUND_ENHANCER = None
+FRAME_ENHANCER = None
 THREAD_SEMAPHORE = threading.Semaphore()
 THREAD_LOCK = threading.Lock()
-NAME = 'ROOP.PROCESSORS.FRAME.BACKGROUND_ENHANCER'
+NAME = 'ROOP.PROCESSORS.FRAME.FRAME_ENHANCER'
 
 
-def get_background_enhancer() -> Any:
-    global BACKGROUND_ENHANCER
+def get_frame_enhancer() -> Any:
+    global FRAME_ENHANCER
 
     with THREAD_LOCK:
-        if BACKGROUND_ENHANCER is None:
+        if FRAME_ENHANCER is None:
             model_path = resolve_relative_path('../models/RealESRGAN_x4plus.pth')
-            BACKGROUND_ENHANCER = RealESRGANer(
-                scale=4,
+            FRAME_ENHANCER = RealESRGANer(
                 model_path=model_path,
                 model=RRDBNet(
                     num_in_ch=3,
@@ -32,9 +31,13 @@ def get_background_enhancer() -> Any:
                     num_grow_ch=32,
                     scale=4
                 ),
-                device=get_device()
+                device=get_device(),
+                tile=512,
+                tile_pad=32,
+                pre_pad=0,
+                scale=4
             )
-    return BACKGROUND_ENHANCER
+    return FRAME_ENHANCER
 
 
 def get_device() -> str:
@@ -45,10 +48,10 @@ def get_device() -> str:
     return 'cpu'
 
 
-def clear_background_enhancer() -> None:
-    global BACKGROUND_ENHANCER
+def clear_frame_enhancer() -> None:
+    global FRAME_ENHANCER
 
-    BACKGROUND_ENHANCER = None
+    FRAME_ENHANCER = None
 
 
 def pre_check() -> bool:
@@ -62,17 +65,17 @@ def pre_start() -> bool:
 
 
 def post_process() -> None:
-    clear_background_enhancer()
+    clear_frame_enhancer()
 
 
-def enhance_background(temp_frame: Frame) -> Frame:
+def enhance_frame(temp_frame: Frame) -> Frame:
     with THREAD_SEMAPHORE:
-        temp_frame, _ = get_background_enhancer().enhance(temp_frame, outscale=1)
+        temp_frame, _ = get_frame_enhancer().enhance(temp_frame, outscale=1)
     return temp_frame
 
 
 def process_frame(source_face: Face, reference_face: Face, temp_frame: Frame) -> Frame:
-    return enhance_background(temp_frame)
+    return enhance_frame(temp_frame)
 
 
 def process_frames(source_path: str, temp_frame_paths: List[str], update: Callable[[], None]) -> None:

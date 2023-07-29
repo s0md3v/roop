@@ -14,7 +14,7 @@ def render() -> None:
         with gradio.Box():
             frame_processors_checkbox_group = gradio.CheckboxGroup(
                 label='frame_processors',
-                choices=['face_swapper', 'face_enhancer', 'background_enhancer'],
+                choices=['face_swapper', 'face_enhancer', 'frame_enhancer'],
                 value=roop.globals.frame_processors
             )
             ui.register_component('frame_processors_checkbox_group', frame_processors_checkbox_group)
