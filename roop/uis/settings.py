@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Literal
 import gradio
 import onnxruntime
 
@@ -31,9 +31,32 @@ def render() -> None:
                 minimum=1,
                 maximum=64
             )
+        with gradio.Box():
+            keep_fps_checkbox = gradio.Checkbox(
+                label='keep_fps',
+                value=roop.globals.keep_fps
+            )
+            keep_frames_checkbox = gradio.Checkbox(
+                label='keep_frames',
+                value=roop.globals.keep_fps
+            )
+            skip_audio_checkbox = gradio.Checkbox(
+                label='skip_audio',
+                value=roop.globals.skip_audio
+            )
+            many_faces_checkbox = gradio.Checkbox(
+                label='many_faces',
+                value=roop.globals.many_faces
+            )
+            ui.register_component('many_faces_checkbox', many_faces_checkbox)
+
         frame_processors_checkbox_group.change(update_frame_processors, inputs=frame_processors_checkbox_group, outputs=frame_processors_checkbox_group)
         execution_providers_checkbox_group.change(update_execution_providers, inputs=execution_providers_checkbox_group, outputs=execution_providers_checkbox_group)
         execution_threads_slider.change(update_execution_threads, inputs=execution_threads_slider, outputs=execution_threads_slider)
+        keep_fps_checkbox.change(lambda value: update_checkbox('keep_fps', value), inputs=keep_fps_checkbox, outputs=keep_fps_checkbox)
+        keep_frames_checkbox.change(lambda value: update_checkbox('keep_frames', value), inputs=keep_frames_checkbox, outputs=keep_frames_checkbox)
+        skip_audio_checkbox.change(lambda value: update_checkbox('skip_audio', value), inputs=skip_audio_checkbox, outputs=skip_audio_checkbox)
+        many_faces_checkbox.change(lambda value: update_checkbox('many_faces', value), inputs=many_faces_checkbox, outputs=many_faces_checkbox)
 
 
 def update_frame_processors(frame_processors: List[str]) -> Dict[Any, Any]:
@@ -50,3 +73,8 @@ def update_execution_providers(execution_providers: List[str]) -> Dict[Any, Any]
 def update_execution_threads(execution_threads: int = 1) -> Dict[Any, Any]:
     roop.globals.execution_threads = execution_threads
     return gradio.update(value=execution_threads)
+
+
+def update_checkbox(name: str, value: bool) -> Dict[Any, Any]:
+    setattr(roop.globals, name, value)
+    return gradio.update(value=value)

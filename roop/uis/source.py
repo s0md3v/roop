@@ -32,5 +32,4 @@ def update(file: IO[Any]) -> Dict[str, Any]:
         roop.globals.source_path = file.name
         return gradio.update(value=file.name, visible=True)
     roop.globals.source_path = None
-    clear_face_reference()
     return gradio.update(value=None, visible=False)

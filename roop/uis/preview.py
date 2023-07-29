@@ -44,15 +44,11 @@ def render() -> None:
         preview_image = gradio.Image(**preview_image_args)
         preview_slider = gradio.Slider(**preview_slider_args)
         preview_slider.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider], show_progress=False)
-        source_file = ui.get_component('source_file')
-        target_file = ui.get_component('target_file')
-        frame_processors_checkbox_group = ui.get_component('frame_processors_checkbox_group')
-        if source_file:
-            source_file.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider])
-        if target_file:
-            target_file.change(update, outputs=[preview_image, preview_slider])
-        if frame_processors_checkbox_group:
-            frame_processors_checkbox_group.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider])
+        component_names = ['source_file', 'target_file', 'frame_processors_checkbox_group', 'many_faces_checkbox']
+        for component_name in component_names:
+            component = ui.get_component(component_name)
+            if component:
+                component.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider])
 
 
 def update(frame_number: int = 0) -> Tuple[Dict[Any, Any], Dict[Any, Any]]:
