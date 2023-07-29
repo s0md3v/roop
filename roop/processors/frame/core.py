@@ -5,13 +5,14 @@ import psutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from queue import Queue
 from types import ModuleType
-from typing import Any, List, Callable
+from typing import Any, List, Callable, Optional
 from tqdm import tqdm
 
 import roop
+from roop.utilities import list_module_names
 
 FRAME_PROCESSORS_MODULES: List[ModuleType] = []
-FRAME_PROCESSORS_INTERFACE = [
+FRAME_PROCESSORS_METHODS = [
     'pre_check',
     'pre_start',
     'process_frame',
@@ -24,8 +25,8 @@ FRAME_PROCESSORS_INTERFACE = [
 
 def load_frame_processor_module(frame_processor: str) -> Any:
     try:
-        frame_processor_module = importlib.import_module(f'roop.processors.frame.{frame_processor}')
-        for method_name in FRAME_PROCESSORS_INTERFACE:
+        frame_processor_module = importlib.import_module(f'roop.processors.frame.__modules__.{frame_processor}')
+        for method_name in FRAME_PROCESSORS_METHODS:
             if not hasattr(frame_processor_module, method_name):
                 raise NotImplementedError
     except ModuleNotFoundError:
@@ -49,6 +50,10 @@ def clear_frame_processors_modules() -> None:
     global FRAME_PROCESSORS_MODULES
 
     FRAME_PROCESSORS_MODULES = []
+
+
+def list_frame_processors_names() -> Optional[List[str]]:
+    return list_module_names('roop/processors/frame/__modules__')
 
 
 def multi_process_frame(source_path: str, temp_frame_paths: List[str], process_frames: Callable[[str, List[str], Any], None], update: Callable[[], None]) -> None:

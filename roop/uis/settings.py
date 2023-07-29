@@ -3,7 +3,7 @@ import gradio
 import onnxruntime
 
 import roop.globals
-from roop.processors.frame.core import clear_frame_processors_modules
+from roop.processors.frame.core import list_frame_processors_names, clear_frame_processors_modules
 from roop.uis import core as ui
 
 NAME = 'ROOP.UIS.OUTPUT'
@@ -14,7 +14,7 @@ def render() -> None:
         with gradio.Box():
             frame_processors_checkbox_group = gradio.CheckboxGroup(
                 label='frame_processors',
-                choices=['face_swapper', 'face_enhancer', 'frame_enhancer'],
+                choices=list_frame_processors_names(),
                 value=roop.globals.frame_processors
             )
             ui.register_component('frame_processors_checkbox_group', frame_processors_checkbox_group)

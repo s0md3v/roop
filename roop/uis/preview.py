@@ -9,7 +9,7 @@ from roop.core import destroy
 from roop.face_analyser import get_one_face
 from roop.face_reference import get_face_reference, set_face_reference
 from roop.predictor import predict_frame
-from roop.processors.frame.core import get_frame_processors_modules, load_frame_processor_module
+from roop.processors.frame.core import load_frame_processor_module
 from roop.typing import Frame
 from roop.uis import core as ui
 from roop.utilities import is_video, is_image
@@ -78,7 +78,8 @@ def get_preview_frame(temp_frame: Frame) -> Frame:
         reference_face = get_one_face(reference_frame, roop.globals.reference_face_position)
         set_face_reference(reference_face)
     reference_face = get_face_reference() if not roop.globals.many_faces else None
-    for frame_processor_module in get_frame_processors_modules(roop.globals.frame_processors):
+    for frame_processor in roop.globals.frame_processors:
+        frame_processor_module = load_frame_processor_module(frame_processor)
         if frame_processor_module.pre_start():
             temp_frame = frame_processor_module.process_frame(
                 source_face,
