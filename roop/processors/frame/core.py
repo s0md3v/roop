@@ -100,3 +100,11 @@ def update_progress(progress: Any = None) -> None:
     })
     progress.refresh()
     progress.update(1)
+
+
+def get_device() -> str:
+    if 'CUDAExecutionProvider' in roop.globals.execution_providers:
+        return 'cuda'
+    if 'CoreMLExecutionProvider' in roop.globals.execution_providers:
+        return 'mps'
+    return 'cpu'

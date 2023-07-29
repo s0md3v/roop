@@ -5,7 +5,7 @@ from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
 
 import roop.globals
-import roop.processors.frame.core
+import roop.processors.frame.core as frame_processors
 from roop.typing import Frame, Face
 from roop.utilities import conditional_download, resolve_relative_path
 
@@ -31,21 +31,13 @@ def get_frame_enhancer() -> Any:
                     num_grow_ch=32,
                     scale=4
                 ),
-                device=get_device(),
+                device=frame_processors.get_device(),
                 tile=512,
                 tile_pad=32,
                 pre_pad=0,
                 scale=4
             )
     return FRAME_ENHANCER
-
-
-def get_device() -> str:
-    if 'CUDAExecutionProvider' in roop.globals.execution_providers:
-        return 'cuda'
-    if 'CoreMLExecutionProvider' in roop.globals.execution_providers:
-        return 'mps'
-    return 'cpu'
 
 
 def clear_frame_enhancer() -> None:
@@ -94,4 +86,4 @@ def process_image(source_path: str, target_path: str, output_path: str) -> None:
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
-    roop.processors.frame.core.process_video(None, temp_frame_paths, process_frames)
+    frame_processors.process_video(None, temp_frame_paths, process_frames)

@@ -4,7 +4,7 @@ import threading
 from gfpgan.utils import GFPGANer
 
 import roop.globals
-import roop.processors.frame.core
+import roop.processors.frame.core as frame_processors
 from roop.core import update_status
 from roop.face_analyser import get_many_faces
 from roop.typing import Frame, Face
@@ -23,16 +23,12 @@ def get_face_enhancer() -> Any:
         if FACE_ENHANCER is None:
             model_path = resolve_relative_path('../models/GFPGANv1.4.pth')
             # todo: set models path -> https://github.com/TencentARC/GFPGAN/issues/399
-            FACE_ENHANCER = GFPGANer(model_path=model_path, upscale=1, device=get_device())
+            FACE_ENHANCER = GFPGANer(
+                model_path=model_path,
+                upscale=1,
+                device=frame_processors.get_device()
+            )
     return FACE_ENHANCER
-
-
-def get_device() -> str:
-    if 'CUDAExecutionProvider' in roop.globals.execution_providers:
-        return 'cuda'
-    if 'CoreMLExecutionProvider' in roop.globals.execution_providers:
-        return 'mps'
-    return 'cpu'
 
 
 def clear_face_enhancer() -> None:

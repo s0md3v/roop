@@ -4,7 +4,7 @@ import insightface
 import threading
 
 import roop.globals
-import roop.processors.frame.core
+import roop.processors.frame.core as frame_processors
 from roop.core import update_status
 from roop.face_analyser import get_one_face, get_many_faces, find_similar_face
 from roop.face_reference import get_face_reference, set_face_reference, clear_face_reference
@@ -97,4 +97,4 @@ def process_video(source_path: str, temp_frame_paths: List[str]) -> None:
         reference_frame = cv2.imread(temp_frame_paths[roop.globals.reference_frame_number])
         reference_face = get_one_face(reference_frame, roop.globals.reference_face_position)
         set_face_reference(reference_face)
-    roop.processors.frame.core.process_video(source_path, temp_frame_paths, process_frames)
+    frame_processors.process_video(source_path, temp_frame_paths, process_frames)
