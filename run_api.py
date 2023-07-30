@@ -9,7 +9,7 @@ from typing import Optional, Literal
 
 import roop.globals
 from roop.core import decode_execution_providers, suggest_execution_threads, limit_resources, start, \
-    get_frame_processors_modules, suggest_execution_providers
+    get_frame_processors_modules, suggest_execution_providers, update_status
 from roop.utilities import resolve_relative_path
 
 
@@ -29,7 +29,6 @@ class RoopModel(BaseModel):
     output_video_encoder: Optional[Literal['libx264', 'libx265', 'libvpx-vp9', 'h264_nvenc', 'hevc_nvenc']] = 'libx264'
     output_video_quality: Optional[int] = 0
     max_memory: Optional[int] = 0
-    execution_provider: Optional[list] = ['cpu']
     execution_threads: Optional[int] = suggest_execution_threads()
 @app.get('/get_execution_providers')
 async def get_execution_provider():
@@ -43,15 +42,25 @@ async def image_file(
         roop_parameters: RoopModel = Depends()
 ):
     # Removing the folder and its content if it already exists
-    saving_path = resolve_relative_path('../files/')
+    saving_path = resolve_relative_path('../workdir/')
     if os.path.exists(saving_path):
         shutil.rmtree(saving_path)
     os.makedirs(saving_path)
 
+    #Get execution provider from env.
+    execution_provider = os.getenv('EXECUTION_PROVIDER')
+    update_status("execution provider is set to {}".format(execution_provider))
+    if execution_provider == 'GPU':
+        execution_provider_list = ['gpu','cpu']
+    elif execution_provider == 'CPU':
+        execution_provider_list = ['cpu']
+    else:
+        execution_provider_list = ['cpu']
+
     # setting paths
     src_saving_path_complete = os.path.join(saving_path, src_file.filename)
     target_saving_path_complete = os.path.join(saving_path, target_file.filename)
-    output_saving_path_complete = os.path.join(saving_path, 'output_' +target_file.filename)
+    output_saving_path_complete = os.path.join(saving_path, 'output_' + target_file.filename)
     with open(src_saving_path_complete, "wb+") as file_object:
         file_object.write(src_file.file.read())
     with open(target_saving_path_complete, 'wb+') as file_obj:
@@ -77,7 +86,7 @@ async def image_file(
     roop.globals.output_video_encoder = roop_parameters.output_video_encoder
     roop.globals.output_video_quality = roop_parameters.output_video_quality
     roop.globals.max_memory = roop_parameters.max_memory
-    roop.globals.execution_providers = decode_execution_providers(roop_parameters.execution_provider)
+    roop.globals.execution_providers = decode_execution_providers(execution_provider_list)
     roop.globals.execution_threads = roop_parameters.execution_threads
 
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
@@ -88,4 +97,8 @@ async def image_file(
     return FileResponse(roop.globals.output_path)
 
 if __name__ == "__main__":
+    if os.getenv('EXECUTION_PROVIDER') == None:
+        update_status('Env variable for provider is not set. Setting default CPU.')
+        os.environ['EXECUTION_PROVIDER'] = 'CPU'
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
