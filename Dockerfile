@@ -1,6 +1,6 @@
 FROM python:3.10
 
-ARG EXECUTION_PROVIDER=CPU
+ENV EXECUTION_PROVIDER=CPU
 
 RUN apt-get update && apt-get install -y ffmpeg
 RUN pip install --upgrade pip

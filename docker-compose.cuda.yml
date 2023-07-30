@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  roopapi:
+    build:
+      context: .
+      dockerfile: cuda.Dockerfile
+    restart: unless-stopped
+    volumes:
+      - roop-data:/roop
+    ports:
+      - :8000
+
+volumes:
+  roop-data:
