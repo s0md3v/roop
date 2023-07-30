@@ -13,12 +13,8 @@ import platform
 import signal
 import shutil
 import argparse
-import torch
 import onnxruntime
-if not 'CUDAExecutionProvider' in onnxruntime.get_available_providers():
-    del torch
 import tensorflow
-
 import roop.globals
 import roop.metadata
 import roop.ui as ui
