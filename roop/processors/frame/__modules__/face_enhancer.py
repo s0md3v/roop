@@ -84,16 +84,16 @@ def process_frame(source_face: Face, reference_face: Face, temp_frame: Frame) ->
 def process_frames(source_path: str, temp_frame_paths: List[str], update: Callable[[], None]) -> None:
     for temp_frame_path in temp_frame_paths:
         temp_frame = cv2.imread(temp_frame_path)
-        result = process_frame(None, None, temp_frame)
-        cv2.imwrite(temp_frame_path, result)
+        result_frame = process_frame(None, None, temp_frame)
+        cv2.imwrite(temp_frame_path, result_frame)
         if update:
             update()
 
 
 def process_image(source_path: str, target_path: str, output_path: str) -> None:
     target_frame = cv2.imread(target_path)
-    result = process_frame(None, None, target_frame)
-    cv2.imwrite(output_path, result)
+    result_frame = process_frame(None, None, target_frame)
+    cv2.imwrite(output_path, result_frame)
 
 
 def process_video(source_path: str, temp_frame_paths: List[str]) -> None:

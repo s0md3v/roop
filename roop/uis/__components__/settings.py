@@ -12,7 +12,7 @@ def render() -> None:
         with gradio.Box():
             frame_processors_checkbox_group = gradio.CheckboxGroup(
                 label='frame_processors',
-                choices=list_frame_processors_names(),
+                choices=sort_frame_processors(roop.globals.frame_processors),
                 value=roop.globals.frame_processors
             )
             ui.register_component('frame_processors_checkbox_group', frame_processors_checkbox_group)
