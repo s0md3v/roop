@@ -9,7 +9,7 @@ from typing import Optional, Literal
 
 import roop.globals
 from roop.core import decode_execution_providers, suggest_execution_threads, limit_resources, start, \
-    get_frame_processors_modules, suggest_execution_providers, update_status
+    get_frame_processors_modules, suggest_execution_providers
 from roop.utilities import resolve_relative_path
 
 
@@ -49,7 +49,7 @@ async def image_file(
 
     #Get execution provider from env.
     execution_provider = os.getenv('EXECUTION_PROVIDER')
-    update_status("execution provider is set to {}".format(execution_provider))
+    print("execution provider is set to {}".format(execution_provider))
     if execution_provider == 'GPU':
         execution_provider_list = ['gpu','cpu']
     elif execution_provider == 'CPU':
@@ -98,7 +98,7 @@ async def image_file(
 
 if __name__ == "__main__":
     if os.getenv('EXECUTION_PROVIDER') == None:
-        update_status('Env variable for provider is not set. Setting default CPU.')
+        print('Env variable for provider is not set. Setting default CPU.')
         os.environ['EXECUTION_PROVIDER'] = 'CPU'
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
