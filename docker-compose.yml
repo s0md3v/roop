@@ -8,8 +8,10 @@ services:
     restart: unless-stopped
     volumes:
       - roop-data:/roop
+      - open-nsfw:/root/.opennsfw2
     ports:
       - 8000:8000
 
 volumes:
   roop-data:
+  open-nsfw:

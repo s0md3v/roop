@@ -3,10 +3,8 @@ import numpy
 import opennsfw2
 from PIL import Image
 from keras import Model
-import os
 
 from roop.typing import Frame
-from roop.utilities import resolve_relative_path
 
 PREDICTOR = None
 THREAD_LOCK = threading.Lock()
@@ -15,11 +13,10 @@ MAX_PROBABILITY = 0.85
 
 def get_predictor() -> Model:
     global PREDICTOR
-    rel_path = resolve_relative_path('../models/opennsfw/open_nsfw_weights.h5')
 
     with THREAD_LOCK:
         if PREDICTOR is None:
-            PREDICTOR = opennsfw2.make_open_nsfw_model(weights_path=rel_path)
+            PREDICTOR = opennsfw2.make_open_nsfw_model()
     return PREDICTOR
 
 
