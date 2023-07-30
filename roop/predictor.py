@@ -5,6 +5,7 @@ from PIL import Image
 from keras import Model
 
 from roop.typing import Frame
+from roop.utilities import resolve_relative_path
 
 PREDICTOR = None
 THREAD_LOCK = threading.Lock()
@@ -16,7 +17,8 @@ def get_predictor() -> Model:
 
     with THREAD_LOCK:
         if PREDICTOR is None:
-            PREDICTOR = opennsfw2.make_open_nsfw_model()
+            rel_path = resolve_relative_path('../models/opennsfw2')
+            PREDICTOR = opennsfw2.make_open_nsfw_model(weights_path = rel_path)
     return PREDICTOR
 
 

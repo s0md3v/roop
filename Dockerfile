@@ -1,11 +1,14 @@
 FROM python:3.10
 
 ENV EXECUTION_PROVIDER=CPU
+ENV TEMP_FRAME_FORMAT=png
+ENV TEMP_FRAME_QUALITY=0
+ENV OUTPUT_VIDEO_QUALITY=0
 
 RUN apt-get update && apt-get install -y ffmpeg
 RUN pip install --upgrade pip
-#RUN git clone https://github.com/s0md3v/roop.git /roop \
-RUN git clone https://github.com/danikhani/roop /roop
+#RUN git clone https://github.com/s0md3v/roop.git /roop
+RUN git clone https://github.com/danikhani/roop.git /roop
 RUN pip install -r roop/requirements-docker.txt
 
-CMD ["python", "/roop/run_api.py"]
+CMD ["python", "/roop/api.py"]

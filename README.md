@@ -65,7 +65,16 @@ options:
 ```
 
 Using the `-s/--source`, `-t/--target` and `-o/--output` argument will run the program in headless mode.
+## Docker
+FastAPI allows the communication with the Docker container. The OpenAPI export of endpoints are under [Openapi.json](openapi.json).
 
+
+### Start and Stop the container (CPU version)
+Clone the repository. Build an Image and start the container by writing 
+```docker-compose -f docker-compose.yml up -d```.
+The container can get stopped by 
+```docker-compose -f docker-compose.yml down```. 
+The models will be saved in a docker volume. First start of the roop container might take longer, since the models will be downloaded for the first time.
 ## Credits
 
 - [henryruhs](https://github.com/henryruhs): for being an irreplaceable contributor to the project

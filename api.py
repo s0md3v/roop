@@ -24,10 +24,7 @@ class RoopModel(BaseModel):
     reference_face_position: Optional[int] = 0
     reference_frame_number: Optional[int] = 0
     similar_face_distance: Optional[float] = 0.85
-    temp_frame_format: Optional[Literal['png','jpg']] = 'png'
-    temp_frame_quality: Optional[int] = 0
     output_video_encoder: Optional[Literal['libx264', 'libx265', 'libvpx-vp9', 'h264_nvenc', 'hevc_nvenc']] = 'libx264'
-    output_video_quality: Optional[int] = 0
     max_memory: Optional[int] = 0
     execution_threads: Optional[int] = suggest_execution_threads()
 @app.get('/get_execution_providers')
@@ -58,6 +55,10 @@ async def image_file(
         execution_provider_list = ['cpu']
     print(execution_provider_list)
 
+    roop.globals.temp_frame_format = os.getenv('TEMP_FRAME_FORMAT')
+    roop.globals.temp_frame_quality = os.getenv('TEMP_FRAME_QUALITY')
+    roop.globals.output_video_quality = os.getenv('OUTPUT_VIDEO_QUALITY')
+
     # setting paths
     src_saving_path_complete = os.path.join(saving_path, src_file.filename)
     target_saving_path_complete = os.path.join(saving_path, target_file.filename)
@@ -82,10 +83,7 @@ async def image_file(
     roop.globals.reference_face_position = roop_parameters.reference_face_position
     roop.globals.reference_frame_number = roop_parameters.reference_frame_number
     roop.globals.similar_face_distance = roop_parameters.similar_face_distance
-    roop.globals.temp_frame_format = roop_parameters.temp_frame_format
-    roop.globals.temp_frame_quality = roop_parameters.temp_frame_quality
     roop.globals.output_video_encoder = roop_parameters.output_video_encoder
-    roop.globals.output_video_quality = roop_parameters.output_video_quality
     roop.globals.max_memory = roop_parameters.max_memory
     roop.globals.execution_providers = decode_execution_providers(execution_provider_list)
     roop.globals.execution_threads = roop_parameters.execution_threads
@@ -100,6 +98,6 @@ async def image_file(
 if __name__ == "__main__":
     if os.getenv('EXECUTION_PROVIDER') is None:
         print('Env variable for execution provider is not set. Setting default to CPU.')
-        os.environ['EXECUTION_PROVIDER'] = 'CUDA'
+        os.environ['EXECUTION_PROVIDER'] = 'CPU'
     print(os.getenv('EXECUTION_PROVIDER'))
     uvicorn.run(app, host="0.0.0.0", port=8000)

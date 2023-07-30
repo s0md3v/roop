@@ -1,17 +1,15 @@
 version: '3.8'
 
 services:
-  roopapi:
+  roop-api:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: unless-stopped
+    restart: always
     volumes:
       - roop-data:/roop
-      - open-nsfw:/root/.opennsfw2
     ports:
       - 8000:8000
 
 volumes:
   roop-data:
-  open-nsfw:
