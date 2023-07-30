@@ -3,13 +3,17 @@ import numpy
 import opennsfw2
 from PIL import Image
 from keras import Model
+import os
 
 from roop.typing import Frame
+from roop.utilities import resolve_relative_path
 
 PREDICTOR = None
 THREAD_LOCK = threading.Lock()
 MAX_PROBABILITY = 0.85
 
+rel_path = resolve_relative_path('../models/nsfw2')
+os.environ['OPENNSFW2_HOME'] = rel_path
 
 def get_predictor() -> Model:
     global PREDICTOR

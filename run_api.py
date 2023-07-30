@@ -50,12 +50,13 @@ async def image_file(
     #Get execution provider from env.
     execution_provider = os.getenv('EXECUTION_PROVIDER')
     print("execution provider is set to {}".format(execution_provider))
-    if execution_provider == 'GPU':
+    if execution_provider == 'CUDA':
         execution_provider_list = ['cuda','cpu']
     elif execution_provider == 'CPU':
         execution_provider_list = ['cpu']
     else:
         execution_provider_list = ['cpu']
+    print(execution_provider_list)
 
     # setting paths
     src_saving_path_complete = os.path.join(saving_path, src_file.filename)
@@ -97,7 +98,7 @@ async def image_file(
     return FileResponse(roop.globals.output_path)
 
 if __name__ == "__main__":
-    if os.getenv('EXECUTION_PROVIDER') == None:
+    if os.getenv('EXECUTION_PROVIDER') is None:
         print('Env variable for execution provider is not set. Setting default to CPU.')
         os.environ['EXECUTION_PROVIDER'] = 'CPU'
 

@@ -1,7 +1,7 @@
 FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 
 #RUN rm -rf /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1 /usr/lib/x86_64-linux-gnu/libcuda.so.1
-ENV EXECUTION_PROVIDER=GPU
+ENV EXECUTION_PROVIDER=CUDA
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
 	ffmpeg \
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 	python3-tk \
 	python-is-python3
 
-RUN git clone https://github.com/danikhani/roop
+RUN git clone https://github.com/danikhani/roop /roop
 RUN pip install -r roop/requirements-docker.txt
 
 # fix modulus in wsl2.0 for windows:
