@@ -62,7 +62,12 @@ def render() -> None:
 def update_frame_processors(frame_processors: List[str]) -> Dict[Any, Any]:
     clear_frame_processors_modules()
     roop.globals.frame_processors = frame_processors
-    return gradio.update(value=frame_processors)
+    return gradio.update(value=frame_processors, choices=sort_frame_processors(frame_processors))
+
+
+def sort_frame_processors(frame_processors: List[str]):
+    frame_processor_key = lambda frame_processor: frame_processors.index(frame_processor) if frame_processor in frame_processors else len(frame_processors)
+    return sorted(list_frame_processors_names(), key=frame_processor_key)
 
 
 def update_execution_providers(execution_providers: List[str]) -> Dict[Any, Any]:
