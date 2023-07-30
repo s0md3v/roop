@@ -12,15 +12,14 @@ PREDICTOR = None
 THREAD_LOCK = threading.Lock()
 MAX_PROBABILITY = 0.85
 
-rel_path = resolve_relative_path('../models/nsfw2')
-os.environ['OPENNSFW2_HOME'] = rel_path
 
 def get_predictor() -> Model:
     global PREDICTOR
+    rel_path = resolve_relative_path('../models/opennsfw/open_nsfw_weights.h5')
 
     with THREAD_LOCK:
         if PREDICTOR is None:
-            PREDICTOR = opennsfw2.make_open_nsfw_model()
+            PREDICTOR = opennsfw2.make_open_nsfw_model(weights_path=rel_path)
     return PREDICTOR
 
 

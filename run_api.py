@@ -51,7 +51,7 @@ async def image_file(
     execution_provider = os.getenv('EXECUTION_PROVIDER')
     print("execution provider is set to {}".format(execution_provider))
     if execution_provider == 'CUDA':
-        execution_provider_list = ['cuda','cpu']
+        execution_provider_list = ['cuda']
     elif execution_provider == 'CPU':
         execution_provider_list = ['cpu']
     else:
@@ -100,6 +100,6 @@ async def image_file(
 if __name__ == "__main__":
     if os.getenv('EXECUTION_PROVIDER') is None:
         print('Env variable for execution provider is not set. Setting default to CPU.')
-        os.environ['EXECUTION_PROVIDER'] = 'CPU'
-
+        os.environ['EXECUTION_PROVIDER'] = 'CUDA'
+    print(os.getenv('EXECUTION_PROVIDER'))
     uvicorn.run(app, host="0.0.0.0", port=8000)
