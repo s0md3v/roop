@@ -1,25 +1,14 @@
 from typing import Dict
 import gradio
 
-from roop.uis import source, target, preview, settings, output
+from roop.uis.__layouts__ import default
 from roop.uis.typing import Component, ComponentName
 
 COMPONENTS: Dict[ComponentName, Component] = {}
 
 
 def init() -> None:
-    with gradio.Blocks(theme=get_theme()) as ui:
-        with gradio.Row():
-            with gradio.Column(scale=1):
-                settings.render()
-            with gradio.Column(scale=1):
-                source.render()
-                target.render()
-            with gradio.Column(scale=2):
-                preview.render()
-        with gradio.Row():
-            output.render()
-    ui.launch()
+    default.render().launch()
 
 
 def get_theme() -> gradio.Theme:

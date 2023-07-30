@@ -14,8 +14,6 @@ from roop.typing import Frame
 from roop.uis import core as ui
 from roop.utilities import is_video, is_image
 
-NAME = 'ROOP.UIS.PREVIEW'
-
 
 def render() -> None:
     with gradio.Box():

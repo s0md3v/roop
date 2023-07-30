@@ -6,8 +6,6 @@ import roop.globals
 from roop.processors.frame.core import list_frame_processors_names, clear_frame_processors_modules
 from roop.uis import core as ui
 
-NAME = 'ROOP.UIS.OUTPUT'
-
 
 def render() -> None:
     with gradio.Column():
