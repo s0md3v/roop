@@ -109,7 +109,7 @@ def move_temp(target_path: str, output_path: str) -> None:
 def clean_temp(target_path: str) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
     parent_directory_path = os.path.dirname(temp_directory_path)
-    if not roop.globals.keep_frames and os.path.isdir(temp_directory_path):
+    if not roop.globals.keep_temp and os.path.isdir(temp_directory_path):
         shutil.rmtree(temp_directory_path)
     if os.path.exists(parent_directory_path) and not os.listdir(parent_directory_path):
         os.rmdir(parent_directory_path)

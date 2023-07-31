@@ -1,14 +1,19 @@
-from typing import Dict
+import importlib
+from typing import Dict, Optional, List
 import gradio
 
-from roop.uis.__layouts__ import default
+import roop.globals
 from roop.uis.typing import Component, ComponentName
+from roop.utilities import list_module_names
 
 COMPONENTS: Dict[ComponentName, Component] = {}
 
 
 def init() -> None:
-    default.render().launch()
+    with gradio.Blocks(theme=get_theme()) as ui:
+        ui_layout_module = importlib.import_module(f'roop.uis.__layouts__.{roop.globals.ui_layouts[0]}')
+        ui_layout_module.render()
+    ui.launch()
 
 
 def get_theme() -> gradio.Theme:
@@ -25,3 +30,7 @@ def get_component(name: ComponentName) -> Component:
 
 def register_component(name: ComponentName, component: Component) -> None:
     COMPONENTS[name] = component
+
+
+def list_ui_layouts_names() -> Optional[List[str]]:
+    return list_module_names('roop/uis/__layouts__')
