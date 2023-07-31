@@ -62,14 +62,14 @@ def enhance_face(target_face: Face, temp_frame: Frame) -> Frame:
     start_y = max(0, start_y - padding_y)
     end_x = max(0, end_x + padding_x)
     end_y = max(0, end_y + padding_y)
-    temp_face = temp_frame[start_y:end_y, start_x:end_x]
-    if temp_face.size:
+    crop_frame = temp_frame[start_y:end_y, start_x:end_x]
+    if crop_frame.size:
         with THREAD_SEMAPHORE:
-            _, _, temp_face = get_face_enhancer().enhance(
-                temp_face,
+            _, _, crop_frame = get_face_enhancer().enhance(
+                crop_frame,
                 paste_back=True
             )
-        temp_frame[start_y:end_y, start_x:end_x] = temp_face
+        temp_frame[start_y:end_y, start_x:end_x] = crop_frame
     return temp_frame
 
 
