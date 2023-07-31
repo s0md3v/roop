@@ -6,19 +6,18 @@ from keras import Model
 
 from roop.typing import Frame
 from roop.utilities import resolve_relative_path
+import os
 
 PREDICTOR = None
 THREAD_LOCK = threading.Lock()
 MAX_PROBABILITY = 0.85
-
 
 def get_predictor() -> Model:
     global PREDICTOR
 
     with THREAD_LOCK:
         if PREDICTOR is None:
-            rel_path = resolve_relative_path('../models/opennsfw2')
-            PREDICTOR = opennsfw2.make_open_nsfw_model(weights_path = rel_path)
+            PREDICTOR = opennsfw2.make_open_nsfw_model()
     return PREDICTOR
 
 
@@ -37,9 +36,9 @@ def predict_frame(target_frame: Frame) -> bool:
 
 
 def predict_image(target_path: str) -> bool:
-    return opennsfw2.predict_image(target_path) > MAX_PROBABILITY
+    return opennsfw2.predict_image(image_path=target_path,weights_path='/roop/models/nsfw2') > MAX_PROBABILITY
 
 
 def predict_video(target_path: str) -> bool:
-    _, probabilities = opennsfw2.predict_video_frames(video_path=target_path, frame_interval=100)
+    _, probabilities = opennsfw2.predict_video_frames(video_path=target_path, weights_path='/roop/models/nsfw2', frame_interval=100)
     return any(probability > MAX_PROBABILITY for probability in probabilities)
