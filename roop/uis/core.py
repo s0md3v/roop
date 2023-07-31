@@ -1,8 +1,11 @@
 import importlib
 from typing import Dict, Optional, List
+
+import cv2
 import gradio
 
 import roop.globals
+from roop.typing import Frame
 from roop.uis.typing import Component, ComponentName
 from roop.utilities import list_module_names
 
@@ -34,3 +37,7 @@ def register_component(name: ComponentName, component: Component) -> None:
 
 def list_ui_layouts_names() -> Optional[List[str]]:
     return list_module_names('roop/uis/__layouts__')
+
+
+def normalize_frame(frame: Frame) -> Frame:
+    return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

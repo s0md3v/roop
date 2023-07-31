@@ -29,12 +29,12 @@ def render() -> None:
         if is_image(roop.globals.target_path):
             temp_frame = cv2.imread(roop.globals.target_path)
             preview_frame = get_preview_frame(temp_frame)
-            preview_image_args['value'] = normalize_preview_frame(preview_frame)
+            preview_image_args['value'] = ui.normalize_frame(preview_frame)
             preview_image_args['visible'] = True
         if is_video(roop.globals.target_path):
             temp_frame = get_video_frame(roop.globals.target_path, roop.globals.reference_frame_number)
             preview_frame = get_preview_frame(temp_frame)
-            preview_image_args['value'] = normalize_preview_frame(preview_frame)
+            preview_image_args['value'] = ui.normalize_frame(preview_frame)
             preview_image_args['visible'] = True
             preview_slider_args['value'] = roop.globals.reference_frame_number
             preview_slider_args['maximum'] = get_video_frame_total(roop.globals.target_path)
@@ -54,12 +54,12 @@ def update(frame_number: int = 0) -> Tuple[Dict[Any, Any], Dict[Any, Any]]:
     if is_image(roop.globals.target_path):
         temp_frame = cv2.imread(roop.globals.target_path)
         preview_frame = get_preview_frame(temp_frame)
-        return gradio.update(value=normalize_preview_frame(preview_frame), visible=True), gradio.update(value=0, maximum=1, visible=False)
+        return gradio.update(value=ui.normalize_frame(preview_frame), visible=True), gradio.update(value=0, maximum=1, visible=False)
     if is_video(roop.globals.target_path):
         video_frame_total = get_video_frame_total(roop.globals.target_path)
         temp_frame = get_video_frame(roop.globals.target_path, frame_number)
         preview_frame = get_preview_frame(temp_frame)
-        return gradio.update(value=normalize_preview_frame(preview_frame), visible=True), gradio.update(value=frame_number, maximum=video_frame_total, visible=True)
+        return gradio.update(value=ui.normalize_frame(preview_frame), visible=True), gradio.update(value=frame_number, maximum=video_frame_total, visible=True)
     return gradio.update(value=None, visible=False), gradio.update(value=0, maximum=1, visible=False)
 
 
@@ -83,5 +83,3 @@ def get_preview_frame(temp_frame: Frame) -> Frame:
     return temp_frame
 
 
-def normalize_preview_frame(preview_frame: Frame) -> Frame:
-    return cv2.cvtColor(preview_frame, cv2.COLOR_BGR2RGB)
