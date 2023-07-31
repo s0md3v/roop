@@ -27,9 +27,6 @@ class RoopModel(BaseModel):
     output_video_encoder: Optional[Literal['libx264', 'libx265', 'libvpx-vp9', 'h264_nvenc', 'hevc_nvenc']] = 'libx264'
     max_memory: Optional[int] = 0
     execution_threads: Optional[int] = suggest_execution_threads()
-@app.get('/get_execution_providers')
-async def get_execution_provider():
-    return suggest_execution_providers()
 
 
 @app.post("/start_roop")

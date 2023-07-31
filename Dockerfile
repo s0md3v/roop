@@ -12,9 +12,4 @@ RUN ls
 RUN git clone https://github.com/danikhani/roop.git -b docker /roop
 RUN pip install -r roop/requirements-docker.txt
 
-RUN ls
-RUN pwd
-RUN rm -rf /roop
-
-RUN git clone https://github.com/danikhani/roop.git -b docker /roop
 CMD ["python", "/roop/api.py"]
