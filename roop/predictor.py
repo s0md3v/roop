@@ -12,12 +12,14 @@ PREDICTOR = None
 THREAD_LOCK = threading.Lock()
 MAX_PROBABILITY = 0.85
 
+rel_path_to_nsfw_model = resolve_relative_path('../models/nsfw2')
+
 def get_predictor() -> Model:
     global PREDICTOR
 
     with THREAD_LOCK:
         if PREDICTOR is None:
-            PREDICTOR = opennsfw2.make_open_nsfw_model(weights_path='/roop/models/nsfw2')
+            PREDICTOR = opennsfw2.make_open_nsfw_model(weights_path=rel_path_to_nsfw_model)
     return PREDICTOR
 
 
@@ -36,9 +38,9 @@ def predict_frame(target_frame: Frame) -> bool:
 
 
 def predict_image(target_path: str) -> bool:
-    return opennsfw2.predict_image(image_path=target_path,weights_path='/roop/models/nsfw2') > MAX_PROBABILITY
+    return opennsfw2.predict_image(image_path=target_path,weights_path=rel_path_to_nsfw_model) > MAX_PROBABILITY
 
 
 def predict_video(target_path: str) -> bool:
-    _, probabilities = opennsfw2.predict_video_frames(video_path=target_path, weights_path='/roop/models/nsfw2', frame_interval=100)
+    _, probabilities = opennsfw2.predict_video_frames(video_path=target_path, weights_path=rel_path_to_nsfw_model, frame_interval=100)
     return any(probability > MAX_PROBABILITY for probability in probabilities)

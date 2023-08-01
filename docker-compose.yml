@@ -2,12 +2,17 @@ version: '3.8'
 
 services:
   roop-api:
+    environment:
+      - TEMP_FRAME_FORMAT=png
+      - TEMP_FRAME_QUALITY=0
+      - OUTPUT_VIDEO_QUALITY=0
+      - MAX_MEMORY=0
     build:
       context: .
       dockerfile: Dockerfile
     restart: always
     volumes:
-      - roop-data:/roop
+      - roop-data:/roop/models
     ports:
       - 8000:8000
 
