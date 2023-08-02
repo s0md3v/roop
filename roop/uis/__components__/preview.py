@@ -1,5 +1,5 @@
 from time import sleep
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, List
 import cv2
 import gradio
 
@@ -12,6 +12,7 @@ from roop.predictor import predict_frame
 from roop.processors.frame.core import load_frame_processor_module
 from roop.typing import Frame
 from roop.uis import core as ui
+from roop.uis.typing import ComponentName
 from roop.utilities import is_video, is_image
 
 
@@ -42,7 +43,14 @@ def render() -> None:
         preview_image = gradio.Image(**preview_image_args)
         preview_slider = gradio.Slider(**preview_slider_args)
         preview_slider.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider], show_progress=False)
-        component_names = ['source_file', 'target_file', 'frame_processors_checkbox_group', 'many_faces_checkbox']
+        component_names: List[ComponentName] = [
+            'source_file',
+            'target_file',
+            'reference_face_position_slider',
+            'similar_face_distance_slider',
+            'frame_processors_checkbox_group',
+            'many_faces_checkbox'
+        ]
         for component_name in component_names:
             component = ui.get_component(component_name)
             if component:
@@ -58,8 +66,9 @@ def update(frame_number: int = 0) -> Tuple[Dict[Any, Any], Dict[Any, Any]]:
     if is_video(roop.globals.target_path):
         video_frame_total = get_video_frame_total(roop.globals.target_path)
         temp_frame = get_video_frame(roop.globals.target_path, frame_number)
+        roop.globals.reference_frame_number = frame_number
         preview_frame = get_preview_frame(temp_frame)
-        return gradio.update(value=ui.normalize_frame(preview_frame), visible=True), gradio.update(value=frame_number, maximum=video_frame_total, visible=True)
+        return gradio.update(value=ui.normalize_frame(preview_frame), visible=True), gradio.update(maximum=video_frame_total, visible=True)
     return gradio.update(value=None, visible=False), gradio.update(value=0, maximum=1, visible=False)
 
 
