@@ -5,7 +5,7 @@ services:
     environment:
       - TEMP_FRAME_FORMAT=png
       - TEMP_FRAME_QUALITY=0
-      - OUTPUT_VIDEO_QUALITY=0
+      - OUTPUT_VIDEO_QUALITY=35
       - MAX_MEMORY=0
     build:
       context: .
