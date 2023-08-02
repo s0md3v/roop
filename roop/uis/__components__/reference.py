@@ -14,15 +14,16 @@ from roop.utilities import is_video
 
 def render() -> None:
     with gradio.Box():
+        reference_face_position_slider_args = {
+            'label': 'reference_face_position',
+            'value': roop.globals.reference_face_position,
+            'step': 1
+        }
         if is_video(roop.globals.target_path):
             target_frame = get_video_frame(roop.globals.target_path, roop.globals.reference_frame_number)
             faces = get_many_faces(target_frame)
-        reference_face_position_slider = gradio.Slider(
-            label='reference_face_position',
-            value=roop.globals.reference_face_position,
-            maximum=len(faces),
-            step=1
-        )
+            reference_face_position_slider_args['maximum'] = len(faces)
+        reference_face_position_slider = gradio.Slider(**reference_face_position_slider_args)
         ui.register_component('reference_face_position_slider', reference_face_position_slider)
         similar_face_distance_slider = gradio.Slider(
             label='similar_face_distance',
