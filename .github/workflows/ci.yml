@@ -30,7 +30,7 @@ jobs:
     uses: actions/setup-python@v2
     with:
      python-version: 3.9
-  - run: pip install -r requirements-ci.txt
+  - run: pip install -r requirements-headless.txt
   - run: python run.py -s .github/examples/source.jpg -t .github/examples/target.mp4 -o .github/examples/output.mp4
     if: matrix.os != 'windows-latest'
   - run: python run.py -s .github\examples\source.jpg -t .github\examples\target.mp4 -o .github\examples\output.mp4
