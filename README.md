@@ -1,6 +1,6 @@
 # Roop
 
-> Take a video and replace the face in it with a face of your choice. You only need one image of the desired face. No dataset, no training..
+> Take a video and replace the face in it with a face of your choice. You only need one image of the desired face. No dataset, no training.
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/s0md3v/roop/ci.yml.svg?branch=main)](https://github.com/s0md3v/roop/actions?query=workflow:ci)
 
@@ -8,9 +8,9 @@
 ## Preview
 
 <div style="display:flex">
-<img src="https://raw.githubusercontent.com/s0md3v/roop/next/.github/target-1080p.gif?sanitize=true" width="48%" alt="Target Video" />
+<img src="https://raw.githubusercontent.com/s0md3v/roop/main/.github/target-1080p.gif?sanitize=true" width="48%" alt="Target Video" />
       
-<img src="https://raw.githubusercontent.com/s0md3v/roop/next/.github/output-1080p.gif?sanitize=true" width="48%" alt="Output Video "/>
+<img src="https://raw.githubusercontent.com/s0md3v/roop/main/.github/output-1080p.gif?sanitize=true" width="48%" alt="Output Video "/>
 </div>
 
 
