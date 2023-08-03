@@ -1,7 +1,6 @@
 ---
 name: Bug
 about: Report a bug
-title: '[Bug]'
 labels: 'bug'
 
 ---
@@ -44,4 +43,5 @@ What version of Roop are you using?
 - [ ] 1.2.0
 - [ ] 1.3.0
 - [ ] 1.3.1
+- [ ] 1.3.2
 - [ ] next

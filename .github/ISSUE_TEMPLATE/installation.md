@@ -1,7 +1,6 @@
 ---
 name: Installation
 about: Platform and installation issues
-title: '[Installation]'
 labels: 'installation'
 
 ---
