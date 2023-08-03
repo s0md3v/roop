@@ -8,7 +8,11 @@
 
 ## Preview
 
+### Target Video
+
 ![Target Video](https://raw.githubusercontent.com/s0md3v/roop/next/.github/target-1080p.gif?sanitize=true)
+
+### Output Video
 
 ![Output Video](https://raw.githubusercontent.com/s0md3v/roop/next/.github/output-1080p.gif?sanitize=true)
 
