@@ -1,2 +1,2 @@
 name = 'roop'
-version = 'next'
+version = '1.3.2'
