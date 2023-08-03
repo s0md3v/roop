@@ -6,11 +6,11 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/s0md3v/roop/ci.yml.svg?branch=main)](https://github.com/s0md3v/roop/actions?query=workflow:ci)
 
 
-## Preview!
+## Preview
 
-![Target Video](https://raw.githubusercontent.com/s0md3v/roop/main/.github/target-1080p.gif?sanitize=true)
+![Target Video](https://raw.githubusercontent.com/s0md3v/roop/next/.github/target-1080p.gif?sanitize=true)
 
-![Output Video](https://raw.githubusercontent.com/s0md3v/roop/main/.github/output-1080p.gif?sanitize=true)
+![Output Video](https://raw.githubusercontent.com/s0md3v/roop/next/.github/output-1080p.gif?sanitize=true)
 
 
 ## Installation
