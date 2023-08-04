@@ -7,11 +7,10 @@
 
 ## Preview
 
-<div style="display:flex">
-<img src="https://raw.githubusercontent.com/s0md3v/roop/main/.github/target-1080p.gif?sanitize=true" width="48%" alt="Target Video" />
-      
-<img src="https://raw.githubusercontent.com/s0md3v/roop/main/.github/output-1080p.gif?sanitize=true" width="48%" alt="Output Video "/>
-</div>
+| Target Video | Output Video |
+|:------------:|:------------:|
+| ![Target Video](https://raw.githubusercontent.com/s0md3v/roop/main/.github/target-1080p.gif?sanitize=true) | ![Output Video](https://raw.githubusercontent.com/s0md3v/roop/main/.github/output-1080p.gif?sanitize=true) |
+
 
 
 ## Installation
@@ -74,7 +73,7 @@ Our software uses a lot of third party libraries as well pre-trained models. The
 
 ## Credits
 
-- [deepinsight](https://github.com/deepinsight): for their [insightface](https://github.com/deepinsight/insightface) project which provided a well-made library and models.
+- [deepinsight](https://github.com/deepinsight) for their [insightface](https://github.com/deepinsight/insightface) project which provided a well-made library and models.
 - all developers behind the libraries used in this project
 
 
