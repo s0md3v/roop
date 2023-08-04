@@ -7,9 +7,9 @@
 
 ## Preview
 
-| Target Video | Output Video |
-|:------------:|:------------:|
-| ![Target Video](https://raw.githubusercontent.com/s0md3v/roop/main/.github/target-1080p.gif?sanitize=true) | ![Output Video](https://raw.githubusercontent.com/s0md3v/roop/main/.github/output-1080p.gif?sanitize=true) |
+|                                                 Target Video                                                 |                                                 Output Video                                                 |
+|:------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------:|
+| ![Target Video](https://raw.githubusercontent.com/s0md3v/roop/main/.github/preview/target.gif?sanitize=true) | ![Output Video](https://raw.githubusercontent.com/s0md3v/roop/main/.github/preview/output.gif?sanitize=true) |
 
 
 
