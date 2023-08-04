@@ -23,6 +23,16 @@ Be aware, the installation needs technical skills and is not for beginners. Plea
 [Acceleration](https://roop-ai.gitbook.io/roop/installation/acceleration) - Unleash the full potential of your CPU and GPU
 
 
+## Virtual environment[VENV] creation
+
+
+1. Open CMD in the directory of your cloned repository.
+2. Run `python -m venv [VENVNAME]` (e.g. `python -m venv venv`)
+3. Activate virtual environment by typing `[VENVNAME]\Scripts\activate` (e.g. `venv\Scripts\activate`)
+4. Install requirements from requirements.txt (select which one by preferences, e.g. if you'll run headless: use `requirements-headless.txt`). Do that by running `python -m pip install -r [REQUIREMENTSFILE]`
+5. Done! Next time you run roop (Whether with `run.py` or `roop-web.py`), don't forget to activate a virtual environment by running `[VENVNAME]\Scripts\activate`
+
+
 ## Usage
 
 Start the program with arguments:
@@ -57,6 +67,19 @@ python run.py [options]
 
 Using the `-s/--source`, `-t/--target` and `-o/--output` argument will run the program in headless mode.
 
+### Gradio UI `by alexlnkp`
+
+Running `python roop-web.py` will run the program in Gradio UI mode.
+
+[Gradio Theme Gallery](https://huggingface.co/spaces/gradio/theme-gallery)
+
+```
+python roop-web.py [options]
+
+-h, --help                               show this help message and exit
+-t THEME, --theme THEME                  Theme for Gradio. format: JohnSmith9982/small_and_pretty
+-cc CLEARCACHE, --clearcache CLEARCACHE  Whether to clear cache of Gradio on startup and on closing application.
+```
 
 ## Disclaimer
 

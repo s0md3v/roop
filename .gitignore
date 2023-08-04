@@ -2,3 +2,5 @@
 models
 temp
 __pycache__
+venv
+*.code-workspace

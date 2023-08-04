@@ -121,6 +121,14 @@ def pre_check() -> bool:
         return False
     return True
 
+def pre_check_nonctk() -> bool:
+    if sys.version_info < (3, 9):
+        print('Python version is not supported - please upgrade to 3.9 or higher.')
+        return False
+    if not shutil.which('ffmpeg'):
+        print('ffmpeg is not installed.')
+        return False
+    return True
 
 def update_status(message: str, scope: str = 'ROOP.CORE') -> None:
     print(f'[{scope}] {message}')
@@ -198,6 +206,138 @@ def start() -> None:
     else:
         update_status('Processing to video failed!')
 
+
+def startGradio(infos: list) -> list:
+    for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
+        if not frame_processor.pre_start():
+            return
+    # process image to image
+    if has_image_extension(roop.globals.target_path):
+        if predict_image(roop.globals.target_path):
+            destroy()
+        shutil.copy2(roop.globals.target_path, roop.globals.output_path)
+        
+        # process frame
+        for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
+            print('Progressing...', frame_processor.NAME)
+
+            infos.append(f"Progressing {frame_processor.NAME}...")
+            yield '\n'.join(infos)
+
+            frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
+            frame_processor.post_process()
+        # validate image
+        if is_image(roop.globals.target_path):
+            print('Processing to image succeed!')
+
+            infos.append('Processing to image succeed!')
+            yield '\n'.join(infos)
+
+        else:
+            print('Processing to image failed!')
+
+            infos.append('Processing to image failed!')
+            yield '\n'.join(infos)
+        return
+    # process image to videos
+    if predict_video(roop.globals.target_path):
+        destroy()
+    print('Creating temporary resources...')
+
+    infos.append('Creating temporary resources...')
+    yield '\n'.join(infos)
+
+    create_temp(roop.globals.target_path)
+    # extract frames
+    if roop.globals.keep_fps:
+        fps = detect_fps(roop.globals.target_path)
+        print(f'Extracting frames with {fps} FPS...')
+
+        infos.append(f'Extracting frames with {fps} FPS...')
+        yield '\n'.join(infos)
+
+        extract_frames(roop.globals.target_path, fps)
+    else:
+        print('Extracting frames with 30 FPS...')
+
+        infos.append(f'Extracting frames with 30 FPS...')
+        yield '\n'.join(infos)
+
+        extract_frames(roop.globals.target_path)
+    # process frame
+    temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
+    if temp_frame_paths:
+        for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
+            print('Progressing...', frame_processor.NAME)
+
+            infos.append(f"Progressing {frame_processor.NAME}...")
+            yield '\n'.join(infos)
+
+            frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
+            frame_processor.post_process()
+    else:
+        print('Frames not found...')
+
+        infos.append('Frames not found...')
+        yield '\n'.join(infos)
+
+        return
+    # create video
+    if roop.globals.keep_fps:
+        fps = detect_fps(roop.globals.target_path)
+        print(f'Creating video with {fps} FPS...')
+
+        infos.append(f'Creating video with {fps} FPS...')
+        yield '\n'.join(infos)
+
+        create_video(roop.globals.target_path, fps)
+    else:
+        print('Creating video with 30 FPS...')
+
+        infos.append('Creating video with 30 FPS...')
+        yield '\n'.join(infos)
+
+        create_video(roop.globals.target_path)
+    # handle audio
+    if roop.globals.skip_audio:
+        move_temp(roop.globals.target_path, roop.globals.output_path)
+        print('Skipping audio...')
+
+        infos.append('Skipping audio...')
+        yield '\n'.join(infos)
+
+    else:
+        if roop.globals.keep_fps:
+            print('Restoring audio...')
+
+            infos.append('Restoring audio...')
+            yield '\n'.join(infos)
+
+        else:
+            print('Restoring audio might cause issues as fps are not kept...')
+
+            infos.append('Restoring audio might cause issues as fps are not kept...')
+            yield '\n'.join(infos)
+        restore_audio(roop.globals.target_path, roop.globals.output_path)
+    # clean temp
+    print('Cleaning temporary resources...')
+
+    infos.append('Cleaning temporary resources...')
+    yield '\n'.join(infos)
+
+    clean_temp(roop.globals.target_path)
+    # validate video
+    if is_video(roop.globals.target_path):
+        print('Processing to video succeed!')
+
+        infos.append('Processing to video succeed!')
+        yield '\n'.join(infos)
+
+    else:
+        print('Processing to video failed!')
+
+        infos.append('Processing to video failed!')
+        yield '\n'.join(infos)
 
 def destroy() -> None:
     if roop.globals.target_path:
