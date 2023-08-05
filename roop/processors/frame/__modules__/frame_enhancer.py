@@ -4,7 +4,6 @@ import threading
 from basicsr.archs.rrdbnet_arch import RRDBNet
 from realesrgan import RealESRGANer
 
-import roop.globals
 import roop.processors.frame.core as frame_processors
 from roop.typing import Frame, Face
 from roop.utilities import conditional_download, resolve_relative_path

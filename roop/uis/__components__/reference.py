@@ -1,8 +1,5 @@
-from time import sleep
 from typing import Dict, Any
-
 import gradio
-import numpy
 
 import roop.globals
 from roop.capturer import get_video_frame

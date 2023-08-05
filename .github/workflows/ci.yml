@@ -8,10 +8,10 @@ jobs:
   steps:
   - name: Checkout
     uses: actions/checkout@v2
-  - name: Set up Python 3.9
+  - name: Set up Python 3.10
     uses: actions/setup-python@v2
     with:
-     python-version: 3.9
+     python-version: '3.10'
   - run: pip install flake8
   - run: pip install mypy
   - run: flake8 run.py roop
@@ -26,10 +26,10 @@ jobs:
     uses: actions/checkout@v2
   - name: Set up ffmpeg
     uses: FedericoCarboni/setup-ffmpeg@v2
-  - name: Set up Python 3.9
+  - name: Set up Python 3.10
     uses: actions/setup-python@v2
     with:
-     python-version: 3.9
+     python-version: '3.10'
   - run: pip install -r requirements-headless.txt
   - run: python run.py -s .github/examples/source.jpg -t .github/examples/target.mp4 -o .github/examples/output.mp4
     if: matrix.os != 'windows-latest'

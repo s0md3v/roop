@@ -2,7 +2,6 @@ from typing import Any, Dict, IO
 import gradio
 
 import roop.globals
-from roop.face_reference import clear_face_reference
 from roop.uis import core as ui
 from roop.utilities import is_image
 
