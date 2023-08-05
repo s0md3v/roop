@@ -3,7 +3,7 @@ import gradio
 import onnxruntime
 
 import roop.globals
-from roop.processors.frame.core import list_frame_processors_names, clear_frame_processors_modules
+from roop.processors.frame.core import list_frame_processors_names, load_frame_processor_module, clear_frame_processors_modules
 from roop.uis import core as ui
 
 
@@ -60,10 +60,13 @@ def render() -> None:
 def update_frame_processors(frame_processors: List[str]) -> Dict[Any, Any]:
     clear_frame_processors_modules()
     roop.globals.frame_processors = frame_processors
+    for frame_processor in roop.globals.frame_processors:
+        frame_processor_module = load_frame_processor_module(frame_processor)
+        frame_processor_module.pre_check()
     return gradio.update(value=frame_processors, choices=sort_frame_processors(frame_processors))
 
 
-def sort_frame_processors(frame_processors: List[str]):
+def sort_frame_processors(frame_processors: List[str]) -> list[str]:
     frame_processor_key = lambda frame_processor: frame_processors.index(frame_processor) if frame_processor in frame_processors else len(frame_processors)
     return sorted(list_frame_processors_names(), key=frame_processor_key)
 
