@@ -15,8 +15,14 @@ from roop.uis import core as ui
 from roop.uis.typing import ComponentName
 from roop.utilities import is_video, is_image
 
+PREVIEW_IMAGE = None
+PREVIEW_SLIDER = None
+
 
 def render() -> None:
+    global PREVIEW_IMAGE
+    global PREVIEW_SLIDER
+
     with gradio.Box():
         preview_image_args: Dict[str, Any] = {
             'label': 'preview_image',
@@ -40,21 +46,25 @@ def render() -> None:
             preview_slider_args['value'] = roop.globals.reference_frame_number
             preview_slider_args['maximum'] = get_video_frame_total(roop.globals.target_path)
             preview_slider_args['visible'] = True
-        preview_image = gradio.Image(**preview_image_args)
-        preview_slider = gradio.Slider(**preview_slider_args)
-        preview_slider.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider], show_progress=False)
-        component_names: List[ComponentName] = [
-            'source_file',
-            'target_file',
-            'reference_face_position_slider',
-            'similar_face_distance_slider',
-            'frame_processors_checkbox_group',
-            'many_faces_checkbox'
-        ]
-        for component_name in component_names:
-            component = ui.get_component(component_name)
-            if component:
-                component.change(update, inputs=preview_slider, outputs=[preview_image, preview_slider])
+        PREVIEW_IMAGE = gradio.Image(**preview_image_args)
+        PREVIEW_SLIDER = gradio.Slider(**preview_slider_args)
+        ui.register_component('preview_slider', PREVIEW_SLIDER)
+
+
+def listen() -> None:
+    PREVIEW_SLIDER.change(update, inputs=PREVIEW_SLIDER, outputs=[PREVIEW_IMAGE, PREVIEW_SLIDER], show_progress=False)
+    component_names: List[ComponentName] = [
+        'source_file',
+        'target_file',
+        'reference_face_position_slider',
+        'similar_face_distance_slider',
+        'frame_processors_checkbox_group',
+        'many_faces_checkbox'
+    ]
+    for component_name in component_names:
+        component = ui.get_component(component_name)
+        if component:
+            component.change(update, inputs=PREVIEW_SLIDER, outputs=[PREVIEW_IMAGE, PREVIEW_SLIDER])
 
 
 def update(frame_number: int = 0) -> Tuple[Dict[Any, Any], Dict[Any, Any]]:
@@ -64,9 +74,9 @@ def update(frame_number: int = 0) -> Tuple[Dict[Any, Any], Dict[Any, Any]]:
         preview_frame = get_preview_frame(temp_frame)
         return gradio.update(value=ui.normalize_frame(preview_frame), visible=True), gradio.update(value=0, maximum=1, visible=False)
     if is_video(roop.globals.target_path):
-        video_frame_total = get_video_frame_total(roop.globals.target_path)
-        temp_frame = get_video_frame(roop.globals.target_path, frame_number)
         roop.globals.reference_frame_number = frame_number
+        video_frame_total = get_video_frame_total(roop.globals.target_path)
+        temp_frame = get_video_frame(roop.globals.target_path, roop.globals.reference_frame_number)
         preview_frame = get_preview_frame(temp_frame)
         return gradio.update(value=ui.normalize_frame(preview_frame), visible=True), gradio.update(maximum=video_frame_total, visible=True)
     return gradio.update(value=None, visible=False), gradio.update(value=0, maximum=1, visible=False)

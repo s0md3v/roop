@@ -12,8 +12,13 @@ def render() -> gradio.Blocks:
                 source.render()
                 target.render()
             with gradio.Column(scale=2):
-                reference.render()
                 preview.render()
+                reference.render()
         with gradio.Row():
             output.render()
     return layout
+
+
+def listen() -> None:
+    preview.listen()
+    reference.listen()

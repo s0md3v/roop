@@ -52,3 +52,7 @@ def find_similar_face(frame: Frame, reference_face: Face) -> Optional[Face]:
                 if distance < roop.globals.similar_face_distance:
                     return face
     return None
+
+
+def count_faces(frame: Frame) -> int:
+    return len(get_many_faces(frame))

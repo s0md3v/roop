@@ -16,6 +16,7 @@ def init() -> None:
     with gradio.Blocks(theme=get_theme()) as ui:
         ui_layout_module = importlib.import_module(f'roop.uis.__layouts__.{roop.globals.ui_layouts[0]}')
         ui_layout_module.render()
+        ui_layout_module.listen()
     ui.launch()
 
 
@@ -27,8 +28,10 @@ def get_theme() -> gradio.Theme:
     )
 
 
-def get_component(name: ComponentName) -> Component:
-    return COMPONENTS[name]
+def get_component(name: ComponentName) -> Optional[Component]:
+    if name in COMPONENTS:
+        return COMPONENTS[name]
+    return None
 
 
 def register_component(name: ComponentName, component: Component) -> None:
