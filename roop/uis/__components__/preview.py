@@ -1,5 +1,5 @@
 from time import sleep
-from typing import Any, Dict, Tuple, List
+from typing import Any, Dict, Tuple, List, Optional
 import cv2
 import gradio
 
@@ -15,8 +15,8 @@ from roop.uis import core as ui
 from roop.uis.typing import ComponentName
 from roop.utilities import is_video, is_image
 
-PREVIEW_IMAGE = None
-PREVIEW_SLIDER = None
+PREVIEW_IMAGE: Optional[gradio.Image] = None
+PREVIEW_SLIDER: Optional[gradio.Slider] = None
 
 
 def render() -> None:

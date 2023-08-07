@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from time import sleep
 
 import cv2
@@ -6,14 +6,14 @@ import gradio
 
 import roop.globals
 from roop.capturer import get_video_frame
-from roop.face_analyser import count_faces
+from roop.face_analyser import get_faces_total
 from roop.face_reference import clear_face_reference
 from roop.uis import core as ui
 from roop.uis.typing import ComponentName
 from roop.utilities import is_image, is_video
 
-REFERENCE_FACE_POSITION_SLIDER = None
-SIMILAR_FACE_DISTANCE_SLIDER = None
+REFERENCE_FACE_POSITION_SLIDER: Optional[gradio.Slider] = None
+SIMILAR_FACE_DISTANCE_SLIDER: Optional[gradio.Slider] = None
 
 
 def render() -> None:
@@ -29,10 +29,10 @@ def render() -> None:
         }
         if is_image(roop.globals.target_path):
             target_frame = cv2.imread(roop.globals.target_path)
-            reference_face_position_slider_args['maximum'] = count_faces(target_frame)
+            reference_face_position_slider_args['maximum'] = get_faces_total(target_frame)
         if is_video(roop.globals.target_path):
             target_frame = get_video_frame(roop.globals.target_path, roop.globals.reference_frame_number)
-            reference_face_position_slider_args['maximum'] = count_faces(target_frame)
+            reference_face_position_slider_args['maximum'] = get_faces_total(target_frame)
         REFERENCE_FACE_POSITION_SLIDER = gradio.Slider(**reference_face_position_slider_args)
         SIMILAR_FACE_DISTANCE_SLIDER = gradio.Slider(
             label='similar_face_distance',
@@ -54,12 +54,12 @@ def listen() -> None:
         component = ui.get_component(component_name)
         if component:
             component.change(update_face_reference_position, inputs=REFERENCE_FACE_POSITION_SLIDER, outputs=REFERENCE_FACE_POSITION_SLIDER)
-    REFERENCE_FACE_POSITION_SLIDER.change(self_update_face_reference_position, inputs=REFERENCE_FACE_POSITION_SLIDER)
+    REFERENCE_FACE_POSITION_SLIDER.change(clear_and_update_face_reference_position, inputs=REFERENCE_FACE_POSITION_SLIDER)
 
 
-def self_update_face_reference_position(reference_face_position: int) -> Dict[Any, Any]:
+def clear_and_update_face_reference_position(reference_face_position: int) -> Dict[Any, Any]:
     clear_face_reference()
-    update_face_reference_position(reference_face_position)
+    return update_face_reference_position(reference_face_position)
 
 
 def update_face_reference_position(reference_face_position: int) -> Dict[Any, Any]:
@@ -68,10 +68,10 @@ def update_face_reference_position(reference_face_position: int) -> Dict[Any, An
     roop.globals.reference_face_position = reference_face_position
     if is_image(roop.globals.target_path):
         target_frame = cv2.imread(roop.globals.target_path)
-        maximum = count_faces(target_frame)
+        maximum = get_faces_total(target_frame)
     if is_video(roop.globals.target_path):
         target_frame = get_video_frame(roop.globals.target_path, roop.globals.reference_frame_number)
-        maximum = count_faces(target_frame)
+        maximum = get_faces_total(target_frame)
     return gradio.update(value=reference_face_position, maximum=maximum)
 
 

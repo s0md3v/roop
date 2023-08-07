@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Optional
 import gradio
 
 import roop.globals
@@ -6,15 +6,29 @@ from roop.core import start
 from roop.utilities import has_image_extension, has_video_extension, normalize_output_path
 
 
+START_BUTTON: Optional[gradio.Button] = None
+CLEAR_BUTTON: Optional[gradio.Button] = None
+OUTPUT_IMAGE: Optional[gradio.Image] = None
+OUTPUT_VIDEO: Optional[gradio.Video] = None
+
+
 def render() -> None:
+    global START_BUTTON
+    global CLEAR_BUTTON
+    global OUTPUT_IMAGE
+    global OUTPUT_VIDEO
+
     with gradio.Column():
         with gradio.Row():
-            start_button = gradio.Button('Start')
-            clear_button = gradio.Button('Clear')
-        output_image = gradio.Image(label='output_image', visible=False)
-        output_video = gradio.Video(label='output_video', visible=False)
-        start_button.click(update, outputs=[output_image, output_video])
-        clear_button.click(clear, outputs=[output_image, output_video])
+            START_BUTTON = gradio.Button('Start')
+            CLEAR_BUTTON = gradio.Button('Clear')
+        OUTPUT_IMAGE = gradio.Image(label='output_image', visible=False)
+        OUTPUT_VIDEO = gradio.Video(label='output_video', visible=False)
+
+
+def listen() -> None:
+    START_BUTTON.click(update, outputs=[OUTPUT_IMAGE, OUTPUT_VIDEO])
+    CLEAR_BUTTON.click(clear, outputs=[OUTPUT_IMAGE, OUTPUT_VIDEO])
 
 
 def update() -> Tuple[Dict[str, Any], Dict[str, Any]]:

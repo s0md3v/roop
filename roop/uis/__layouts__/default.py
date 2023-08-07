@@ -20,5 +20,9 @@ def render() -> gradio.Blocks:
 
 
 def listen() -> None:
+    settings.listen()
+    source.listen()
+    target.listen()
     preview.listen()
     reference.listen()
+    output.listen()

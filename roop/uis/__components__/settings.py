@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 import gradio
 import onnxruntime
 
@@ -6,23 +6,39 @@ import roop.globals
 from roop.processors.frame.core import list_frame_processors_names, load_frame_processor_module, clear_frame_processors_modules
 from roop.uis import core as ui
 
+FRAME_PROCESSORS_CHECKBOX_GROUP: Optional[gradio.CheckboxGroup] = None
+EXECUTION_PROVIDERS_CHECKBOX_GROUP: Optional[gradio.CheckboxGroup] = None
+EXECUTION_THREADS_SLIDER: Optional[gradio.Slider] = None
+KEEP_FPS_CHECKBOX: Optional[gradio.Checkbox] = None
+KEEP_TEMP_CHECKBOX: Optional[gradio.Checkbox] = None
+SKIP_AUDIO_CHECKBOX: Optional[gradio.Checkbox] = None
+MANY_FACES_CHECKBOX: Optional[gradio.Checkbox] = None
+
 
 def render() -> None:
+    global FRAME_PROCESSORS_CHECKBOX_GROUP
+    global EXECUTION_PROVIDERS_CHECKBOX_GROUP
+    global EXECUTION_THREADS_SLIDER
+    global KEEP_FPS_CHECKBOX
+    global KEEP_TEMP_CHECKBOX
+    global SKIP_AUDIO_CHECKBOX
+    global MANY_FACES_CHECKBOX
+
     with gradio.Column():
         with gradio.Box():
-            frame_processors_checkbox_group = gradio.CheckboxGroup(
+            FRAME_PROCESSORS_CHECKBOX_GROUP = gradio.CheckboxGroup(
                 label='frame_processors',
                 choices=sort_frame_processors(roop.globals.frame_processors),
                 value=roop.globals.frame_processors
             )
-            ui.register_component('frame_processors_checkbox_group', frame_processors_checkbox_group)
+            ui.register_component('frame_processors_checkbox_group', FRAME_PROCESSORS_CHECKBOX_GROUP)
         with gradio.Box():
-            execution_providers_checkbox_group = gradio.CheckboxGroup(
+            EXECUTION_PROVIDERS_CHECKBOX_GROUP = gradio.CheckboxGroup(
                 label='execution_providers',
                 choices=onnxruntime.get_available_providers(),
                 value=roop.globals.execution_providers
             )
-            execution_threads_slider = gradio.Slider(
+            EXECUTION_THREADS_SLIDER = gradio.Slider(
                 label='execution_threads',
                 value=roop.globals.execution_threads,
                 step=1,
@@ -30,31 +46,33 @@ def render() -> None:
                 maximum=64
             )
         with gradio.Box():
-            keep_fps_checkbox = gradio.Checkbox(
+            KEEP_FPS_CHECKBOX = gradio.Checkbox(
                 label='keep_fps',
                 value=roop.globals.keep_fps
             )
-            keep_temp_checkbox = gradio.Checkbox(
+            KEEP_TEMP_CHECKBOX = gradio.Checkbox(
                 label='keep_temp',
                 value=roop.globals.keep_fps
             )
-            skip_audio_checkbox = gradio.Checkbox(
+            SKIP_AUDIO_CHECKBOX = gradio.Checkbox(
                 label='skip_audio',
                 value=roop.globals.skip_audio
             )
-            many_faces_checkbox = gradio.Checkbox(
+            MANY_FACES_CHECKBOX = gradio.Checkbox(
                 label='many_faces',
                 value=roop.globals.many_faces
             )
-            ui.register_component('many_faces_checkbox', many_faces_checkbox)
+            ui.register_component('many_faces_checkbox', MANY_FACES_CHECKBOX)
 
-        frame_processors_checkbox_group.change(update_frame_processors, inputs=frame_processors_checkbox_group, outputs=frame_processors_checkbox_group)
-        execution_providers_checkbox_group.change(update_execution_providers, inputs=execution_providers_checkbox_group, outputs=execution_providers_checkbox_group)
-        execution_threads_slider.change(update_execution_threads, inputs=execution_threads_slider, outputs=execution_threads_slider)
-        keep_fps_checkbox.change(lambda value: update_checkbox('keep_fps', value), inputs=keep_fps_checkbox, outputs=keep_fps_checkbox)
-        keep_temp_checkbox.change(lambda value: update_checkbox('keep_temp', value), inputs=keep_temp_checkbox, outputs=keep_temp_checkbox)
-        skip_audio_checkbox.change(lambda value: update_checkbox('skip_audio', value), inputs=skip_audio_checkbox, outputs=skip_audio_checkbox)
-        many_faces_checkbox.change(lambda value: update_checkbox('many_faces', value), inputs=many_faces_checkbox, outputs=many_faces_checkbox)
+
+def listen() -> None:
+    FRAME_PROCESSORS_CHECKBOX_GROUP.change(update_frame_processors, inputs=FRAME_PROCESSORS_CHECKBOX_GROUP, outputs=FRAME_PROCESSORS_CHECKBOX_GROUP)
+    EXECUTION_PROVIDERS_CHECKBOX_GROUP.change(update_execution_providers, inputs=EXECUTION_PROVIDERS_CHECKBOX_GROUP, outputs=EXECUTION_PROVIDERS_CHECKBOX_GROUP)
+    EXECUTION_THREADS_SLIDER.change(update_execution_threads, inputs=EXECUTION_THREADS_SLIDER, outputs=EXECUTION_THREADS_SLIDER)
+    KEEP_FPS_CHECKBOX.change(lambda value: update_checkbox('keep_fps', value), inputs=KEEP_FPS_CHECKBOX, outputs=KEEP_FPS_CHECKBOX)
+    KEEP_TEMP_CHECKBOX.change(lambda value: update_checkbox('keep_temp', value), inputs=KEEP_TEMP_CHECKBOX, outputs=KEEP_TEMP_CHECKBOX)
+    SKIP_AUDIO_CHECKBOX.change(lambda value: update_checkbox('skip_audio', value), inputs=SKIP_AUDIO_CHECKBOX, outputs=SKIP_AUDIO_CHECKBOX)
+    MANY_FACES_CHECKBOX.change(lambda value: update_checkbox('many_faces', value), inputs=MANY_FACES_CHECKBOX, outputs=MANY_FACES_CHECKBOX)
 
 
 def update_frame_processors(frame_processors: List[str]) -> Dict[Any, Any]:

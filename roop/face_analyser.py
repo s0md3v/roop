@@ -54,5 +54,5 @@ def find_similar_face(frame: Frame, reference_face: Face) -> Optional[Face]:
     return None
 
 
-def count_faces(frame: Frame) -> int:
+def get_faces_total(frame: Frame) -> int:
     return len(get_many_faces(frame))
