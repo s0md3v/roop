@@ -31,8 +31,8 @@ def parse_args() -> None:
     program.add_argument('-s', '--source', help='select an source image', dest='source_path')
     program.add_argument('-t', '--target', help='select an target image or video', dest='target_path')
     program.add_argument('-o', '--output', help='select output file or directory', dest='output_path')
-    program.add_argument('--frame-processors', help='list of available frame processors', dest='frame_processors', default=['face_swapper'], choices=list_frame_processors_names(), nargs='+')
-    program.add_argument('--ui-layouts', help='list of available ui layouts', dest='ui_layouts', default=['default'], choices=suggest_ui_layouts(), nargs='+')
+    program.add_argument('--frame-processors', help='list of available frame processors', dest='frame_processors', default=['face_swapper'], nargs='+')
+    program.add_argument('--ui-layouts', help='list of available ui layouts', dest='ui_layouts', default=['default'], nargs='+')
     program.add_argument('--keep-fps', help='keep target fps', dest='keep_fps', action='store_true')
     program.add_argument('--keep-temp', help='keep temporary frames', dest='keep_temp', action='store_true')
     program.add_argument('--skip-audio', help='skip target audio', dest='skip_audio', action='store_true')
@@ -160,10 +160,12 @@ def start() -> None:
     if roop.globals.keep_fps:
         fps = detect_fps(roop.globals.target_path)
         update_status(f'Extracting frames with {fps} FPS...')
-        extract_frames(roop.globals.target_path, fps)
+        if not extract_frames(roop.globals.target_path, fps):
+            update_status('Extracting frames failed...')
     else:
         update_status('Extracting frames with 30 FPS...')
-        extract_frames(roop.globals.target_path)
+        if not extract_frames(roop.globals.target_path):
+            update_status('Extracting frames failed...')
     # process frame
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     if temp_frame_paths:
@@ -178,10 +180,12 @@ def start() -> None:
     if roop.globals.keep_fps:
         fps = detect_fps(roop.globals.target_path)
         update_status(f'Creating video with {fps} FPS...')
-        create_video(roop.globals.target_path, fps)
+        if not create_video(roop.globals.target_path, fps):
+            update_status('Creating video failed...')
     else:
         update_status('Creating video with 30 FPS...')
-        create_video(roop.globals.target_path)
+        if not create_video(roop.globals.target_path):
+            update_status('Creating video failed...')
     # handle audio
     if roop.globals.skip_audio:
         move_temp(roop.globals.target_path, roop.globals.output_path)

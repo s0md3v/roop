@@ -30,7 +30,7 @@ def load_frame_processor_module(frame_processor: str) -> Any:
             if not hasattr(frame_processor_module, method_name):
                 raise NotImplementedError
     except ModuleNotFoundError:
-        sys.exit(f'Frame processor {frame_processor} not found.')
+        sys.exit(f'Frame processor {frame_processor} could be not loaded.')
     except NotImplementedError:
         sys.exit(f'Frame processor {frame_processor} not implemented correctly.')
     return frame_processor_module
