@@ -160,12 +160,10 @@ def start() -> None:
     if roop.globals.keep_fps:
         fps = detect_fps(roop.globals.target_path)
         update_status(f'Extracting frames with {fps} FPS...')
-        if not extract_frames(roop.globals.target_path, fps):
-            update_status('Extracting frames failed...')
+        extract_frames(roop.globals.target_path, fps)
     else:
         update_status('Extracting frames with 30 FPS...')
-        if not extract_frames(roop.globals.target_path):
-            update_status('Extracting frames failed...')
+        extract_frames(roop.globals.target_path)
     # process frame
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     if temp_frame_paths:
@@ -174,7 +172,7 @@ def start() -> None:
             frame_processor_module.process_video(roop.globals.source_path, temp_frame_paths)
             frame_processor_module.post_process()
     else:
-        update_status('Frames not found...')
+        update_status('Temporary frames not found...')
         return
     # create video
     if roop.globals.keep_fps:
