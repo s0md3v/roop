@@ -17,7 +17,10 @@ jobs:
   - run: flake8 run.py roop
   - run: mypy run.py roop
  test:
-  runs-on: ubuntu-latest
+  strategy:
+   matrix:
+    os: [macos-latest, ubuntu-latest, windows-latest]
+  runs-on: ${{ matrix.os }}
   steps:
   - name: Checkout
     uses: actions/checkout@v2
@@ -27,7 +30,12 @@ jobs:
     uses: actions/setup-python@v2
     with:
      python-version: 3.9
-  - run: pip install -r requirements-ci.txt
-  - run: python run.py -s=.github/examples/source.jpg -t=.github/examples/target.mp4 -o=.github/examples/output.mp4
+  - run: pip install -r requirements-headless.txt
+  - run: python run.py -s .github/examples/source.jpg -t .github/examples/target.mp4 -o .github/examples/output.mp4
+    if: matrix.os != 'windows-latest'
+  - run: python run.py -s .github\examples\source.jpg -t .github\examples\target.mp4 -o .github\examples\output.mp4
+    if: matrix.os == 'windows-latest'
   - run: ffmpeg -i .github/examples/snapshot.mp4 -i .github/examples/output.mp4 -filter_complex psnr -f null -
-
+    if: matrix.os != 'windows-latest'
+  - run: ffmpeg -i .github\examples\snapshot.mp4 -i .github\examples\output.mp4 -filter_complex psnr -f null -
+    if: matrix.os == 'windows-latest'
