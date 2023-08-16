@@ -57,7 +57,8 @@ python run.py [options]
 Using the `-s/--source`, `-t/--target` and `-o/--output` argument will run the program in headless mode.
 
 
-##Disclaimer
+## Disclaimer
+
 This software is designed to contribute positively to the AI-generated media industry, assisting artists with tasks like character animation and clothing modeling.
 
 We are committed to preventing unethical use. The program has checks to avoid working on inappropriate content. We'll continue to develop ethically and legally, potentially adding watermarks or shutting down as required.
