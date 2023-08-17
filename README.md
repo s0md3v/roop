@@ -52,7 +52,7 @@ Using the `-s/--source`, `-t/--target` and `-o/--output` argument will run the p
 
 This software is designed to contribute positively to the AI-generated media industry, assisting artists with tasks like character animation and clothing modeling.
 
-We are committed to preventing unethical use. The program has checks to avoid working on inappropriate content. We'll continue to develop ethically and legally, potentially adding watermarks or shutting down as required.
+We are aware of the potential ethical issues and have implemented measures to prevent the software from being used for inappropriate content, such as nudity.
 
 Users are expected to follow local laws and use the software responsibly. If using real faces, get consent and clearly label deepfakes when sharing. The developers aren't liable for user actions.
 
