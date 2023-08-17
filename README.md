@@ -50,7 +50,7 @@ Using the `-s/--source`, `-t/--target` and `-o/--output` argument will run the p
 
 ## Disclaimer
 
-This software is designed to contribute positively to the AI-generated media industry, assisting artists with tasks like character animation and clothing modeling.
+This software is designed to contribute positively to the AI-generated media industry, assisting artists with tasks like character animation and models for clothing.
 
 We are aware of the potential ethical issues and have implemented measures to prevent the software from being used for inappropriate content, such as nudity.
 
