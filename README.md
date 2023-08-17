@@ -70,4 +70,4 @@ Our software uses a lot of third party libraries as well pre-trained models. The
 
 ## Documentation
 
-Read the [documenation](https://roop-ai.gitbook.io/roop) for a deep dive.
+Read the [documentation](https://roop-ai.gitbook.io/roop) for a deep dive.
