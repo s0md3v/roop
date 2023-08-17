@@ -4,15 +4,6 @@
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/s0md3v/roop/ci.yml.svg?branch=main)](https://github.com/s0md3v/roop/actions?query=workflow:ci)
 
-
-## Preview
-
-|                                                 Target Video                                                 |                                                 Output Video                                                 |
-|:------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------:|
-| ![Target Video](https://raw.githubusercontent.com/s0md3v/roop/main/.github/preview/target.gif?sanitize=true) | ![Output Video](https://raw.githubusercontent.com/s0md3v/roop/main/.github/preview/output.gif?sanitize=true) |
-
-
-
 ## Installation
 
 Be aware, the installation needs technical skills and is not for beginners. Please do not open platform and installation related issues on GitHub. We have a very helpful [Discord](https://discord.com/invite/Y9p4ZQ2sB9) community that will guide you to install roop.
