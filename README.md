@@ -8,9 +8,9 @@
 
 Be aware, the installation needs technical skills and is not for beginners. Please do not open platform and installation related issues on GitHub. We have a very helpful [Discord](https://discord.com/invite/Y9p4ZQ2sB9) community that will guide you to install roop.
 
-[Basic](https://roop-ai.gitbook.io/roop/installation/basic) - It is more likely to work on your computer, but will be quite slow
+[Basic](https://github.com/s0md3v/roop/wiki/1.-Installation) - It is more likely to work on your computer, but will be quite slow
 
-[Acceleration](https://roop-ai.gitbook.io/roop/installation/acceleration) - Unleash the full potential of your CPU and GPU
+[Acceleration](https://github.com/s0md3v/roop/wiki/2.-Acceleration) - Unleash the full potential of your CPU and GPU
 
 
 ## Usage
@@ -70,4 +70,4 @@ Our software uses a lot of third party libraries as well pre-trained models. The
 
 ## Documentation
 
-Read the [documentation](https://roop-ai.gitbook.io/roop) for a deep dive.
+Read the [documentation](https://github.com/s0md3v/roop/wiki) for a deep dive.
