@@ -1,24 +1,19 @@
-## This project has been discontinued
+## This project has been archived
 
-Yes, you can still use this software. It just won't recieve any updates now.
+**When I originally built this project, I approached it primarily as a technical experiment in generative media. Not long after releasing it, my view of the broader second-order effects around software in this category changed.**
 
-> The reason behind shutting the project down is that a developer with write access to the code published a [problematic video](https://github.com/s0md3v/roop/commit/cf7ba1caf932e8c9f39d972100f74022e7372c27) to the documentation of the project. This happened while I was taking a break from the project in July-Aug 2023. It went unnoticed for 2 weeks until someone reached out to me to talk about this project. It was a complete breach of trust for me and I decided that I do not have the interest or time to oversee the development of a software with such ethical issues.
-> I thank all the amazing people who contributed to this project and made what it is in it's final form.
+**Because of that, this project has been permanently discontinued.*
 
 # Roop
+<img src="https://i.ibb.co/4RdPYwQ/Untitled.jpg"/>
 
-> Take a video and replace the face in it with a face of your choice. You only need one image of the desired face. No dataset, no training.
+## Disclaimer
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/s0md3v/roop/ci.yml.svg?branch=main)](https://github.com/s0md3v/roop/actions?query=workflow:ci)
+This software is designed to contribute positively to the AI-generated media industry, assisting professionals with tasks like generating consistent faces for clothing models and character animation.
 
-## Installation
+We are aware of the potential ethical issues and have implemented measures to prevent the software from being used for inappropriate content, such as nudity.
 
-Be aware, the installation needs technical skills and is not for beginners. Please do not open platform and installation related issues on GitHub. We have a very helpful [Discord](https://discord.com/invite/Y9p4ZQ2sB9) community that will guide you to install roop.
-
-[Basic](https://github.com/s0md3v/roop/wiki/1.-Installation) - It is more likely to work on your computer, but will be quite slow
-
-[Acceleration](https://github.com/s0md3v/roop/wiki/2.-Acceleration) - Unleash the full potential of your CPU and GPU
-
+Users are expected to follow local laws and use the software responsibly. If using real faces, get consent and clearly label deepfakes when sharing. The developers aren't liable for user actions.
 
 ## Usage
 
@@ -54,20 +49,16 @@ python run.py [options]
 
 Using the `-s/--source`, `-t/--target` and `-o/--output` argument will run the program in headless mode.
 
+## Installation
 
-## Disclaimer
+Be aware, the installation needs technical skills and is not for beginners. Please do not open platform and installation related issues on GitHub.
 
-This software is designed to contribute positively to the AI-generated media industry, assisting artists with tasks like character animation and models for clothing.
+[Basic](https://github.com/s0md3v/roop/wiki/1.-Installation) - It is more likely to work on your computer, but will be quite slow
 
-We are aware of the potential ethical issues and have implemented measures to prevent the software from being used for inappropriate content, such as nudity.
-
-Users are expected to follow local laws and use the software responsibly. If using real faces, get consent and clearly label deepfakes when sharing. The developers aren't liable for user actions.
-
+[Acceleration](https://github.com/s0md3v/roop/wiki/2.-Acceleration) - Unleash the full potential of your CPU and GPU
 
 ## Licenses
-
 Our software uses a lot of third party libraries as well pre-trained models. The users should keep in mind that these third party components have their own license and terms, therefore our license is not being applied.
-
 
 ## Credits
 
