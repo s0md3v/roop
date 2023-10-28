@@ -52,38 +52,32 @@ def parse_args() -> None:
     args = program.parse_args()
     print("Vinay")
 
-    for i in range(2):
-
-        if i==0:
-            source_path = args.source_path + "Female_1.png"
-            target_path = args.target_path + "face_2.mp4"
-            output_path = args.output_path + "vinay_1.mp4"
-            
-        elif i == 1:
-            source_path = args.source_path + "Female_1.png"
-            target_path = args.target_path + "real_1.mp4"
-            output_path = args.output_path + "vinay_2.mp4"
+  
+    source_path = args.source_path 
+    target_path = args.target_path
+    output_path = args.output_path
 
 
-        roop.globals.source_path = source_path
-        roop.globals.target_path = target_path
-        roop.globals.output_path = normalize_output_path(roop.globals.source_path, roop.globals.target_path, output_path)
-        roop.globals.headless = roop.globals.source_path is not None and roop.globals.target_path is not None and roop.globals.output_path is not None
-        roop.globals.frame_processors = args.frame_processor
-        roop.globals.keep_fps = args.keep_fps
-        roop.globals.keep_frames = args.keep_frames
-        roop.globals.skip_audio = args.skip_audio
-        roop.globals.many_faces = args.many_faces
-        roop.globals.reference_face_position = args.reference_face_position
-        roop.globals.reference_frame_number = args.reference_frame_number
-        roop.globals.similar_face_distance = args.similar_face_distance
-        roop.globals.temp_frame_format = args.temp_frame_format
-        roop.globals.temp_frame_quality = args.temp_frame_quality
-        roop.globals.output_video_encoder = args.output_video_encoder
-        roop.globals.output_video_quality = args.output_video_quality
-        roop.globals.max_memory = args.max_memory
-        roop.globals.execution_providers = decode_execution_providers(args.execution_provider)
-        roop.globals.execution_threads = args.execution_threads
+
+    roop.globals.source_path = source_path
+    roop.globals.target_path = target_path
+    roop.globals.output_path = normalize_output_path(roop.globals.source_path, roop.globals.target_path, output_path)
+    roop.globals.headless = roop.globals.source_path is not None and roop.globals.target_path is not None and roop.globals.output_path is not None
+    roop.globals.frame_processors = args.frame_processor
+    roop.globals.keep_fps = args.keep_fps
+    roop.globals.keep_frames = args.keep_frames
+    roop.globals.skip_audio = args.skip_audio
+    roop.globals.many_faces = args.many_faces
+    roop.globals.reference_face_position = args.reference_face_position
+    roop.globals.reference_frame_number = args.reference_frame_number
+    roop.globals.similar_face_distance = args.similar_face_distance
+    roop.globals.temp_frame_format = args.temp_frame_format
+    roop.globals.temp_frame_quality = args.temp_frame_quality
+    roop.globals.output_video_encoder = args.output_video_encoder
+    roop.globals.output_video_quality = args.output_video_quality
+    roop.globals.max_memory = args.max_memory
+    roop.globals.execution_providers = decode_execution_providers(args.execution_provider)
+    roop.globals.execution_threads = args.execution_threads
 
 
 def encode_execution_providers(execution_providers: List[str]) -> List[str]:
@@ -140,9 +134,12 @@ def update_status(message: str, scope: str = 'ROOP.CORE') -> None:
     print(f'[{scope}] {message}')
     if not roop.globals.headless:
         ui.update_status(message)
-
-
+        
 def start() -> None:
+    roop.globals.source_path = roop.globals.source_path + "Female_1.png"
+    roop.globals.target_path = roop.globals.target_path + "face_2.mp4"
+    roop.globals.output_path = roop.globals.output_path + "vinay_1.mp4"
+
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         if not frame_processor.pre_start():
             return
