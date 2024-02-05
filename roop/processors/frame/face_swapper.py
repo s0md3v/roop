@@ -1,19 +1,22 @@
-from typing import Any, List, Callable
+import threading
+from typing import Any, Callable, List
+
 import cv2
 import insightface
-import threading
 
 import roop.globals
 import roop.processors.frame.core
 from roop.core import update_status
-from roop.face_analyser import get_one_face, get_many_faces, find_similar_face
-from roop.face_reference import get_face_reference, set_face_reference, clear_face_reference
+from roop.face_analyser import find_similar_face, get_many_faces, get_one_face
+from roop.face_reference import (clear_face_reference, get_face_reference,
+                                 set_face_reference)
 from roop.typing import Face, Frame
-from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
+from roop.utilities import (conditional_download, is_image, is_video,
+                            resolve_relative_path)
 
 FACE_SWAPPER = None
 THREAD_LOCK = threading.Lock()
-NAME = 'ROOP.FACE-SWAPPER'
+NAME = 'Đổi khuôn mặt'
 
 
 def get_face_swapper() -> Any:
@@ -40,13 +43,13 @@ def pre_check() -> bool:
 
 def pre_start() -> bool:
     if not is_image(roop.globals.source_path):
-        update_status('Select an image for source path.', NAME)
+        update_status('Chọn ảnh từ source', NAME)
         return False
     elif not get_one_face(cv2.imread(roop.globals.source_path)):
-        update_status('No face in source path detected.', NAME)
+        update_status('Không phát hiện khuôn mặt nào', NAME)
         return False
     if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
-        update_status('Select an image or video for target path.', NAME)
+        update_status('Chọn một video hoặc hình ảnh từ nguồn', NAME)
         return False
     return True
 

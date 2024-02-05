@@ -1,19 +1,21 @@
-from typing import Any, List, Callable
-import cv2
 import threading
+from typing import Any, Callable, List
+
+import cv2
 from gfpgan.utils import GFPGANer
 
 import roop.globals
 import roop.processors.frame.core
 from roop.core import update_status
 from roop.face_analyser import get_many_faces
-from roop.typing import Frame, Face
-from roop.utilities import conditional_download, resolve_relative_path, is_image, is_video
+from roop.typing import Face, Frame
+from roop.utilities import (conditional_download, is_image, is_video,
+                            resolve_relative_path)
 
 FACE_ENHANCER = None
 THREAD_SEMAPHORE = threading.Semaphore()
 THREAD_LOCK = threading.Lock()
-NAME = 'ROOP.FACE-ENHANCER'
+NAME = 'Cải thiện khuôn mặt'
 
 
 def get_face_enhancer() -> Any:
@@ -49,7 +51,7 @@ def pre_check() -> bool:
 
 def pre_start() -> bool:
     if not is_image(roop.globals.target_path) and not is_video(roop.globals.target_path):
-        update_status('Select an image or video for target path.', NAME)
+        update_status('Chọn một hình ảnh hoặc video cho tệp đích', NAME)
         return False
     return True
 
