@@ -2,25 +2,31 @@
 
 import os
 import sys
+
 # single thread doubles cuda performance - needs to be set before torch import
 if any(arg.startswith('--execution-provider') for arg in sys.argv):
     os.environ['OMP_NUM_THREADS'] = '1'
 # reduce tensorflow log level
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+import argparse
+import platform
+import shutil
+import signal
 import warnings
 from typing import List
-import platform
-import signal
-import shutil
-import argparse
+
 import onnxruntime
 import tensorflow
+
 import roop.globals
 import roop.metadata
 import roop.ui as ui
 from roop.predictor import predict_image, predict_video
 from roop.processors.frame.core import get_frame_processors_modules
-from roop.utilities import has_image_extension, is_image, is_video, detect_fps, create_video, extract_frames, get_temp_frame_paths, restore_audio, create_temp, move_temp, clean_temp, normalize_output_path
+from roop.utilities import (clean_temp, create_temp, create_video, detect_fps,
+                            extract_frames, get_temp_frame_paths,
+                            has_image_extension, is_image, is_video, move_temp,
+                            normalize_output_path, restore_audio)
 
 warnings.filterwarnings('ignore', category=FutureWarning, module='insightface')
 warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
@@ -114,15 +120,15 @@ def limit_resources() -> None:
 
 def pre_check() -> bool:
     if sys.version_info < (3, 9):
-        update_status('Python version is not supported - please upgrade to 3.9 or higher.')
+        update_status('Python version không hỗ trợ, vui lòng cài phiên bản mới hơn')
         return False
     if not shutil.which('ffmpeg'):
-        update_status('ffmpeg is not installed.')
+        update_status('ffmpeg chưa được cài đặt.')
         return False
     return True
 
 
-def update_status(message: str, scope: str = 'ROOP.CORE') -> None:
+def update_status(message: str, scope: str = '') -> None:
     print(f'[{scope}] {message}')
     if not roop.globals.headless:
         ui.update_status(message)
@@ -139,64 +145,64 @@ def start() -> None:
         shutil.copy2(roop.globals.target_path, roop.globals.output_path)
         # process frame
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-            update_status('Progressing...', frame_processor.NAME)
+            update_status('Đang chạy...', frame_processor.NAME)
             frame_processor.process_image(roop.globals.source_path, roop.globals.output_path, roop.globals.output_path)
             frame_processor.post_process()
         # validate image
         if is_image(roop.globals.target_path):
-            update_status('Processing to image succeed!')
+            update_status('Thành công')
         else:
-            update_status('Processing to image failed!')
+            update_status('Lỗi')
         return
     # process image to videos
     if predict_video(roop.globals.target_path):
         destroy()
-    update_status('Creating temporary resources...')
+    update_status('Đang khởi tạo tệp tin tạm...')
     create_temp(roop.globals.target_path)
     # extract frames
     if roop.globals.keep_fps:
         fps = detect_fps(roop.globals.target_path)
-        update_status(f'Extracting frames with {fps} FPS...')
+        update_status(f'Đang extract frame với {fps} FPS...')
         extract_frames(roop.globals.target_path, fps)
     else:
-        update_status('Extracting frames with 30 FPS...')
+        update_status('Đang trích xuất frame với 30FPS...')
         extract_frames(roop.globals.target_path)
     # process frame
     temp_frame_paths = get_temp_frame_paths(roop.globals.target_path)
     if temp_frame_paths:
         for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
-            update_status('Progressing...', frame_processor.NAME)
+            update_status('Đang chạy...', frame_processor.NAME)
             frame_processor.process_video(roop.globals.source_path, temp_frame_paths)
             frame_processor.post_process()
     else:
-        update_status('Frames not found...')
+        update_status('Không thấy frame nào...')
         return
     # create video
     if roop.globals.keep_fps:
         fps = detect_fps(roop.globals.target_path)
-        update_status(f'Creating video with {fps} FPS...')
+        update_status(f'CTạo video với {fps} FPS...')
         create_video(roop.globals.target_path, fps)
     else:
-        update_status('Creating video with 30 FPS...')
+        update_status('Tạo video với 30 FPS...')
         create_video(roop.globals.target_path)
     # handle audio
     if roop.globals.skip_audio:
         move_temp(roop.globals.target_path, roop.globals.output_path)
-        update_status('Skipping audio...')
+        update_status('Bỏ qua âm thanh...')
     else:
         if roop.globals.keep_fps:
-            update_status('Restoring audio...')
+            update_status('Khôi phục âm thanh...')
         else:
-            update_status('Restoring audio might cause issues as fps are not kept...')
+            update_status('Khôi phục âm thanh có thể gây ra sự cố do không giữ được khung hình/giây...')
         restore_audio(roop.globals.target_path, roop.globals.output_path)
     # clean temp
-    update_status('Cleaning temporary resources...')
+    update_status('Làm sạch tài nguyên tạm thời...')
     clean_temp(roop.globals.target_path)
     # validate video
     if is_video(roop.globals.target_path):
-        update_status('Processing to video succeed!')
+        update_status('Xử lý thành video thành công!')
     else:
-        update_status('Processing to video failed!')
+        update_status('Xử lý video không thành công!')
 
 
 def destroy() -> None:
