@@ -2,7 +2,7 @@
 
 Yes, it still works, you can still use this software. It just won't recieve any updates now.
 
-> I do not have the interest or time to oversee the development of a software. I thank all the amazing people who contributed to this project and made what it is in it's final form.
+> I do not have the interest or time to oversee the development of this software. I thank all the amazing people who contributed to this project and made what it is in it's final form.
 
 # Roop
 
@@ -14,7 +14,7 @@ Yes, it still works, you can still use this software. It just won't recieve any 
 
 ## Installation
 
-Be aware, the installation needs technical skills and is not for beginners. Please do not open platform and installation related issues on GitHub. We have a very helpful [Discord](https://discord.com/invite/Y9p4ZQ2sB9) community that will guide you to install roop.
+Be aware, the installation needs technical skills and is not for beginners. Please do not open platform and installation related issues on GitHub.
 
 [Basic](https://github.com/s0md3v/roop/wiki/1.-Installation) - It is more likely to work on your computer, but will be quite slow
 
