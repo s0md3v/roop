@@ -1,6 +1,7 @@
 name: ci
 
-on: [ push, pull_request ]
+on: 
+  workflow_dispatch:
 
 jobs:
  lint:
