@@ -45,7 +45,7 @@ jobs:
         choco install ffmpeg
     - name: Run Python script
       run: |
-        if [ "${{ matrix.os }}" != "windows-latest" ]; then
+        if: matrix.os != 'windows-latest'; then
           python run.py -s .github/examples/source.jpg -t .github/examples/target.mp4 -o .github/examples/output.mp4
           ffmpeg -i .github/examples/snapshot.mp4 -i .github/examples/output.mp4 -filter_complex psnr -f null -
         else
