@@ -1,5 +1,5 @@
 ---
-name: Installation
+name: Installer
 about: Platform and installation issues
 labels: 'installation'
 
