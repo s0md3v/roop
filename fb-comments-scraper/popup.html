@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FB Comments Scraper</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -16,7 +15,7 @@
     <section class="options">
       <label class="toggle">
         <input type="checkbox" id="opt-autoscroll" checked />
-        <span>Auto-scroll &amp; load more</span>
+        <span>Auto-scroll &amp; expand all replies</span>
       </label>
       <label class="toggle">
         <input type="checkbox" id="opt-debug" />
@@ -25,39 +24,51 @@
     </section>
 
     <section class="actions">
-      <button id="btn-probe" class="btn btn-secondary" title="Test selectors without full scrape">
-        🔍 Probe
-      </button>
-      <button id="btn-scrape" class="btn btn-primary">
-        ▶ Scrape Comments
-      </button>
-      <button id="btn-export" class="btn btn-success" disabled>
-        ⬇ Export CSV
-      </button>
+      <button id="btn-probe"  class="btn btn-secondary" title="Quick test – no full scroll">🔍 Probe</button>
+      <button id="btn-scrape" class="btn btn-primary">▶ Scrape</button>
+      <button id="btn-export" class="btn btn-success" disabled>⬇ Export CSV</button>
     </section>
 
     <div id="status-box" class="status hidden"></div>
 
-    <div id="debug-box" class="debug-panel hidden">
-      <h3>Debug Probe Result</h3>
-      <pre id="debug-output"></pre>
+    <!-- Post Metadata Panel -->
+    <div id="meta-panel" class="meta-panel hidden">
+      <div class="meta-panel-title">Post info</div>
+      <table id="meta-table" class="meta-table">
+        <tbody id="meta-body"></tbody>
+      </table>
     </div>
 
+    <!-- Reaction Bar -->
+    <div id="reaction-bar" class="reaction-bar hidden">
+      <div class="reaction-bar-title">Reactions</div>
+      <div id="reaction-chips" class="reaction-chips"></div>
+    </div>
+
+    <!-- Comment Preview Table -->
     <div id="preview-box" class="preview hidden">
-      <h3>Preview <span id="preview-count"></span></h3>
-      <div id="preview-table-wrap">
+      <div class="preview-title">Comments <span id="preview-count"></span></div>
+      <div class="preview-table-wrap">
         <table id="preview-table">
           <thead>
             <tr>
+              <th>#</th>
+              <th>Thread</th>
               <th>Author</th>
               <th>Text</th>
               <th>Time</th>
-              <th>Likes</th>
+              <th>❤</th>
             </tr>
           </thead>
           <tbody id="preview-body"></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- Debug Panel -->
+    <div id="debug-box" class="debug-panel hidden">
+      <div class="debug-title">Debug Probe</div>
+      <pre id="debug-output"></pre>
     </div>
   </div>
   <script src="popup.js"></script>
