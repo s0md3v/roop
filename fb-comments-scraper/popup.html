@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FB Comments Scraper</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>FB Comments Scraper</h1>
+      <p class="subtitle">Open a Facebook post, then click Scrape.</p>
+    </header>
+
+    <section class="options">
+      <label class="toggle">
+        <input type="checkbox" id="opt-autoscroll" checked />
+        <span>Auto-scroll &amp; load more</span>
+      </label>
+      <label class="toggle">
+        <input type="checkbox" id="opt-debug" />
+        <span>Debug mode (console logs)</span>
+      </label>
+    </section>
+
+    <section class="actions">
+      <button id="btn-probe" class="btn btn-secondary" title="Test selectors without full scrape">
+        🔍 Probe
+      </button>
+      <button id="btn-scrape" class="btn btn-primary">
+        ▶ Scrape Comments
+      </button>
+      <button id="btn-export" class="btn btn-success" disabled>
+        ⬇ Export CSV
+      </button>
+    </section>
+
+    <div id="status-box" class="status hidden"></div>
+
+    <div id="debug-box" class="debug-panel hidden">
+      <h3>Debug Probe Result</h3>
+      <pre id="debug-output"></pre>
+    </div>
+
+    <div id="preview-box" class="preview hidden">
+      <h3>Preview <span id="preview-count"></span></h3>
+      <div id="preview-table-wrap">
+        <table id="preview-table">
+          <thead>
+            <tr>
+              <th>Author</th>
+              <th>Text</th>
+              <th>Time</th>
+              <th>Likes</th>
+            </tr>
+          </thead>
+          <tbody id="preview-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
