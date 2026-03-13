@@ -4,6 +4,8 @@
 
 **Because of that, this project has been permanently discontinued.*
 
+> Update: This repository has been archived to prevent pull requests.
+
 # Roop
 <img src="https://i.ibb.co/4RdPYwQ/Untitled.jpg"/>
 
